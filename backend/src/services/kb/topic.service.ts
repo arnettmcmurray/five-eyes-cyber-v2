@@ -1,17 +1,54 @@
+import { eq } from 'drizzle-orm';
+import { v4 as uuid } from 'uuid';
+import { db } from '../../db/client.js';
+import { topics, topicRelationships } from '../../db/schema/topics.js';
 import type { Topic, TopicRelationship } from '../../models/kb/topic.js';
 
-/** Manages Topics and TopicRelationships. */
+function toTopic(row: typeof topics.$inferSelect): Topic {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description,
+    parentTopicId: row.parentTopicId ?? undefined,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
+function toRelationship(row: typeof topicRelationships.$inferSelect): TopicRelationship {
+  return {
+    id: row.id,
+    itemId: row.itemId,
+    topicId: row.topicId,
+    weight: row.weight ?? 1.0,
+    assignedBy: row.assignedBy as 'admin' | 'pipeline',
+    assignedAt: row.assignedAt.toISOString(),
+  };
+}
+
 export class KBTopicService {
   async createTopic(data: Omit<Topic, 'id' | 'createdAt'>): Promise<Topic> {
-    throw new Error('Not implemented: KBTopicService.createTopic');
+    const [row] = await db
+      .insert(topics)
+      .values({
+        id: uuid(),
+        slug: data.slug,
+        name: data.name,
+        description: data.description,
+        parentTopicId: data.parentTopicId ?? null,
+      })
+      .returning();
+    return toTopic(row);
   }
 
   async getTopic(id: string): Promise<Topic | null> {
-    throw new Error('Not implemented: KBTopicService.getTopic');
+    const [row] = await db.select().from(topics).where(eq(topics.id, id)).limit(1);
+    return row ? toTopic(row) : null;
   }
 
   async listTopics(): Promise<Topic[]> {
-    throw new Error('Not implemented: KBTopicService.listTopics');
+    const rows = await db.select().from(topics);
+    return rows.map(toTopic);
   }
 
   async assignTopic(
@@ -20,14 +57,26 @@ export class KBTopicService {
     weight: number,
     assignedBy: 'admin' | 'pipeline',
   ): Promise<TopicRelationship> {
-    throw new Error('Not implemented: KBTopicService.assignTopic');
+    const [row] = await db
+      .insert(topicRelationships)
+      .values({ id: uuid(), itemId, topicId, weight, assignedBy })
+      .returning();
+    return toRelationship(row);
   }
 
   async getTopicsForItem(itemId: string): Promise<TopicRelationship[]> {
-    throw new Error('Not implemented: KBTopicService.getTopicsForItem');
+    const rows = await db
+      .select()
+      .from(topicRelationships)
+      .where(eq(topicRelationships.itemId, itemId));
+    return rows.map(toRelationship);
   }
 
   async getItemsForTopic(topicId: string): Promise<TopicRelationship[]> {
-    throw new Error('Not implemented: KBTopicService.getItemsForTopic');
+    const rows = await db
+      .select()
+      .from(topicRelationships)
+      .where(eq(topicRelationships.topicId, topicId));
+    return rows.map(toRelationship);
   }
 }
