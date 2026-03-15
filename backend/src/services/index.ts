@@ -1,0 +1,8 @@
+export { KBItemService } from './kb/item.service.js';
+export { KBRevisionService } from './kb/revision.service.js';
+export { KBTopicService } from './kb/topic.service.js';
+export { KBLessonService } from './kb/lesson.service.js';
+export { KBQuizCandidateService } from './kb/quiz-candidate.service.js';
+export { KBRetrievalService } from './kb/retrieval.service.js';
+export { KBWorkflowService } from './kb/workflow.service.js';
+export { KBIngestionService } from './kb/ingestion.service.js';

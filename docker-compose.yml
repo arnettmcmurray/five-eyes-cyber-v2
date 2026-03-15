@@ -1,0 +1,20 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: five_eyes_v2_db
+    environment:
+      POSTGRES_DB: five_eyes_v2
+      POSTGRES_USER: five_eyes_user
+      POSTGRES_PASSWORD: five_eyes_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data_v2:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U five_eyes_user -d five_eyes_v2"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data_v2:
