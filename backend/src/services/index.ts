@@ -6,3 +6,4 @@ export { KBQuizCandidateService } from './kb/quiz-candidate.service.js';
 export { KBRetrievalService } from './kb/retrieval.service.js';
 export { KBWorkflowService } from './kb/workflow.service.js';
 export { KBIngestionService } from './kb/ingestion.service.js';
+export { KBChunkService } from './kb/chunk.service.js';
