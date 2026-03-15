@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { KBQuizCandidateService } from '../../services/kb/quiz-candidate.service.js';
+import { validateBody } from '../../validation/middleware.js';
+import { createQuizCandidateSchema } from '../../validation/kb.schemas.js';
+import { z } from 'zod';
 
 const router = Router({ mergeParams: true });
 const svc = new KBQuizCandidateService();
 
-// GET /kb/items/:itemId/quiz-candidates
 router.get('/', async (req, res) => {
   try {
     res.json(await svc.listForItem((req.params as any).itemId));
@@ -13,44 +15,38 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /kb/items/:itemId/quiz-candidates
-router.post('/', async (req, res) => {
+router.post('/', validateBody(createQuizCandidateSchema), async (req, res) => {
   try {
-    const candidate = await svc.create({
-      ...req.body,
-      kbItemId: (req.params as any).itemId,
-      status: req.body.status ?? 'pending-review',
-    });
-    res.status(201).json(candidate);
+    res.status(201).json(await svc.create({ ...req.body, kbItemId: (req.params as any).itemId }));
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 
-// POST /kb/quiz-candidates/:id/approve
-// POST /kb/quiz-candidates/:id/reject
-// POST /kb/quiz-candidates/:id/promote
+const reviewSchema = z.object({ reviewedBy: z.string().min(1) });
+const promoteSchema = z.object({ moduleId: z.string().min(1) });
+
 const standalone = Router();
 
-standalone.post('/:id/approve', async (req, res) => {
+standalone.post('/:id/approve', validateBody(reviewSchema), async (req, res) => {
   try {
-    res.json(await svc.approve(req.params.id, req.body.reviewedBy));
+    res.json(await svc.approve(String(req.params.id), req.body.reviewedBy as string));
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 
-standalone.post('/:id/reject', async (req, res) => {
+standalone.post('/:id/reject', validateBody(reviewSchema), async (req, res) => {
   try {
-    res.json(await svc.reject(req.params.id, req.body.reviewedBy));
+    res.json(await svc.reject(String(req.params.id), req.body.reviewedBy as string));
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 
-standalone.post('/:id/promote', async (req, res) => {
+standalone.post('/:id/promote', validateBody(promoteSchema), async (req, res) => {
   try {
-    res.json(await svc.promote(req.params.id, req.body.moduleId));
+    res.json(await svc.promote(String(req.params.id), req.body.moduleId as string));
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
   }

@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { KBWorkflowService } from '../../services/kb/workflow.service.js';
+import { validateBody } from '../../validation/middleware.js';
+import { workflowActionSchema } from '../../validation/kb.schemas.js';
 
 const router = Router({ mergeParams: true });
 const svc = new KBWorkflowService();
 
-// GET /kb/items/:itemId/workflow
 router.get('/', async (req, res) => {
   try {
     res.json(await svc.getHistory((req.params as any).itemId));
@@ -13,13 +14,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /kb/items/:itemId/workflow/:action
-router.post('/:action', async (req, res) => {
+router.post('/:action', validateBody(workflowActionSchema), async (req, res) => {
   const { action } = req.params;
   const itemId = (req.params as any).itemId;
   const { performedBy, note } = req.body;
-
-  if (!performedBy) return res.status(400).json({ error: 'performedBy required' });
 
   try {
     let event;

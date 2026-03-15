@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { KBTopicService } from '../../services/kb/topic.service.js';
+import { validateBody } from '../../validation/middleware.js';
+import { createTopicSchema } from '../../validation/kb.schemas.js';
 
 const router = Router();
 const svc = new KBTopicService();
 
-// GET /kb/topics
 router.get('/', async (_req, res) => {
   try {
     res.json(await svc.listTopics());
@@ -13,8 +14,7 @@ router.get('/', async (_req, res) => {
   }
 });
 
-// POST /kb/topics
-router.post('/', async (req, res) => {
+router.post('/', validateBody(createTopicSchema), async (req, res) => {
   try {
     res.status(201).json(await svc.createTopic(req.body));
   } catch (err) {
@@ -22,7 +22,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /kb/topics/:id
 router.get('/:id', async (req, res) => {
   try {
     const topic = await svc.getTopic(req.params.id);
@@ -33,7 +32,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// GET /kb/topics/:id/items — items assigned to this topic
 router.get('/:id/items', async (req, res) => {
   try {
     res.json(await svc.getItemsForTopic(req.params.id));
