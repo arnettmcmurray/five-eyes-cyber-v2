@@ -41,3 +41,23 @@ router.get('/:id/items', async (req, res) => {
 });
 
 export default router;
+
+import { z } from 'zod';
+
+const assignSchema = z.object({
+  itemId: z.string().min(1),
+  weight: z.number().min(0).max(1).default(1.0),
+  assignedBy: z.enum(['admin', 'pipeline']).default('admin'),
+});
+
+// POST /kb/topics/:id/assign
+router.post('/:id/assign', validateBody(assignSchema), async (req, res) => {
+  try {
+    const { itemId, weight, assignedBy } = req.body;
+    res.status(201).json(
+      await svc.assignTopic(itemId, String(req.params.id), weight, assignedBy),
+    );
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
