@@ -1,6 +1,8 @@
-import type { ContentChunk } from '../../models/kb/chunk.js';
+import { sql, eq, desc } from 'drizzle-orm';
+import { db } from '../../db/client.js';
+import { kbItems } from '../../db/schema/kb-items.js';
+import { contentChunks } from '../../db/schema/content-chunks.js';
 
-/** Input query for the KB retrieval service. */
 export interface RetrievalQuery {
   text: string;
   userId: string;
@@ -8,7 +10,6 @@ export interface RetrievalQuery {
   topK?: number;
 }
 
-/** A single retrieval result. */
 export interface RetrievalHit {
   itemId: string;
   slug: string;
@@ -17,37 +18,84 @@ export interface RetrievalHit {
   score: number;
 }
 
-/** Full retrieval response. */
 export interface RetrievalResponse {
   query: string;
   confidence: number;
   /** Band thresholds: high >= 0.80, medium >= 0.50, low < 0.50 */
   band: 'high' | 'medium' | 'low';
   hits: RetrievalHit[];
-  suggestedModuleSlug?: string;
 }
 
-/**
- * KB retrieval service.
- * Production: vector similarity search against ContentChunks.
- * Stub: always returns empty results with low confidence.
- */
+function scoreBand(score: number): RetrievalResponse['band'] {
+  if (score >= 0.8) return 'high';
+  if (score >= 0.5) return 'medium';
+  return 'low';
+}
+
+function excerpt(text: string, maxLen = 200): string {
+  return text.length <= maxLen ? text : text.slice(0, maxLen).trimEnd() + '…';
+}
+
 export class KBRetrievalService {
   /**
-   * Retrieves KB hits for a query.
-   * Band thresholds: high >= 0.80, medium >= 0.50, low < 0.50.
+   * Full-text keyword search against content_chunks.
+   * Uses PostgreSQL plainto_tsquery + ts_rank for scoring.
+   * Falls back to empty results if no published chunks exist.
    */
   async retrieve(query: RetrievalQuery): Promise<RetrievalResponse> {
-    throw new Error('Not implemented: KBRetrievalService.retrieve');
+    const topK = query.topK ?? 5;
+
+    // plainto_tsquery handles multi-word queries safely (no injection risk)
+    const rows = await db.execute(sql`
+      SELECT
+        ki.id        AS item_id,
+        ki.slug,
+        ki.title,
+        cc.content   AS chunk_content,
+        ts_rank(
+          to_tsvector('english', cc.content),
+          plainto_tsquery('english', ${query.text})
+        )            AS rank
+      FROM content_chunks cc
+      JOIN kb_items ki ON ki.id = cc.item_id
+      WHERE
+        ki.status = 'published'
+        AND to_tsvector('english', cc.content)
+            @@ plainto_tsquery('english', ${query.text})
+      ORDER BY rank DESC
+      LIMIT ${topK}
+    `);
+
+    const hits: RetrievalHit[] = (rows.rows as Array<{
+      item_id: string;
+      slug: string;
+      title: string;
+      chunk_content: string;
+      rank: string;
+    }>).map((r) => ({
+      itemId: r.item_id,
+      slug: r.slug,
+      title: r.title,
+      excerpt: excerpt(r.chunk_content),
+      score: parseFloat(r.rank),
+    }));
+
+    const topScore = hits[0]?.score ?? 0;
+
+    return {
+      query: query.text,
+      confidence: topScore,
+      band: scoreBand(topScore),
+      hits,
+    };
   }
 
-  /** Embeds a ContentChunk. Production: calls embedding API. */
-  async embedChunk(chunk: ContentChunk): Promise<ContentChunk> {
-    throw new Error('Not implemented: KBRetrievalService.embedChunk');
+  /** Placeholder — will call embedding API when vector search is wired. */
+  async embedChunk(_chunk: { content: string }): Promise<never> {
+    throw new Error('embedChunk: embedding API not configured');
   }
 
-  /** Embeds a query string. Production: calls embedding API. */
-  async embedQuery(text: string): Promise<number[]> {
-    throw new Error('Not implemented: KBRetrievalService.embedQuery');
+  async embedQuery(_text: string): Promise<never> {
+    throw new Error('embedQuery: embedding API not configured');
   }
 }
