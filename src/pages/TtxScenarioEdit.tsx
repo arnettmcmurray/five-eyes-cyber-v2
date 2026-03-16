@@ -385,12 +385,14 @@ export default function TtxScenarioEdit() {
               return (
                 <div key={ii} className="border rounded bg-white p-3 text-sm flex justify-between items-start gap-3">
                   <div>
-                    <span className={`text-xs font-mono px-1 rounded mr-2 ${inj.injectType === 'technical' ? 'bg-blue-100' : inj.injectType === 'media' ? 'bg-yellow-100' : inj.injectType === 'legal' ? 'bg-purple-100' : 'bg-gray-100'}`}>
-                      {inj.injectType}
-                    </span>
-                    {inj.body}
-                    {inj.targetRoles.length > 0 && <span className="text-xs text-gray-400 ml-2">→ {inj.targetRoles.join(', ')}</span>}
-                    {inj.suggestedTimingMinutes && <span className="text-xs text-gray-400 ml-2">{inj.suggestedTimingMinutes}min</span>}
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${inj.injectType === 'technical' ? 'bg-blue-100 text-blue-800' : inj.injectType === 'media' ? 'bg-yellow-100 text-yellow-800' : inj.injectType === 'legal' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-600'}`}>
+                        {inj.injectType}
+                      </span>
+                      {inj.targetRoles.length > 0 && <span className="text-xs text-gray-400">→ {inj.targetRoles.join(', ')}</span>}
+                      {inj.suggestedTimingMinutes && <span className="text-xs text-gray-400">{inj.suggestedTimingMinutes}min</span>}
+                    </div>
+                    <p className="text-gray-800">{inj.body}</p>
                   </div>
                   <button onClick={() => applyInjectSuggestion(sectionId, injectSuggestions.stepId, inj)}
                     className="text-xs px-2 py-0.5 bg-blue-600 text-white rounded shrink-0">Use</button>
@@ -456,17 +458,19 @@ export default function TtxScenarioEdit() {
                   {step.injects.map((inject, ii) => (
                     <div key={inject.id} className="flex justify-between items-start border rounded px-3 py-2 text-sm bg-white">
                       <div>
-                        <span className={`text-xs font-mono px-1 rounded mr-2 ${inject.injectType === 'media' ? 'bg-yellow-100' : inject.injectType === 'technical' ? 'bg-blue-100' : inject.injectType === 'legal' ? 'bg-purple-100' : 'bg-gray-100'}`}>
-                          {inject.injectType}
-                        </span>
-                        {inject.body}
-                        {inject.targetRoles.length > 0 && (
-                          <span className="text-xs text-gray-400 ml-2">→ {inject.targetRoles.join(', ')}</span>
-                        )}
-                        {inject.suggestedTimingMinutes && (
-                          <span className="text-xs text-gray-400 ml-2">{inject.suggestedTimingMinutes}min</span>
-                        )}
-                        {aiCreated.has(inject.id) && <span className="text-xs text-purple-400 ml-2">✦ AI</span>}
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${inject.injectType === 'media' ? 'bg-yellow-100 text-yellow-800' : inject.injectType === 'technical' ? 'bg-blue-100 text-blue-800' : inject.injectType === 'legal' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-600'}`}>
+                            {inject.injectType}
+                          </span>
+                          {inject.targetRoles.length > 0 && (
+                            <span className="text-xs text-gray-400">→ {inject.targetRoles.join(', ')}</span>
+                          )}
+                          {inject.suggestedTimingMinutes && (
+                            <span className="text-xs text-gray-400">{inject.suggestedTimingMinutes}min</span>
+                          )}
+                          {aiCreated.has(inject.id) && <span className="text-xs text-purple-400">✦ AI</span>}
+                        </div>
+                        <p className="text-gray-800 leading-snug">{inject.body}</p>
                       </div>
                       <button onClick={() => deleteInject(section.id, step.id, inject.id)} className="text-xs text-red-400 hover:underline ml-3 shrink-0">✕</button>
                     </div>

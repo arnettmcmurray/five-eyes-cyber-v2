@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   api,
@@ -81,9 +81,8 @@ function ByLearner() {
       </thead>
       <tbody>
         {learners.map(l => (
-          <>
+          <Fragment key={l.learnerId}>
             <tr
-              key={l.learnerId}
               className="border-b hover:bg-gray-50 cursor-pointer"
               onClick={() => selectLearner(l.learnerId)}
             >
@@ -95,7 +94,7 @@ function ByLearner() {
               </td>
             </tr>
             {selected === l.learnerId && (
-              <tr key={`${l.learnerId}-detail`} className="bg-gray-50">
+              <tr className="bg-gray-50">
                 <td colSpan={4} className="py-3 px-2">
                   {detailLoading ? (
                     <p className="text-gray-400 text-xs">Loading…</p>
@@ -132,7 +131,7 @@ function ByLearner() {
                 </td>
               </tr>
             )}
-          </>
+          </Fragment>
         ))}
       </tbody>
     </table>
@@ -176,9 +175,8 @@ function ByModule() {
       </thead>
       <tbody>
         {modules.map(m => (
-          <>
+          <Fragment key={m.id}>
             <tr
-              key={m.id}
               className="border-b hover:bg-gray-50 cursor-pointer"
               onClick={() => selectModule(m.id)}
             >
@@ -186,7 +184,7 @@ function ByModule() {
               <td className="py-2 text-gray-400">{m.published ? 'Yes' : 'No'}</td>
             </tr>
             {selected === m.id && (
-              <tr key={`${m.id}-detail`} className="bg-gray-50">
+              <tr className="bg-gray-50">
                 <td colSpan={2} className="py-3 px-2">
                   {detailLoading ? (
                     <p className="text-gray-400 text-xs">Loading…</p>
@@ -223,7 +221,7 @@ function ByModule() {
                 </td>
               </tr>
             )}
-          </>
+          </Fragment>
         ))}
       </tbody>
     </table>

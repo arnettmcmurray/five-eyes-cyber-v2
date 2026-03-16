@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api, type Topic } from '../api/client';
+import { getAdminUsername, clearAdminSession } from '../lib/adminSession';
 
 export default function TopicManager() {
+  const navigate = useNavigate();
+  const adminUsername = getAdminUsername();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,19 +26,33 @@ export default function TopicManager() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <Link to="/kb" className="text-blue-600 text-sm hover:underline">&larr; Back to KB</Link>
-          <h1 className="text-2xl font-bold mt-2">Topics</h1>
+    <div className="max-w-5xl mx-auto p-6">
+      {/* Nav */}
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+        <div className="flex items-center gap-2 flex-wrap text-sm">
+          <Link to="/kb" className="px-3 py-1.5 border rounded text-gray-600 hover:bg-gray-50">← KB</Link>
+          <Link to="/kb/search" className="px-3 py-1.5 border rounded text-gray-600 hover:bg-gray-50">Search</Link>
+          <Link to="/kb/modules" className="px-3 py-1.5 border rounded text-gray-600 hover:bg-gray-50">Modules</Link>
+          <Link to="/admin/progress" className="px-3 py-1.5 border rounded text-gray-600 hover:bg-gray-50">Progress</Link>
+          <Link to="/admin/assignments" className="px-3 py-1.5 border rounded text-gray-600 hover:bg-gray-50">Assignments</Link>
         </div>
-        <button
-          onClick={() => setShowForm(v => !v)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          {showForm ? 'Cancel' : '+ New topic'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowForm(v => !v)}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+          >
+            {showForm ? 'Cancel' : '+ New topic'}
+          </button>
+          <button
+            onClick={() => { clearAdminSession(); navigate('/admin/login'); }}
+            className="text-xs text-gray-400 hover:text-gray-600 border rounded px-2 py-1.5"
+            title={`Logged in as ${adminUsername}`}
+          >
+            Logout
+          </button>
+        </div>
       </div>
+      <h1 className="text-2xl font-bold mb-4">Topics</h1>
 
       {showForm && (
         <CreateTopicForm

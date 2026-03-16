@@ -46,9 +46,9 @@ export default function KBAdmin() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Knowledge Base</h1>
         <div className="flex gap-2">
-          <Link to="/learn" className="px-3 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50">
-            Learn
-          </Link>
+          <a href="/learn" target="_blank" rel="noopener noreferrer" className="px-3 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50">
+            Learner ↗
+          </a>
           <Link to="/kb/search" className="px-3 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50">
             Search
           </Link>
@@ -72,7 +72,7 @@ export default function KBAdmin() {
             className="px-3 py-2 border rounded text-sm text-gray-400 hover:bg-gray-50"
             title={`Logged in as ${adminUsername}`}
           >
-            Log out
+            Logout
           </button>
           <button
             onClick={async () => {
@@ -202,7 +202,7 @@ export default function KBAdmin() {
                   >
                     {item.title}
                   </Link>
-                  <span className="ml-2 text-gray-400 text-xs">{item.slug}</span>
+                  <div className="text-gray-400 text-xs mt-0.5 max-w-xs truncate" title={item.slug}>{item.slug}</div>
                 </td>
                 <td className="py-2 pr-4 text-gray-600">{item.type}</td>
                 <td className="py-2 pr-4">

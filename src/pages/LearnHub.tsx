@@ -44,7 +44,8 @@ export default function LearnHub() {
   const modules = response?.modules ?? [];
   const nextRecommendedId = response?.nextRecommendedId ?? null;
 
-  const inProgress = modules.filter(m => m.inProgress && !m.locked);
+  // Exclude the recommended module from in-progress list to avoid showing it twice
+  const inProgress = modules.filter(m => m.inProgress && !m.locked && m.id !== nextRecommendedId);
   const notStarted = modules.filter(m => !m.completed && !m.inProgress && !m.locked);
   const completed = modules.filter(m => m.completed);
   const locked = modules.filter(m => m.locked);
@@ -244,7 +245,7 @@ function OtpLoginForm({ onLoggedIn }: { onLoggedIn: (token: string, handle: stri
       ) : (
         <>
           <p className="text-gray-500 text-sm mb-1">Code sent for <strong>{handle}</strong>.</p>
-          <p className="text-gray-400 text-xs mb-6">(Check server logs for the code during development.)</p>
+          <p className="text-gray-400 text-xs mb-6">Your code was sent. Check your inbox or contact your administrator.</p>
           <form onSubmit={verifyCode} className="space-y-3">
             <input
               className="w-full border rounded px-3 py-2 text-sm tracking-widest text-center"

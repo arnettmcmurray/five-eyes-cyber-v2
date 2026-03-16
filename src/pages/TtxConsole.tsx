@@ -252,12 +252,17 @@ export default function TtxConsole() {
       {!isEnded && (
         <div className="flex items-center gap-2 mb-4 border rounded px-3 py-2 bg-gray-50 text-sm">
           <span className="text-gray-500 shrink-0">Participant URL:</span>
-          <span className="font-mono text-xs text-gray-700 flex-1 truncate">
+          <a
+            href={`${window.location.origin}/ttx/sessions/${id}/participate`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono text-xs text-blue-600 hover:underline flex-1 truncate"
+          >
             {window.location.origin}/ttx/sessions/{id}/participate
-          </span>
+          </a>
           <button
             onClick={() => navigator.clipboard.writeText(`${window.location.origin}/ttx/sessions/${id}/participate`)}
-            className="text-xs text-blue-600 hover:underline shrink-0">
+            className="text-xs text-gray-500 hover:text-blue-600 shrink-0 border rounded px-2 py-0.5">
             Copy
           </button>
         </div>
@@ -341,8 +346,9 @@ export default function TtxConsole() {
               <textarea className="border w-full px-2 py-1 rounded text-sm mb-2" rows={2} placeholder="Event body *"
                 value={eventBody} onChange={e => setEventBody(e.target.value)} />
               <button onClick={logEvent} disabled={busy || !eventActor || !eventBody}
-                className="px-3 py-1 bg-gray-800 text-white rounded text-sm disabled:opacity-50">
-                Log
+                className="px-3 py-1 bg-gray-800 text-white rounded text-sm disabled:opacity-50"
+                title={!eventActor ? 'Enter actor handle' : !eventBody ? 'Enter event body' : ''}>
+                {busy ? '…' : 'Log event'}
               </button>
             </div>
           )}

@@ -177,9 +177,9 @@ export default function KBItemDetail() {
       {/* Content */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-semibold text-gray-700">
+          <h2 className="font-semibold text-gray-700 flex items-center gap-1.5">
             Content
-            {currentRevision && <span className="ml-2 text-xs text-gray-400 font-normal">v{currentRevision.version}</span>}
+            {currentRevision && <span className="text-xs text-gray-400 font-normal">v{currentRevision.version}</span>}
           </h2>
           <button
             onClick={() => setAddingRevision(v => !v)}

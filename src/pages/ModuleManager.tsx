@@ -58,7 +58,7 @@ export default function ModuleManager() {
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <Link to="/kb" className="text-blue-600 text-sm hover:underline">&larr; KB</Link>
+          <Link to="/kb" className="text-blue-600 text-sm hover:underline">&larr; Back to KB</Link>
           <h1 className="text-2xl font-bold">Modules</h1>
         </div>
         <button

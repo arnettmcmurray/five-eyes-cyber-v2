@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { getAdminUsername, clearAdminSession } from '../lib/adminSession';
 import { api, type SearchResult, type SearchHit, type QuizAidHint, type QuizAidRelated, type TopicRef } from '../api/client';
 
 export default function KBSearch() {
+  const navigate = useNavigate();
+  const adminUsername = getAdminUsername();
   const [q, setQ] = useState('');
   const [mode, setMode] = useState<'fts' | 'quiz-aid'>('fts');
   const [result, setResult] = useState<SearchResult | null>(null);
@@ -24,10 +27,26 @@ export default function KBSearch() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <div className="mb-6">
-        <Link to="/kb" className="text-blue-600 text-sm hover:underline">&larr; Back to KB</Link>
-        <h1 className="text-2xl font-bold mt-2">Search</h1>
+    <div className="max-w-5xl mx-auto p-6">
+      {/* Nav */}
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+        <div className="flex items-center gap-2 flex-wrap text-sm">
+          <Link to="/kb" className="px-3 py-1.5 border rounded text-gray-600 hover:bg-gray-50">← KB</Link>
+          <Link to="/kb/topics" className="px-3 py-1.5 border rounded text-gray-600 hover:bg-gray-50">Topics</Link>
+          <Link to="/kb/modules" className="px-3 py-1.5 border rounded text-gray-600 hover:bg-gray-50">Modules</Link>
+          <Link to="/admin/progress" className="px-3 py-1.5 border rounded text-gray-600 hover:bg-gray-50">Progress</Link>
+          <Link to="/admin/assignments" className="px-3 py-1.5 border rounded text-gray-600 hover:bg-gray-50">Assignments</Link>
+        </div>
+        <button
+          onClick={() => { clearAdminSession(); navigate('/admin/login'); }}
+          className="text-xs text-gray-400 hover:text-gray-600 border rounded px-2 py-1"
+          title={`Logged in as ${adminUsername}`}
+        >
+          Logout
+        </button>
+      </div>
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold">Search</h1>
       </div>
 
       <form onSubmit={search} className="flex gap-2 mb-4">
@@ -43,8 +62,8 @@ export default function KBSearch() {
           value={mode}
           onChange={e => { setMode(e.target.value as 'fts' | 'quiz-aid'); setResult(null); }}
         >
-          <option value="fts">FTS</option>
-          <option value="quiz-aid">Quiz-aid</option>
+          <option value="fts">Full-text</option>
+          <option value="quiz-aid">Quiz assist</option>
         </select>
         <button
           type="submit"
