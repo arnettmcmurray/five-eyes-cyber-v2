@@ -102,6 +102,7 @@ export default function TtxSessions() {
             <tr className="border-b text-left text-gray-500">
               <th className="py-2 pr-4">Title</th>
               <th className="py-2 pr-4">Status</th>
+              <th className="py-2 pr-4">Participants</th>
               <th className="py-2 pr-4">Scheduled</th>
               <th className="py-2 pr-4">Started</th>
               <th className="py-2"></th>
@@ -116,6 +117,9 @@ export default function TtxSessions() {
                   </Link>
                 </td>
                 <td className="py-2 pr-4">{statusBadge(s.status)}</td>
+                <td className="py-2 pr-4 text-gray-500 text-xs">
+                  {(s as any).participantCount ?? 0}
+                </td>
                 <td className="py-2 pr-4 text-gray-400 text-xs">
                   {s.scheduledAt ? new Date(s.scheduledAt).toLocaleString() : '—'}
                 </td>

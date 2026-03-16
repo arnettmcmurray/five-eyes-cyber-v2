@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, count, sql } from 'drizzle-orm';
 import { db } from '../../db/client.js';
 import {
   ttxScenarios,
@@ -60,7 +60,12 @@ router.get('/:id/stream', async (req, res) => {
 // GET /ttx/sessions
 router.get('/', async (_req, res) => {
   const rows = await db.select().from(ttxSessions).orderBy(asc(ttxSessions.createdAt));
-  res.json(rows);
+  const counts = await db
+    .select({ sessionId: ttxSessionParticipants.sessionId, n: count(ttxSessionParticipants.id) })
+    .from(ttxSessionParticipants)
+    .groupBy(ttxSessionParticipants.sessionId);
+  const countMap = Object.fromEntries(counts.map(c => [c.sessionId, c.n]));
+  res.json(rows.map(r => ({ ...r, participantCount: countMap[r.id] ?? 0 })));
 });
 
 // POST /ttx/sessions — create (status: planned)
