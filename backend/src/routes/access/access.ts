@@ -78,11 +78,13 @@ router.post('/assessment/start', assessmentRateLimit, async (req, res) => {
     }
 
     const accessToken = randomBytes(24).toString('hex');
+    const tokenExpiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000); // 72h
     await db.insert(assessmentLeads).values({
       id: uuid(),
       email: normalized,
       accessToken,
       status: 'pending',
+      tokenExpiresAt,
     });
 
     await sendAssessmentEmail(normalized, accessToken);
@@ -119,6 +121,10 @@ router.get('/assessment/:token', async (req, res) => {
       .limit(1);
 
     if (!lead) { res.status(404).json({ error: 'Invalid assessment link' }); return; }
+    if (lead.tokenExpiresAt && lead.tokenExpiresAt < new Date()) {
+      res.status(410).json({ error: 'Assessment link has expired' });
+      return;
+    }
     if (lead.status === 'pending') {
       await db.update(assessmentLeads)
         .set({ status: 'started' })
@@ -155,6 +161,10 @@ router.post('/assessment/:token', async (req, res) => {
       .limit(1);
 
     if (!lead) { res.status(404).json({ error: 'Invalid assessment link' }); return; }
+    if (lead.tokenExpiresAt && lead.tokenExpiresAt < new Date()) {
+      res.status(410).json({ error: 'Assessment link has expired' });
+      return;
+    }
     if (lead.status === 'completed') { res.status(409).json({ error: 'Assessment already completed' }); return; }
 
     await db.update(assessmentLeads)

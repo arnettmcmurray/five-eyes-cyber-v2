@@ -47,5 +47,7 @@ export const assessmentLeads = pgTable('assessment_leads', {
   followUpEnabled: boolean('follow_up_enabled').notNull().default(true),
   lastFollowUpAt:  timestamp('last_follow_up_at'),
   completedAt:     timestamp('completed_at'),
+  /** Assessment link expires after 72h. Null = no expiry (legacy rows). */
+  tokenExpiresAt:  timestamp('token_expires_at'),
   createdAt:       timestamp('created_at').notNull().defaultNow(),
 });
