@@ -11,7 +11,6 @@ export const createItemSchema = z.object({
   tags: z.array(z.string()).default([]),
   status: kbItemStatus.default('draft'),
   sourceTrust,
-  createdBy: z.string().min(1),
   currentRevisionId: z.string().nullable().default(null),
 });
 
@@ -27,11 +26,10 @@ export const updateItemSchema = z.object({
 
 export const createRevisionSchema = z.object({
   content: z.string().min(1),
-  createdBy: z.string().min(1),
 });
 
 export const rollbackSchema = z.object({
-  performedBy: z.string().min(1),
+  note: z.string().optional(),
 });
 
 export const searchQuerySchema = z.object({
@@ -42,21 +40,18 @@ export const searchQuerySchema = z.object({
 });
 
 export const ingestManualSchema = z.object({
-  content: z.string().min(1),
+  content: z.string().min(1).max(500_000),
   label: z.string().min(1).max(300),
-  createdBy: z.string().min(1),
 });
 
 export const ingestFileSchema = z.object({
-  rawContent: z.string().min(1),
+  rawContent: z.string().min(1).max(1_000_000),
   filename: z.string().min(1).max(300),
   mimeType: z.enum(['text/plain', 'text/html', 'application/pdf', 'text/markdown']).default('text/plain'),
-  uploadedBy: z.string().min(1),
 });
 
 export const ingestUrlSchema = z.object({
   url: z.string().url(),
-  fetchedBy: z.string().min(1),
 });
 
 export const createTopicSchema = z.object({
@@ -67,7 +62,6 @@ export const createTopicSchema = z.object({
 });
 
 export const workflowActionSchema = z.object({
-  performedBy: z.string().min(1),
   note: z.string().optional(),
 });
 

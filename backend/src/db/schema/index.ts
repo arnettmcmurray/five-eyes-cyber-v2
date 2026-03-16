@@ -1,4 +1,5 @@
 export * from './kb-items.js';
+export * from './modules.js';  // learningModules + modulePrerequisites
 export * from './kb-revisions.js';
 export * from './raw-sources.js';
 export * from './ingestion-jobs.js';
@@ -7,3 +8,14 @@ export * from './topics.js';
 export * from './lesson-links.js';
 export * from './quiz-candidates.js';
 export * from './workflow.js';
+export * from './learner-progress.js';
+export * from './learners.js';
+export * from './groups.js';
+export * from './practice-attempts.js';
+export * from './module-assignments.js';
+export * from './packages.js';
+export * from './auth.js';
+export * from './admin-auth.js';
+export * from './content-blocks.js';
+export * from './access-tiers.js';
+export * from './ttx.js';

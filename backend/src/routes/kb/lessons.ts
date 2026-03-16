@@ -4,6 +4,15 @@ import { KBLessonService } from '../../services/kb/lesson.service.js';
 const router = Router();
 const svc = new KBLessonService();
 
+// GET /kb/modules/:moduleId/content  — enriched view for learner UI
+router.get('/modules/:moduleId/content', async (req, res) => {
+  try {
+    res.json(await svc.getModuleContent(req.params.moduleId));
+  } catch (err) {
+    res.status(404).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
 // GET /kb/modules/:moduleId/links
 router.get('/modules/:moduleId/links', async (req, res) => {
   try {

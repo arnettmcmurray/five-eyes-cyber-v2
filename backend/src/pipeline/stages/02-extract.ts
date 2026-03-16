@@ -14,10 +14,31 @@ export function extractContent(
   let text = sourceResult.content;
 
   // Per-MIME pre-processing stubs
-  if (source.mimeType === 'text/html') {
-    // Stub: strip HTML tags
-    text = text.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim();
-  } else if (source.mimeType === 'application/pdf') {
+  // Use the mimeType detected at read time (may differ from source.mimeType for url-fetch)
+  const effectiveMime = sourceResult.mimeType || source.mimeType;
+  let htmlTitle: string | undefined;
+  if (effectiveMime === 'text/html') {
+    // Extract <title> tag content before stripping — used as inferred title later
+    const htmlTitleMatch = text.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    htmlTitle = htmlTitleMatch ? htmlTitleMatch[1].replace(/<[^>]+>/g, '').trim() : undefined;
+
+    // Remove scripts/styles entirely
+    text = text.replace(/<script[\s\S]*?<\/script>/gi, ' ');
+    text = text.replace(/<style[\s\S]*?<\/style>/gi, ' ');
+    // Strip remaining tags
+    text = text.replace(/<[^>]+>/g, ' ');
+    // Decode common HTML entities
+    text = text
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&ndash;/g, '–')
+      .replace(/&mdash;/g, '—');
+    text = text.replace(/\s{2,}/g, ' ').trim();
+  } else if (effectiveMime === 'application/pdf') {
     // Stub: real extraction requires pdf-parse or similar
     text = `[PDF extraction stub — real extraction requires pdf-parse or similar]\n\n${text}`;
   }
@@ -36,9 +57,13 @@ export function extractContent(
     };
   });
 
-  // Infer title from first heading found, or first section
+  // Infer title: for HTML use the <title> tag if available, then headings, then first section line
   const firstHeadingSection = sections.find((s) => s.heading !== undefined);
-  const inferredTitle = firstHeadingSection?.heading ?? sections[0]?.body.split('\n')[0] ?? source.label;
+  const inferredTitle =
+    (effectiveMime === 'text/html' ? htmlTitle : undefined) ??
+    firstHeadingSection?.heading ??
+    sections[0]?.body.split('\n')[0] ??
+    source.label;
 
   // Estimate word count across all section bodies
   const wordCount = sections.reduce((sum, s) => {

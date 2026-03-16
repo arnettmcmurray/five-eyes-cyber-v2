@@ -1,11 +1,5 @@
 import type { RawSource } from '../../models/kb/source.js';
 
-/**
- * Reads raw content from a RawSource.
- * - file-upload: reads rawContent string directly.
- * - url-fetch: stub (returns placeholder; URL fetch not yet implemented).
- * - manual-entry: passes through as-is.
- */
 export interface ReadSourceResult {
   sourceId: string;
   content: string;
@@ -14,21 +8,30 @@ export interface ReadSourceResult {
   readAt: string;
 }
 
-export function readSource(source: RawSource): ReadSourceResult {
+export async function readSource(source: RawSource): Promise<ReadSourceResult> {
   let content: string;
+  let mimeType = source.mimeType;
 
   if (source.type === 'url-fetch') {
-    content = `[URL fetch not yet implemented for origin: ${source.origin}]`;
+    const res = await fetch(source.origin, {
+      headers: { 'User-Agent': 'five-eyes-kb-ingestion/1.0' },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) throw new Error(`URL fetch failed: ${res.status} ${res.statusText}`);
+    const contentType = res.headers.get('content-type') ?? '';
+    if (contentType.includes('text/html')) mimeType = 'text/html';
+    else if (contentType.includes('text/markdown')) mimeType = 'text/markdown';
+    else mimeType = 'text/plain';
+    content = await res.text();
   } else {
-    // 'file-upload' and 'manual-entry' both use rawContent directly
     content = source.rawContent;
   }
 
   return {
     sourceId: source.id,
     content,
-    mimeType: source.mimeType,
-    byteSize: source.byteSize,
+    mimeType,
+    byteSize: Buffer.byteLength(content, 'utf8'),
     readAt: new Date().toISOString(),
   };
 }

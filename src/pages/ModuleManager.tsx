@@ -1,0 +1,597 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { api, type LearningModule, type ModulePrerequisite, type AdminModuleLink, type KBItem } from '../api/client';
+
+export default function ModuleManager() {
+  const [modules, setModules] = useState<LearningModule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editing, setEditing] = useState<LearningModule | null>(null);
+  const [managingPrereqs, setManagingPrereqs] = useState<LearningModule | null>(null);
+  const [managingContent, setManagingContent] = useState<LearningModule | null>(null);
+  const [acting, setActing] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setModules(await api.modules.list());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  function patch(updated: LearningModule) {
+    setModules(ms => ms.map(m => m.id === updated.id ? updated : m).sort(
+      (a, b) => a.displayOrder - b.displayOrder || a.createdAt.localeCompare(b.createdAt)
+    ));
+  }
+
+  async function togglePublish(m: LearningModule) {
+    setActing(m.id + ':pub');
+    setError(null);
+    try {
+      patch(m.published ? await api.modules.unpublish(m.id) : await api.modules.publish(m.id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setActing(null);
+    }
+  }
+
+  async function deleteModule(id: string, title: string) {
+    if (!window.confirm(`Delete "${title}"? Lesson links using this module will remain orphaned.`)) return;
+    try {
+      await api.modules.delete(id);
+      setModules(ms => ms.filter(m => m.id !== id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <Link to="/kb" className="text-blue-600 text-sm hover:underline">&larr; KB</Link>
+          <h1 className="text-2xl font-bold">Modules</h1>
+        </div>
+        <button
+          onClick={() => { setShowCreate(v => !v); setEditing(null); setManagingPrereqs(null); setManagingContent(null); }}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+        >
+          {showCreate ? 'Cancel' : '+ New module'}
+        </button>
+      </div>
+
+      {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded text-sm">{error}</div>}
+
+      {showCreate && (
+        <ModuleForm
+          allModules={modules}
+          onSave={async data => {
+            const created = await api.modules.create({ ...data, createdBy: 'admin' });
+            setModules(ms => [...ms, created].sort((a, b) => a.displayOrder - b.displayOrder));
+            setShowCreate(false);
+          }}
+        />
+      )}
+
+      {editing && (
+        <ModuleForm
+          initial={editing}
+          allModules={modules.filter(m => m.id !== editing.id)}
+          onSave={async data => {
+            const updated = await api.modules.update(editing.id, data);
+            patch(updated);
+            setEditing(null);
+          }}
+          onCancel={() => setEditing(null)}
+        />
+      )}
+
+      {managingPrereqs && (
+        <PrerequisiteManager
+          module={managingPrereqs}
+          allModules={modules.filter(m => m.id !== managingPrereqs.id)}
+          onClose={() => setManagingPrereqs(null)}
+        />
+      )}
+
+      {managingContent && (
+        <ContentPanel
+          module={managingContent}
+          onClose={() => setManagingContent(null)}
+        />
+      )}
+
+      {loading ? (
+        <p className="text-gray-500">Loading…</p>
+      ) : modules.length === 0 ? (
+        <p className="text-gray-500">No modules yet.</p>
+      ) : (
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b text-left text-gray-500 text-xs uppercase tracking-wide">
+              <th className="py-2 pr-3 w-8">#</th>
+              <th className="py-2 pr-4">Title</th>
+              <th className="py-2 pr-4">Status</th>
+              <th className="py-2 pr-4">Next</th>
+              <th className="py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {modules.map(m => {
+              const nextTitle = m.nextModuleId ? modules.find(x => x.id === m.nextModuleId)?.title : null;
+              return (
+                <tr key={m.id} className="border-b hover:bg-gray-50">
+                  <td className="py-2 pr-3 text-gray-400 text-xs">{m.displayOrder}</td>
+                  <td className="py-2 pr-4">
+                    <div className="font-medium">{m.title}</div>
+                    <div className="text-xs text-gray-400 font-mono">{m.slug}</div>
+                    {m.description && <div className="text-xs text-gray-500 mt-0.5 max-w-xs truncate">{m.description}</div>}
+                  </td>
+                  <td className="py-2 pr-4">
+                    <button
+                      onClick={() => togglePublish(m)}
+                      disabled={acting === m.id + ':pub'}
+                      className={`px-2 py-0.5 rounded text-xs font-medium border ${
+                        m.published
+                          ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200'
+                          : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+                      } disabled:opacity-50`}
+                    >
+                      {acting === m.id + ':pub' ? '…' : m.published ? 'Published' : 'Draft'}
+                    </button>
+                  </td>
+                  <td className="py-2 pr-4 text-xs text-gray-500">{nextTitle ?? '—'}</td>
+                  <td className="py-2">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setEditing(m); setShowCreate(false); setManagingPrereqs(null); setManagingContent(null); }}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => { setManagingContent(m); setEditing(null); setShowCreate(false); setManagingPrereqs(null); }}
+                        className="text-xs text-gray-600 hover:underline"
+                      >
+                        Content
+                      </button>
+                      <button
+                        onClick={() => { setManagingPrereqs(m); setEditing(null); setShowCreate(false); setManagingContent(null); }}
+                        className="text-xs text-gray-600 hover:underline"
+                      >
+                        Prerequisites
+                      </button>
+                      <button
+                        onClick={() => deleteModule(m.id, m.title)}
+                        className="text-xs text-red-500 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+function ModuleForm({
+  initial,
+  allModules,
+  onSave,
+  onCancel,
+}: {
+  initial?: LearningModule;
+  allModules: LearningModule[];
+  onSave: (data: { slug: string; title: string; description: string; displayOrder: number; nextModuleId: string | null }) => Promise<void>;
+  onCancel?: () => void;
+}) {
+  const [title, setTitle] = useState(initial?.title ?? '');
+  const [slug, setSlug] = useState(initial?.slug ?? '');
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [displayOrder, setDisplayOrder] = useState(initial?.displayOrder ?? 0);
+  const [nextModuleId, setNextModuleId] = useState<string>(initial?.nextModuleId ?? '');
+  const [slugTouched, setSlugTouched] = useState(!!initial);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  function deriveSlug(t: string) {
+    return t.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-{2,}/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  function handleTitleChange(val: string) {
+    setTitle(val);
+    if (!slugTouched) setSlug(deriveSlug(val));
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setErr(null);
+    try {
+      await onSave({ slug, title, description, displayOrder, nextModuleId: nextModuleId || null });
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="mb-6 p-4 border rounded bg-gray-50 space-y-3">
+      {err && <div className="p-2 bg-red-100 text-red-800 rounded text-sm">{err}</div>}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Title</label>
+          <input className="w-full border rounded px-3 py-1.5 text-sm" value={title} onChange={e => handleTitleChange(e.target.value)} required />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Slug {initial && <span className="text-gray-400">(locked)</span>}</label>
+          <input
+            className="w-full border rounded px-3 py-1.5 text-sm font-mono"
+            value={slug}
+            onChange={e => { setSlug(e.target.value); setSlugTouched(true); }}
+            required pattern="[a-z0-9-]+"
+            disabled={!!initial}
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">Description</label>
+        <textarea className="w-full border rounded px-3 py-1.5 text-sm" rows={2} value={description} onChange={e => setDescription(e.target.value)} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Display order</label>
+          <input type="number" className="w-full border rounded px-3 py-1.5 text-sm" value={displayOrder} onChange={e => setDisplayOrder(Number(e.target.value))} min={0} />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Next module</label>
+          <select className="w-full border rounded px-3 py-1.5 text-sm" value={nextModuleId} onChange={e => setNextModuleId(e.target.value)}>
+            <option value="">— none —</option>
+            {allModules.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <button type="submit" disabled={saving} className="px-4 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+          {saving ? 'Saving…' : initial ? 'Save changes' : 'Create module'}
+        </button>
+        {onCancel && (
+          <button type="button" onClick={onCancel} className="px-3 py-1.5 border rounded text-sm text-gray-600 hover:bg-gray-100">Cancel</button>
+        )}
+      </div>
+    </form>
+  );
+}
+
+const ROLES = ['primary', 'prerequisite-reading', 'supplementary'] as const;
+type LinkRole = typeof ROLES[number];
+
+const STATUS_COLORS: Record<string, string> = {
+  draft: 'bg-gray-100 text-gray-600',
+  'under-review': 'bg-yellow-100 text-yellow-800',
+  published: 'bg-green-100 text-green-800',
+  archived: 'bg-red-100 text-red-700',
+};
+
+function ContentPanel({ module, onClose }: { module: LearningModule; onClose: () => void }) {
+  const [links, setLinks] = useState<AdminModuleLink[]>([]);
+  const [allItems, setAllItems] = useState<KBItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
+  // add-item form state
+  const [showAdd, setShowAdd] = useState(false);
+  const [filter, setFilter] = useState('');
+  const [selectedItemId, setSelectedItemId] = useState('');
+  const [role, setRole] = useState<LinkRole>('primary');
+  const [order, setOrder] = useState(0);
+  const [adding, setAdding] = useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      api.modules.content(module.id),
+      api.items.list(),
+    ])
+      .then(([content, items]) => {
+        setLinks(content.items);
+        setAllItems(items);
+      })
+      .catch(e => setErr(e instanceof Error ? e.message : String(e)))
+      .finally(() => setLoading(false));
+  }, [module.id]);
+
+  const linkedItemIds = new Set(links.map(l => l.item.id));
+  const filteredItems = allItems.filter(
+    i => !linkedItemIds.has(i.id) &&
+      (filter === '' || i.title.toLowerCase().includes(filter.toLowerCase()) || i.slug.includes(filter.toLowerCase()))
+  );
+
+  async function removeLink(linkId: string) {
+    setRemoving(linkId);
+    setErr(null);
+    try {
+      await api.lessons.remove(linkId);
+      setLinks(prev => prev.filter(l => l.link.id !== linkId));
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setRemoving(null);
+    }
+  }
+
+  async function addLink(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedItemId) return;
+    setAdding(true);
+    setErr(null);
+    try {
+      await api.lessons.link(module.id, { kbItemId: selectedItemId, role, order, addedBy: 'admin' });
+      // Reload content to get enriched item details
+      const updated = await api.modules.content(module.id);
+      setLinks(updated.items);
+      setShowAdd(false);
+      setSelectedItemId('');
+      setFilter('');
+      setOrder(0);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setAdding(false);
+    }
+  }
+
+  return (
+    <div className="mb-6 p-4 border rounded bg-gray-50 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-gray-700">Content: {module.title}</h3>
+        <div className="flex gap-2">
+          <button
+            onClick={() => { setShowAdd(v => !v); setFilter(''); setSelectedItemId(''); }}
+            className="text-xs text-blue-600 hover:underline"
+          >
+            {showAdd ? 'cancel add' : '+ Add item'}
+          </button>
+          <button onClick={onClose} className="text-xs text-gray-400 hover:text-gray-600">close</button>
+        </div>
+      </div>
+
+      {err && <div className="p-2 bg-red-100 text-red-800 rounded text-sm">{err}</div>}
+
+      {showAdd && (
+        <form onSubmit={addLink} className="p-3 border rounded bg-white space-y-2">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Search KB items</label>
+            <input
+              className="w-full border rounded px-2 py-1 text-sm"
+              placeholder="Filter by title or slug…"
+              value={filter}
+              onChange={e => { setFilter(e.target.value); setSelectedItemId(''); }}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Item</label>
+            <select
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={selectedItemId}
+              onChange={e => setSelectedItemId(e.target.value)}
+              required
+              size={filteredItems.length > 6 ? 6 : undefined}
+            >
+              <option value="" disabled>Select item…</option>
+              {filteredItems.map(i => (
+                <option key={i.id} value={i.id}>
+                  [{i.status}] {i.title} ({i.type})
+                </option>
+              ))}
+            </select>
+            {filteredItems.length === 0 && filter && (
+              <p className="text-xs text-gray-400 mt-1">No unlinked items match "{filter}".</p>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Role</label>
+              <select
+                className="border rounded px-2 py-1 text-sm"
+                value={role}
+                onChange={e => setRole(e.target.value as LinkRole)}
+              >
+                {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Order</label>
+              <input
+                type="number"
+                className="border rounded px-2 py-1 text-sm w-16"
+                value={order}
+                onChange={e => setOrder(Number(e.target.value))}
+                min={0}
+              />
+            </div>
+            <div className="flex items-end">
+              <button
+                type="submit"
+                disabled={adding || !selectedItemId}
+                className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+              >
+                {adding ? 'Adding…' : 'Add'}
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {loading ? (
+        <p className="text-sm text-gray-400">Loading…</p>
+      ) : links.length === 0 ? (
+        <p className="text-sm text-gray-400">No items linked to this module.</p>
+      ) : (
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="border-b text-left text-xs text-gray-500">
+              <th className="py-1 pr-3">Order</th>
+              <th className="py-1 pr-4">Title</th>
+              <th className="py-1 pr-3">Type</th>
+              <th className="py-1 pr-3">Status</th>
+              <th className="py-1 pr-3">Role</th>
+              <th className="py-1"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...links]
+              .sort((a, b) => a.link.order - b.link.order)
+              .map(({ link, item }) => (
+                <tr key={link.id} className="border-b">
+                  <td className="py-1 pr-3 text-gray-400 text-xs">{link.order}</td>
+                  <td className="py-1 pr-4">
+                    <span className="font-medium">{item.title}</span>
+                    <span className="ml-1 text-xs text-gray-400">{item.slug}</span>
+                  </td>
+                  <td className="py-1 pr-3 text-xs text-gray-500">{item.type}</td>
+                  <td className="py-1 pr-3">
+                    <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[item.status] ?? 'bg-gray-100'}`}>
+                      {item.status}
+                    </span>
+                  </td>
+                  <td className="py-1 pr-3 text-xs text-gray-600">{link.role}</td>
+                  <td className="py-1">
+                    <button
+                      onClick={() => removeLink(link.id)}
+                      disabled={removing === link.id}
+                      className="text-xs text-red-500 hover:underline disabled:opacity-50"
+                    >
+                      {removing === link.id ? '…' : 'remove'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+function PrerequisiteManager({ module, allModules, onClose }: {
+  module: LearningModule;
+  allModules: LearningModule[];
+  onClose: () => void;
+}) {
+  const [prereqs, setPrereqs] = useState<ModulePrerequisite[]>([]);
+  const [dependents, setDependents] = useState<ModulePrerequisite[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    Promise.all([
+      api.modules.prerequisites.get(module.id),
+      api.modules.dependents(module.id),
+    ])
+      .then(([list, deps]) => {
+        setPrereqs(list);
+        setDependents(deps);
+        setSelectedIds(new Set(list.map(p => p.id)));
+      })
+      .catch(e => setErr(e instanceof Error ? e.message : String(e)))
+      .finally(() => setLoading(false));
+  }, [module.id]);
+
+  function toggle(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  async function save() {
+    setSaving(true);
+    setErr(null);
+    try {
+      const updated = await api.modules.prerequisites.set(module.id, [...selectedIds]);
+      setPrereqs(updated);
+      onClose();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mb-6 p-4 border rounded bg-gray-50 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-gray-700">Prerequisites for: {module.title}</h3>
+        <button onClick={onClose} className="text-xs text-gray-400 hover:text-gray-600">close</button>
+      </div>
+
+      {err && <div className="p-2 bg-red-100 text-red-800 rounded text-sm">{err}</div>}
+
+      {loading ? (
+        <p className="text-sm text-gray-400">Loading…</p>
+      ) : allModules.length === 0 ? (
+        <p className="text-sm text-gray-400">No other modules to set as prerequisites.</p>
+      ) : (
+        <div className="space-y-1">
+          {allModules.map(m => (
+            <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedIds.has(m.id)}
+                onChange={() => toggle(m.id)}
+              />
+              <span>{m.title}</span>
+              {!m.published && <span className="text-xs text-gray-400">(draft)</span>}
+            </label>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <button
+          onClick={save}
+          disabled={saving || loading}
+          className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+        >
+          {saving ? 'Saving…' : 'Save prerequisites'}
+        </button>
+        <button onClick={onClose} className="px-3 py-1.5 border rounded text-sm text-gray-600 hover:bg-gray-100">Cancel</button>
+      </div>
+
+      {prereqs.length > 0 && (
+        <p className="text-xs text-gray-400">
+          Currently: {prereqs.map(p => p.title).join(', ')}
+        </p>
+      )}
+
+      {dependents.length > 0 && (
+        <div className="pt-2 border-t">
+          <p className="text-xs font-medium text-gray-500 mb-1">Required by:</p>
+          <ul className="space-y-0.5">
+            {dependents.map(d => (
+              <li key={d.id} className="text-xs text-gray-500">{d.title}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -5,7 +5,7 @@
 set -euo pipefail
 
 SCHEMA_DIR="src/db/schema"
-FILES=(content-chunks.ts kb-revisions.ts lesson-links.ts workflow.ts ingestion-jobs.ts topics.ts quiz-candidates.ts)
+FILES=(content-chunks.ts kb-revisions.ts lesson-links.ts workflow.ts ingestion-jobs.ts topics.ts quiz-candidates.ts learner-progress.ts groups.ts practice-attempts.ts module-assignments.ts packages.ts auth.ts admin-auth.ts content-blocks.ts access-tiers.ts ttx.ts)
 
 strip_js() {
   for f in "${FILES[@]}"; do

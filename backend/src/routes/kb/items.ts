@@ -1,9 +1,10 @@
-import { Router } from 'express';
+import { Router, type Request } from 'express';
 import { KBItemService } from '../../services/kb/item.service.js';
 import { validateBody, validateQuery } from '../../validation/middleware.js';
 import { createItemSchema, updateItemSchema } from '../../validation/kb.schemas.js';
 import { z } from 'zod';
 
+type AdminReq = Request & { adminUsername: string };
 const router = Router();
 const svc = new KBItemService();
 
@@ -14,8 +15,9 @@ const listQuerySchema = z.object({
 });
 
 router.post('/', validateBody(createItemSchema), async (req, res) => {
+  const adminUsername = (req as unknown as AdminReq).adminUsername;
   try {
-    res.status(201).json(await svc.create(req.body));
+    res.status(201).json(await svc.create({ ...req.body, createdBy: adminUsername }));
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
   }
