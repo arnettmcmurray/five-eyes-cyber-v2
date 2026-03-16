@@ -1,18 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, type LearningModule, type LearnerSummary } from '../api/client';
+import { api, type LearningModule, type LearnerSummary, type Assignment } from '../api/client';
 import { getAdminToken } from '../lib/adminSession';
-
-interface Assignment {
-  id: string;
-  moduleId: string;
-  moduleTitle: string;
-  learnerId: string | null;
-  groupId: string | null;
-  assignedBy: string;
-  assignedAt: string;
-  dueAt: string | null;
-}
 
 export default function AdminAssignments() {
   const navigate = useNavigate();
@@ -25,7 +14,7 @@ export default function AdminAssignments() {
   const [selectedModule, setSelectedModule] = useState('');
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ learnerId: '', assignedBy: 'admin' });
+  const [form, setForm] = useState({ learnerId: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,10 +29,7 @@ export default function AdminAssignments() {
     if (!moduleId) { setAssignments([]); return; }
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3001/admin/assignments/module/${moduleId}`, {
-        headers: { 'x-api-key': 'dev-local-key' },
-      });
-      setAssignments(res.ok ? await res.json() : []);
+      setAssignments(await api.assignments.forModule(moduleId));
     } catch {
       setAssignments([]);
     } finally {
@@ -57,15 +43,9 @@ export default function AdminAssignments() {
     setSubmitting(true);
     setError(null);
     try {
-      await api.adminProgress.learners(); // just to confirm service is live
-      const res = await fetch('http://localhost:3001/admin/assignments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': 'dev-local-key' },
-        body: JSON.stringify({ moduleId: selectedModule, learnerId: form.learnerId, assignedBy: form.assignedBy }),
-      });
-      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+      await api.assignments.create({ moduleId: selectedModule, learnerId: form.learnerId });
       await loadAssignments(selectedModule);
-      setForm(f => ({ ...f, learnerId: '' }));
+      setForm({ learnerId: '' });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -74,10 +54,7 @@ export default function AdminAssignments() {
   }
 
   async function remove(id: string) {
-    await fetch(`http://localhost:3001/admin/assignments/${id}`, {
-      method: 'DELETE',
-      headers: { 'x-api-key': 'dev-local-key' },
-    });
+    await api.assignments.remove(id);
     setAssignments(a => a.filter(x => x.id !== id));
   }
 

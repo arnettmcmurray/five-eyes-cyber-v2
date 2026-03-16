@@ -156,6 +156,11 @@ export const api = {
     learner: (learnerId: string) => adminReq<LearnerProgressDetail>('GET', `/admin/progress/learners/${learnerId}`),
     module: (moduleId: string) => adminReq<ModuleProgressDetail>('GET', `/admin/progress/modules/${moduleId}`),
   },
+  assignments: {
+    forModule: (moduleId: string) => adminReq<Assignment[]>('GET', `/admin/assignments/module/${moduleId}`),
+    create: (body: { moduleId: string; learnerId: string }) => adminReq<Assignment>('POST', '/admin/assignments', body),
+    remove: (id: string) => adminReq<void>('DELETE', `/admin/assignments/${id}`),
+  },
   modules: {
     list: () => adminReq<LearningModule[]>('GET', '/kb/modules'),
     get: (id: string) => adminReq<LearningModule>('GET', `/kb/modules/${id}`),
@@ -473,6 +478,17 @@ export interface AttemptSummary {
   percentage: number;
   passed: boolean;
   attemptedAt: string;
+}
+
+export interface Assignment {
+  id: string;
+  moduleId: string;
+  moduleTitle: string;
+  learnerId: string | null;
+  groupId: string | null;
+  assignedBy: string;
+  assignedAt: string;
+  dueAt: string | null;
 }
 
 export interface LearnerSummary {
