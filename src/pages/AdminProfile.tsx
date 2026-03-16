@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { getAdminToken, getAdminUsername, clearAdminSession } from '../lib/adminSession';
 
@@ -36,9 +36,9 @@ export default function AdminProfile() {
     <div className="max-w-md mx-auto p-6 mt-10">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold">Admin Profile</h1>
-        <button onClick={() => navigate('/kb')} className="text-xs text-gray-400 hover:text-gray-600">
-          Back to KB
-        </button>
+        <Link to="/kb" className="text-xs text-gray-400 hover:text-gray-600">
+          ← Back to KB
+        </Link>
       </div>
 
       <div className="mb-6 p-4 border rounded bg-gray-50">
