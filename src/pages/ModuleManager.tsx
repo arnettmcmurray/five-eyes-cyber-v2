@@ -361,7 +361,7 @@ function ContentPanel({ module, onClose }: { module: LearningModule; onClose: ()
   return (
     <div className="mb-6 p-4 border rounded bg-gray-50 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-700">Content: {module.title}</h3>
+        <h3 className="font-semibold text-gray-700">Content: {module.title} <span className="text-gray-400 font-normal text-sm">({links.length} item{links.length !== 1 ? 's' : ''})</span></h3>
         <div className="flex gap-2">
           <button
             onClick={() => { setShowAdd(v => !v); setFilter(''); setSelectedItemId(''); }}

@@ -275,6 +275,27 @@ Admin login → KB list/filter/ingest → KB item detail → KB search → Topic
 ### Proof artifacts
 - out/local-proof-status.md — flow status table, presentation-ready screens, known gaps
 
+## Operational Data Setup & UI Polish Pass 2 (2026-03-16)
+
+### Module content linked and verified
+- Phishing 101: 1 primary (Phishing Awareness), 1 reference (MFA item)
+- Spear Phishing 201: prereq set to Phishing 101; testlearner assigned to both; locktest only to 201 → confirmed locked
+- 3 quiz candidates approved for Phishing 101; practice POST returns score 2/2, 100% with remediation ✓
+- Module chain: Phishing 101 → next_module_id = Spear Phishing 201 ✓
+
+### Bugs fixed
+- `learn.service.ts`: quiz candidates disappeared after promote — `checkPractice` + `getModuleContent` only checked `status = 'approved'`; fixed with `or(eq(status,'approved'), eq(status,'promoted'))` in both queries
+- `KBAdmin.tsx`: `Field` component updated to accept optional `hint` prop; URL tab uses hint text; actor display is read-only span
+- `KBItemDetail.tsx`: actor display is read-only span (matches KBAdmin pattern)
+- `ModuleManager.tsx`: content panel header shows item count; actor fields use logged-in admin; empty state guidance text added
+- `AdminProgress.tsx`: nav dead end fixed — added KB/Modules/Assignments links + Logout
+- `AdminAssignments.tsx`: nav dead end fixed — added KB/Modules/Progress links + Logout
+- `LearnModule.tsx`: pointless ternary removed on "Back to Learning Hub" text
+- Admin passwords: arnettmcmurray and darren.mott had stale seed passwords; both changed via change-password API (see out/admin-credentials.md)
+
+### Admin credentials
+All 4 accounts verified with individual passwords (2026-03-16). See out/admin-credentials.md.
+
 ## Resume Notes
 - Free learner → 403 on /learn/* — must have assignment or override to get paid tier
 - Assessment flow is pre-auth marketing only; never creates a learner_sessions row
