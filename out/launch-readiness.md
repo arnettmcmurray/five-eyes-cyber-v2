@@ -62,8 +62,8 @@ These cannot be closed in application code. Each requires AWS/ops/provider work.
 
 | Item | Priority | Notes |
 |------|----------|-------|
-| **OTP delivery** | Critical | Currently stdout-only. Must integrate email (SES) or SMS (Twilio) provider before learner auth is usable in production. |
-| **Assessment token delivery** | Critical | Currently stdout-only. Same provider as OTP. |
+| **OTP delivery** | Critical | Set `SES_FROM_ADDRESS` for production SES delivery, or `SMTP_HOST`/`SMTP_PORT` for SMTP relay (e.g. Mailpit in dev). Stdout fallback active when neither is set. |
+| **Assessment token delivery** | Critical | Same delivery chain as OTP — `SES_FROM_ADDRESS` or `SMTP_HOST`/`SMTP_PORT`. |
 | **HTTPS / TLS** | Critical | App serves plain HTTP. TLS must terminate at ALB or Nginx. `Strict-Transport-Security` header is set but inactive until HTTPS is live. |
 | **CORS_ORIGIN** | Critical | Must be set to production frontend URL in deployment env. Defaults to `localhost:5173`. |
 | **API_KEY rotation** | High | No hot-reload; requires server restart. Acceptable at current scale. |
