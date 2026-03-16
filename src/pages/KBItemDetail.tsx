@@ -290,11 +290,7 @@ export default function KBItemDetail() {
         <h2 className="font-semibold text-gray-700 mb-2">Workflow</h2>
         <div className="flex items-center gap-2 mb-3">
           <span className="text-sm text-gray-500">As:</span>
-          <input
-            className="border rounded px-2 py-1 text-sm w-40"
-            value={actor}
-            onChange={e => setActor(e.target.value)}
-          />
+          <span className="text-sm font-medium text-gray-700">{actor}</span>
         </div>
         {actions.length === 0 ? (
           <p className="text-sm text-gray-400">No actions available for "{item.status}".</p>

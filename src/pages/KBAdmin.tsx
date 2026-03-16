@@ -325,14 +325,15 @@ function IngestForm({ onDone }: { onDone: () => void }) {
       )}
 
       {tab === 'url' && (
-        <Field label="URL">
-          <input type="url" className="w-full border rounded px-3 py-1.5 text-sm" value={url} onChange={e => setUrl(e.target.value)} required />
+        <Field label="URL" hint="Fetches the page content and creates a draft KB item.">
+          <input type="url" className="w-full border rounded px-3 py-1.5 text-sm" placeholder="https://…" value={url} onChange={e => setUrl(e.target.value)} required />
         </Field>
       )}
 
-      <Field label="By">
-        <input className="w-40 border rounded px-3 py-1.5 text-sm" value={actor} onChange={e => setActor(e.target.value)} required />
-      </Field>
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <span>Ingested by:</span>
+        <span className="font-medium text-gray-700">{actor}</span>
+      </div>
 
       <button type="submit" disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
         {saving ? 'Ingesting…' : 'Ingest'}
@@ -341,10 +342,11 @@ function IngestForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-600 mb-1">{label}</label>
+      {hint && <p className="text-xs text-gray-400 mb-1">{hint}</p>}
       {children}
     </div>
   );
