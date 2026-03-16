@@ -36,9 +36,9 @@ router.get('/:id', async (req, res) => {
 });
 
 router.patch('/:id', async (req, res) => {
-  const { title, description, displayOrder, nextModuleId } = req.body;
+  const { title, description, displayOrder, nextModuleId, estimatedMinutes } = req.body;
   try {
-    res.json(await svc.update(req.params.id, { title, description, displayOrder, nextModuleId }));
+    res.json(await svc.update(req.params.id, { title, description, displayOrder, nextModuleId, estimatedMinutes }));
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
   }

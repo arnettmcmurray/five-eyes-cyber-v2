@@ -164,9 +164,9 @@ export const api = {
   modules: {
     list: () => adminReq<LearningModule[]>('GET', '/kb/modules'),
     get: (id: string) => adminReq<LearningModule>('GET', `/kb/modules/${id}`),
-    create: (body: { slug: string; title: string; description: string; displayOrder?: number; createdBy: string }) =>
+    create: (body: { slug: string; title: string; description: string; displayOrder?: number; estimatedMinutes?: number | null; createdBy: string }) =>
       adminReq<LearningModule>('POST', '/kb/modules', body),
-    update: (id: string, body: Partial<Pick<LearningModule, 'title' | 'description' | 'displayOrder' | 'nextModuleId'>>) =>
+    update: (id: string, body: Partial<Pick<LearningModule, 'title' | 'description' | 'displayOrder' | 'nextModuleId' | 'estimatedMinutes'>>) =>
       adminReq<LearningModule>('PATCH', `/kb/modules/${id}`, body),
     publish: (id: string) => adminReq<LearningModule>('POST', `/kb/modules/${id}/publish`, {}),
     unpublish: (id: string) => adminReq<LearningModule>('POST', `/kb/modules/${id}/unpublish`, {}),
@@ -459,6 +459,7 @@ export interface LearningModule {
   published: boolean;
   displayOrder: number;
   nextModuleId: string | null;
+  estimatedMinutes: number | null;
   createdBy: string;
   createdAt: string;
   updatedAt: string;

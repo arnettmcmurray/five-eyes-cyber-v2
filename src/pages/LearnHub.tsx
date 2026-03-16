@@ -165,8 +165,20 @@ function ModuleCard({ module: m }: { module: LearnModuleWithProgress }) {
             {m.description}
           </p>
         )}
+        {m.estimatedMinutes != null && !m.completed && (
+          <p className="text-xs text-gray-400 mt-0.5">{m.estimatedMinutes} min</p>
+        )}
       </div>
-      {m.completed && <span className="text-green-500 shrink-0" aria-hidden>✓</span>}
+      {m.completed && m.nextModuleId && (
+        <Link
+          to={`/learn/modules/${m.nextModuleId}`}
+          onClick={e => e.stopPropagation()}
+          className="shrink-0 text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Next →
+        </Link>
+      )}
+      {m.completed && !m.nextModuleId && <span className="text-green-500 shrink-0" aria-hidden>✓</span>}
       {m.locked && <span className="text-gray-300 shrink-0" aria-hidden>🔒</span>}
     </div>
   );

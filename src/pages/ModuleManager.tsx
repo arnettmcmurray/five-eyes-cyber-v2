@@ -135,7 +135,12 @@ export default function ModuleManager() {
                 <tr key={m.id} className="border-b hover:bg-gray-50">
                   <td className="py-2 pr-3 text-gray-400 text-xs">{m.displayOrder}</td>
                   <td className="py-2 pr-4">
-                    <div className="font-medium">{m.title}</div>
+                    <div className="font-medium flex items-center gap-2">
+                      {m.title}
+                      {m.estimatedMinutes != null && (
+                        <span className="text-xs text-gray-400 font-normal">{m.estimatedMinutes} min</span>
+                      )}
+                    </div>
                     <div className="text-xs text-gray-400 font-mono">{m.slug}</div>
                     {m.description && <div className="text-xs text-gray-500 mt-0.5 max-w-xs truncate">{m.description}</div>}
                   </td>
@@ -199,7 +204,7 @@ function ModuleForm({
 }: {
   initial?: LearningModule;
   allModules: LearningModule[];
-  onSave: (data: { slug: string; title: string; description: string; displayOrder: number; nextModuleId: string | null }) => Promise<void>;
+  onSave: (data: { slug: string; title: string; description: string; displayOrder: number; nextModuleId: string | null; estimatedMinutes: number | null }) => Promise<void>;
   onCancel?: () => void;
 }) {
   const [title, setTitle] = useState(initial?.title ?? '');
@@ -207,6 +212,7 @@ function ModuleForm({
   const [description, setDescription] = useState(initial?.description ?? '');
   const [displayOrder, setDisplayOrder] = useState(initial?.displayOrder ?? 0);
   const [nextModuleId, setNextModuleId] = useState<string>(initial?.nextModuleId ?? '');
+  const [estimatedMinutes, setEstimatedMinutes] = useState<string>(initial?.estimatedMinutes != null ? String(initial.estimatedMinutes) : '');
   const [slugTouched, setSlugTouched] = useState(!!initial);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -225,7 +231,8 @@ function ModuleForm({
     setSaving(true);
     setErr(null);
     try {
-      await onSave({ slug, title, description, displayOrder, nextModuleId: nextModuleId || null });
+      const mins = estimatedMinutes !== '' ? Number(estimatedMinutes) : null;
+      await onSave({ slug, title, description, displayOrder, nextModuleId: nextModuleId || null, estimatedMinutes: mins && !isNaN(mins) ? mins : null });
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
@@ -256,10 +263,14 @@ function ModuleForm({
         <label className="block text-xs text-gray-500 mb-1">Description</label>
         <textarea className="w-full border rounded px-3 py-1.5 text-sm" rows={2} value={description} onChange={e => setDescription(e.target.value)} />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <div>
           <label className="block text-xs text-gray-500 mb-1">Display order</label>
           <input type="number" className="w-full border rounded px-3 py-1.5 text-sm" value={displayOrder} onChange={e => setDisplayOrder(Number(e.target.value))} min={0} />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Est. minutes</label>
+          <input type="number" className="w-full border rounded px-3 py-1.5 text-sm" value={estimatedMinutes} onChange={e => setEstimatedMinutes(e.target.value)} min={1} placeholder="optional" />
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1">Next module</label>

@@ -11,6 +11,7 @@ export interface LearningModule {
   published: boolean;
   displayOrder: number;
   nextModuleId: string | null;
+  estimatedMinutes: number | null;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -31,6 +32,7 @@ function toModel(row: typeof learningModules.$inferSelect): LearningModule {
     published: row.published,
     displayOrder: row.displayOrder,
     nextModuleId: row.nextModuleId ?? null,
+    estimatedMinutes: row.estimatedMinutes ?? null,
     createdBy: row.createdBy,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -63,7 +65,7 @@ export class ModuleService {
 
   async create(input: {
     slug: string; title: string; description: string;
-    displayOrder?: number; createdBy: string;
+    displayOrder?: number; estimatedMinutes?: number | null; createdBy: string;
   }): Promise<LearningModule> {
     const [row] = await db
       .insert(learningModules)
@@ -72,7 +74,7 @@ export class ModuleService {
     return toModel(row);
   }
 
-  async update(id: string, input: Partial<Pick<LearningModule, 'title' | 'description' | 'displayOrder' | 'nextModuleId'>>): Promise<LearningModule> {
+  async update(id: string, input: Partial<Pick<LearningModule, 'title' | 'description' | 'displayOrder' | 'nextModuleId' | 'estimatedMinutes'>>): Promise<LearningModule> {
     const [row] = await db
       .update(learningModules)
       .set({ ...input, updatedAt: new Date() })
