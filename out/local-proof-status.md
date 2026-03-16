@@ -14,8 +14,8 @@
 | Admin assignments — assign learner to module | ✅ Works | Shows assigned learners per module |
 | Learner OTP login | ✅ Works | Handle → code request → verify → session |
 | Learner hub — module list with progress state | ✅ Works | In-progress, available, locked, completed sections |
-| Module study content | ⚠️ Requires data | No KB items linked to Phishing 101 yet (admin task: use Content panel in Modules) |
-| Module practice | ⚠️ Requires data | No quiz items linked to module (admin task) |
+| Module study content | ✅ Works | Phishing 101: 1 primary study item + 1 reference linked |
+| Module practice | ✅ Works | 3 quiz candidates approved; practice POST returns 100% with remediation |
 | Module results / remediation | ✅ Works | Score, question breakdown, topic tags, KB search, retry |
 | TTX scenarios — list, create, edit, AI draft | ✅ Works | Section/step/inject structure, AI suggest |
 | TTX sessions — list, create | ✅ Works | Scenario binding, schedule |
@@ -37,10 +37,9 @@
 
 ## Gaps Before "Fully Working App + Visual Proof"
 
-1. **Module content not linked** — Phishing 101 exists but has no KB items in its content list. Admin must use the Content panel in Modules to link KB items to modules. (Admin task, not a bug.)
-2. **No practice questions linked** — Same reason. Quiz candidates exist on KB items but need to be linked. (Admin task.)
-3. **Email handle display** — Learners created via email handle (e.g. `testlearner@example.com`) are stored with `@` and `.` stripped (`testlearnerexamplecom`). Functional but cosmetically odd in admin tables.
-4. **Single admin user** — Only one admin in DB. Multi-admin workflows untested.
+1. **Email handle display** — Learners created via email handle (e.g. `testlearner@example.com`) are stored with `@` and `.` stripped (`testlearnerexamplecom`). Functional but cosmetically odd in admin tables.
+2. **Multi-admin workflows** — 4 admin accounts in DB (all individually verified). Cross-admin audit trails confirmed. Side-by-side concurrent admin testing not run.
+3. **OTP email delivery** — stdout in dev; Mailpit works with `SMTP_HOST=localhost SMTP_PORT=1025` in .env; SES for production.
 
 ## What Was Fixed This Session
 

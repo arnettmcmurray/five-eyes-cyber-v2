@@ -311,6 +311,14 @@ All 4 accounts verified with individual passwords (2026-03-16). See out/admin-cr
 - `TtxSessions`: session list now shows participant count column (extra count query in backend list endpoint)
 - `ModuleManager`: content panel header shows item count `(n items)`
 
+## Batch 28 — Dev Polish & Field Additions (2026-03-16)
+
+- Email delivery: SMTP relay path via nodemailer; `SMTP_HOST` + `SMTP_PORT` env vars; Mailpit quick-start documented
+- Module `estimatedMinutes` field: schema, service, backend route, frontend form + list + learner hub card
+- LearnHub: completed module cards show "Next →" button when `nextModuleId` set; uncompleted cards show `n min`
+- Module content panel header shows item count
+- local-proof-status.md updated: module study/practice rows now ✅ (data set up in prior session)
+
 ## Resume Notes
 - Free learner → 403 on /learn/* — must have assignment or override to get paid tier
 - Assessment flow is pre-auth marketing only; never creates a learner_sessions row
