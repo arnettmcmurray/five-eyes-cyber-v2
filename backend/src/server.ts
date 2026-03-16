@@ -26,6 +26,12 @@ if (!process.env['ADMIN_PASSWORD']) {
 if (!process.env['ANTHROPIC_API_KEY']) {
   console.warn('[WARN] ANTHROPIC_API_KEY is not set — TTX AI assist endpoints will return 500.');
 }
+if (!process.env['SES_FROM_ADDRESS']) {
+  console.warn('[WARN] SES_FROM_ADDRESS is not set — OTP and assessment emails will be printed to stdout only (dev mode).');
+}
+if (!process.env['APP_BASE_URL']) {
+  console.warn('[WARN] APP_BASE_URL is not set — assessment links will use http://localhost:5173 as base URL.');
+}
 
 // TRUST_PROXY — must be set correctly behind a load balancer/reverse proxy.
 // Set to '1' for a single proxy layer (e.g., Nginx, ALB), '2' for two layers, etc.

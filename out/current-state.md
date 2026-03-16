@@ -206,6 +206,23 @@ All passing — see out/history/2026-03-16-smoke-tests.md:
 ## Gate 5 Bug Fixed
 - **413 exposed as 500**: global error handler now checks `err.status`/`err.statusCode`; body-parser 413 surfaces correctly
 
+## AWS Deployment Prep (2026-03-16)
+
+### App changes
+- SES email delivery wired: `backend/src/lib/email.ts` — SES when `SES_FROM_ADDRESS` set, stdout fallback in dev
+- OTP delivery: sends SES email when handle contains `@`; stdout for non-email handles
+- Assessment token delivery: sends SES email with `APP_BASE_URL`-based link
+- `backend/Dockerfile` — multi-stage, non-root user, HEALTHCHECK via `/health`
+- `backend/.dockerignore` added
+- `backend/.env.example` updated: `SES_FROM_ADDRESS`, `AWS_REGION`, `APP_BASE_URL`
+- Startup warns if `SES_FROM_ADDRESS` or `APP_BASE_URL` unset
+
+### AWS docs
+- `out/aws-architecture.md` — target shape: ECS Fargate + RDS + ALB + CloudFront/S3 + SES + Secrets Manager
+- `out/aws-env-secrets.md` — full Secrets Manager / Parameter Store / task definition map
+- `out/aws-deployment-sequence.md` — step-by-step with CLI commands and verification checks
+- TypeScript: tsc --noEmit clean
+
 ## Deployment Handoff (2026-03-16)
 - out/launch-readiness.md — app-ready checklist + external blockers + launch sequence
 - out/deployment-handoff.md — env vars, AWS config, launch order, post-deploy test plan

@@ -7,6 +7,7 @@ import { assessmentLeads } from '../../db/schema/access-tiers.js';
 import { LearnerAuthService } from '../../services/auth/learner-auth.service.js';
 import { AccessService } from '../../services/access/access.service.js';
 import { assessmentRateLimit } from '../../middleware/ratelimit.js';
+import { sendEmail } from '../../lib/email.js';
 
 const router = Router();
 const authSvc = new LearnerAuthService();
@@ -37,6 +38,18 @@ router.get('/tier', async (req, res) => {
 
 // ── Assessment funnel (no learner session required) ─────────────────────────
 
+/** Send assessment link email via SES (falls back to stdout in dev). */
+async function sendAssessmentEmail(email: string, token: string): Promise<void> {
+  const base = process.env['APP_BASE_URL'] ?? 'http://localhost:5173';
+  const link = `${base}/assessment/${token}`;
+  await sendEmail({
+    to: email,
+    subject: 'Your Five Eyes access assessment',
+    text: `Thank you for your interest in Five Eyes.\n\nComplete your qualification assessment here:\n${link}\n\nThis link is unique to your email address.`,
+  });
+  console.log(`[Assessment] email dispatched: to=${email}`);
+}
+
 /**
  * POST /access/assessment/start
  * Body: { email: string }
@@ -59,8 +72,7 @@ router.post('/assessment/start', assessmentRateLimit, async (req, res) => {
       .limit(1);
 
     if (existing) {
-      // TODO: send email with link containing accessToken — currently stdout only
-      console.log(`[Assessment] Re-send: email=${normalized} status=${existing.status}`);
+      await sendAssessmentEmail(normalized, existing.accessToken);
       res.status(204).send();
       return;
     }
@@ -73,8 +85,7 @@ router.post('/assessment/start', assessmentRateLimit, async (req, res) => {
       status: 'pending',
     });
 
-    // TODO: send email with link containing accessToken — currently stdout only
-    console.log(`[Assessment] New lead: email=${normalized}`);
+    await sendAssessmentEmail(normalized, accessToken);
     res.status(204).send();
   } catch (err) {
     console.error('[Assessment] start error:', err instanceof Error ? err.message : String(err));

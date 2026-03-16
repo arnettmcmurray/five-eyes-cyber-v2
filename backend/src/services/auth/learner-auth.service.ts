@@ -4,6 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { db } from '../../db/client.js';
 import { otpRequests, learnerSessions } from '../../db/schema/auth.js';
 import { LearnerService } from '../learn/learner.service.js';
+import { sendEmail } from '../../lib/email.js';
 
 const learnerSvc = new LearnerService();
 
@@ -35,8 +36,20 @@ export class LearnerAuthService {
       expiresAt,
     });
 
-    // TODO: replace with real delivery (email/SMS)
-    console.log(`[OTP] handle=${normalized} code=${code} expires=${expiresAt.toISOString()}`);
+    // Deliver OTP via SES if SES_FROM_ADDRESS is set; stdout fallback in dev.
+    // If the raw handle looks like an email address, use it as the delivery address.
+    // For non-email handles (usernames), delivery must be wired externally (SMS/push).
+    const deliveryAddress = handle.includes('@') ? handle.trim() : null;
+    if (deliveryAddress) {
+      await sendEmail({
+        to: deliveryAddress,
+        subject: 'Your Five Eyes login code',
+        text: `Your login code is: ${code}\n\nThis code expires in 10 minutes. Do not share it.`,
+      });
+    } else {
+      // Non-email handle — stdout only until SMS/push is wired
+      console.log(`[OTP] handle=${normalized} code=${code} expires=${expiresAt.toISOString()}`);
+    }
   }
 
   /**
