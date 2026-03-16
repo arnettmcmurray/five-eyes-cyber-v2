@@ -58,7 +58,7 @@ export const ttxSessions = pgTable('ttx_sessions', {
   status:        text('status').notNull().default('planned'),
   facilitatorId: text('facilitator_id').notNull(),  // admin_users.id
   /** Current inject id being run (facilitator advances this). */
-  currentInjectId: text('current_inject_id'),
+  currentInjectId: text('current_inject_id').references(() => ttxInjects.id, { onDelete: 'set null' }),
   createdAt:     timestamp('created_at').notNull().defaultNow(),
 });
 
