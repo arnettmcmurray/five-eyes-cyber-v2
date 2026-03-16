@@ -1,5 +1,7 @@
-import { Router } from 'express';
+import { Router, type Request } from 'express';
 import { KBLessonService } from '../../services/kb/lesson.service.js';
+
+type AdminReq = Request & { adminUsername: string };
 
 const router = Router();
 const svc = new KBLessonService();
@@ -24,8 +26,9 @@ router.get('/modules/:moduleId/links', async (req, res) => {
 
 // POST /kb/modules/:moduleId/links
 router.post('/modules/:moduleId/links', async (req, res) => {
+  const adminUsername = (req as unknown as AdminReq).adminUsername;
   try {
-    const link = await svc.linkToModule({ ...req.body, moduleId: req.params.moduleId });
+    const link = await svc.linkToModule({ ...req.body, moduleId: req.params.moduleId, addedBy: adminUsername });
     res.status(201).json(link);
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : String(err) });

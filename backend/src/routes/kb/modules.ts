@@ -1,6 +1,7 @@
-import { Router } from 'express';
+import { Router, type Request } from 'express';
 import { ModuleService } from '../../services/kb/module.service.js';
 
+type AdminReq = Request & { adminUsername: string };
 const router = Router();
 const svc = new ModuleService();
 
@@ -13,13 +14,14 @@ router.get('/', async (_req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { slug, title, description = '', displayOrder = 0, createdBy } = req.body;
-  if (!slug || !title || !createdBy) {
-    res.status(400).json({ error: 'slug, title, and createdBy are required' });
+  const adminUsername = (req as unknown as AdminReq).adminUsername;
+  const { slug, title, description = '', displayOrder = 0 } = req.body;
+  if (!slug || !title) {
+    res.status(400).json({ error: 'slug and title are required' });
     return;
   }
   try {
-    res.status(201).json(await svc.create({ slug, title, description, displayOrder, createdBy }));
+    res.status(201).json(await svc.create({ slug, title, description, displayOrder, createdBy: adminUsername }));
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
   }
