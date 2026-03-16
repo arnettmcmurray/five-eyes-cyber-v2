@@ -251,6 +251,30 @@ All tables applied (2026-03-16):
 - API key: dev-local-key
 - ADMIN_PASSWORD env must be set before first start
 
+## Local Proof & UI Polish Pass (2026-03-16)
+
+Full browser walkthrough + presentability pass — all core flows verified locally. See out/local-proof-status.md.
+
+### Flows verified end-to-end
+Admin login → KB list/filter/ingest → KB item detail → KB search → Topics → Modules → Progress → Assignments → Learner OTP → Learner hub → TTX scenarios → TTX sessions → TTX console → TTX participant → TTX AAR ✓
+
+### Fixes applied
+- AdminLogin: broken redirect `/kb-admin` → `/kb`
+- KBAdmin: "Learner" nav opens new tab (preserves admin session); "Logout" no-wrap; slug truncated in list
+- KBSearch: full admin nav bar added; FTS → "Full-text", Quiz-aid → "Quiz assist"; max-w-5xl
+- TopicManager: full admin nav bar added (was a dead end)
+- ModuleManager: back-link text → "← Back to KB"
+- KBItemDetail: "Contentv1" heading spacing fixed (gap between label and version badge)
+- AdminProgress: React key warning fixed (Fragment keying in both ByLearner + ByModule maps)
+- AdminAssignments: replaced all hardcoded fetch() with api.assignments.*; added subtitle
+- AdminProfile: "Back to KB" changed to Link element (proper keyboard/right-click behavior)
+- LearnHub: removed dev-facing "check server logs" OTP hint; duplicate module in recommended banner fixed
+- TtxConsole: participant URL is clickable link + Copy button; Log Event button tooltip when fields missing
+- TtxScenarioEdit: inject type badge on own line, separated from body text
+
+### Proof artifacts
+- out/local-proof-status.md — flow status table, presentation-ready screens, known gaps
+
 ## Resume Notes
 - Free learner → 403 on /learn/* — must have assignment or override to get paid tier
 - Assessment flow is pre-auth marketing only; never creates a learner_sessions row
