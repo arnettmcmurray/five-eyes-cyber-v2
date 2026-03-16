@@ -1,28 +1,41 @@
 /**
- * Email delivery via AWS SES.
+ * Email delivery.
  *
- * Behaviour:
- *   - If SES_FROM_ADDRESS env var is set: send via SES (production).
- *   - Otherwise: print to stdout (development / local fallback).
+ * Priority:
+ *   1. SES_FROM_ADDRESS set  → AWS SES (production)
+ *   2. SMTP_HOST set         → SMTP relay (dev/staging, e.g. Mailpit on localhost:1025)
+ *   3. Neither               → stdout (bare local dev)
  *
- * AWS credentials are resolved by the SDK's default chain:
- *   ECS task role → instance profile → ~/.aws/credentials → env vars.
- * No explicit credential config is needed when running on ECS Fargate.
- *
- * Required env vars (production):
- *   SES_FROM_ADDRESS  — verified SES sender address (e.g. noreply@fiveeyesltd.com)
- *   AWS_REGION        — region where SES is configured (e.g. us-east-1)
+ * Mailpit quick-start:
+ *   brew install mailpit && mailpit
+ *   # Web UI: http://localhost:8025
+ *   # SMTP:   localhost:1025 (no auth, no TLS)
+ *   Then add to backend/.env:  SMTP_HOST=localhost  SMTP_PORT=1025
  */
 
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import nodemailer from 'nodemailer';
 
 let sesClient: SESClient | null = null;
+let smtpTransport: nodemailer.Transporter | null = null;
 
-function getClient(): SESClient {
+function getSesClient(): SESClient {
   if (!sesClient) {
     sesClient = new SESClient({ region: process.env['AWS_REGION'] ?? 'us-east-1' });
   }
   return sesClient;
+}
+
+function getSmtpTransport(): nodemailer.Transporter {
+  if (!smtpTransport) {
+    smtpTransport = nodemailer.createTransport({
+      host: process.env['SMTP_HOST'],
+      port: Number(process.env['SMTP_PORT'] ?? 1025),
+      secure: false,
+      ignoreTLS: true,
+    });
+  }
+  return smtpTransport;
 }
 
 export interface EmailMessage {
@@ -37,29 +50,45 @@ export interface EmailMessage {
  * Never throws — logs errors server-side and returns silently.
  */
 export async function sendEmail(msg: EmailMessage): Promise<void> {
-  const from = process.env['SES_FROM_ADDRESS'];
+  const sesFrom = process.env['SES_FROM_ADDRESS'];
+  const smtpHost = process.env['SMTP_HOST'];
 
-  if (!from) {
-    // Dev fallback — print to stdout so the code path is exercised locally
-    console.log(`[email:dev] to=${msg.to} subject="${msg.subject}"\n${msg.text}`);
+  if (sesFrom) {
+    try {
+      await getSesClient().send(new SendEmailCommand({
+        Source: sesFrom,
+        Destination: { ToAddresses: [msg.to] },
+        Message: {
+          Subject: { Data: msg.subject, Charset: 'UTF-8' },
+          Body: {
+            Text: { Data: msg.text, Charset: 'UTF-8' },
+            ...(msg.html ? { Html: { Data: msg.html, Charset: 'UTF-8' } } : {}),
+          },
+        },
+      }));
+    } catch (err) {
+      console.error('[email:ses] delivery failed:', err instanceof Error ? err.message : String(err));
+    }
     return;
   }
 
-  try {
-    await getClient().send(new SendEmailCommand({
-      Source: from,
-      Destination: { ToAddresses: [msg.to] },
-      Message: {
-        Subject: { Data: msg.subject, Charset: 'UTF-8' },
-        Body: {
-          Text: { Data: msg.text, Charset: 'UTF-8' },
-          ...(msg.html ? { Html: { Data: msg.html, Charset: 'UTF-8' } } : {}),
-        },
-      },
-    }));
-  } catch (err) {
-    // Log but never surface SES errors to callers — OTP/assessment flows
-    // must not fail just because email delivery fails (handle separately).
-    console.error('[email:ses] delivery failed:', err instanceof Error ? err.message : String(err));
+  if (smtpHost) {
+    try {
+      const from = `Five Eyes <noreply@fiveeyesltd.com>`;
+      await getSmtpTransport().sendMail({
+        from,
+        to: msg.to,
+        subject: msg.subject,
+        text: msg.text,
+        ...(msg.html ? { html: msg.html } : {}),
+      });
+      console.log(`[email:smtp] sent to=${msg.to} subject="${msg.subject}"`);
+    } catch (err) {
+      console.error('[email:smtp] delivery failed:', err instanceof Error ? err.message : String(err));
+    }
+    return;
   }
+
+  // Bare dev fallback — print to stdout
+  console.log(`[email:dev] to=${msg.to} subject="${msg.subject}"\n${msg.text}`);
 }
