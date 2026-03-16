@@ -296,6 +296,21 @@ Admin login → KB list/filter/ingest → KB item detail → KB search → Topic
 ### Admin credentials
 All 4 accounts verified with individual passwords (2026-03-16). See out/admin-credentials.md.
 
+## Security & Data Integrity Pass 2 (2026-03-16)
+
+### KB audit fields now always from token
+- `quiz-candidates.ts`: `reviewedBy` for approve/reject from `req.adminUsername`
+- `lessons.ts`: `addedBy` for module link creation from `req.adminUsername`
+- `modules.ts`: `createdBy` for module creation from `req.adminUsername`
+
+### Schema fixes
+- `ttxSessions.currentInjectId`: added FK `.references(() => ttxInjects.id, { onDelete: 'set null' })` — deleting inject no longer leaves dangling reference
+- `assessmentLeads`: added `tokenExpiresAt` column; new tokens expire after 72h; GET/POST return 410 for expired tokens
+
+### UI / API additions
+- `TtxSessions`: session list now shows participant count column (extra count query in backend list endpoint)
+- `ModuleManager`: content panel header shows item count `(n items)`
+
 ## Resume Notes
 - Free learner → 403 on /learn/* — must have assignment or override to get paid tier
 - Assessment flow is pre-auth marketing only; never creates a learner_sessions row
