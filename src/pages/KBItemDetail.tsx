@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api, type KBItem, type WorkflowEvent, type Topic, type TopicRelationship, type Revision, type LessonLink, type QuizCandidate, type LearningModule } from '../api/client';
+import { getAdminUsername } from '../lib/adminSession';
 
 const WORKFLOW_ACTIONS: Record<string, string[]> = {
   draft: ['submit', 'archive'],
@@ -23,7 +24,7 @@ export default function KBItemDetail() {
   const [quizCandidates, setQuizCandidates] = useState<QuizCandidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actor, setActor] = useState('admin');
+  const [actor, setActor] = useState(() => getAdminUsername() ?? 'admin');
   const [acting, setActing] = useState<string | null>(null);
 
   // section toggles
@@ -472,6 +473,7 @@ function QuizCandidatesSection({ itemId, revisionId, candidates, actor, onUpdate
   const [acting, setActing] = useState<string | null>(null);
   const [promoteTarget, setPromoteTarget] = useState<string | null>(null);
   const [promoteModuleId, setPromoteModuleId] = useState('');
+  const [modules, setModules] = useState<LearningModule[]>([]);
 
   function patch(updated: QuizCandidate) {
     onUpdate(candidates.map(c => c.id === updated.id ? updated : c));
@@ -509,7 +511,7 @@ function QuizCandidatesSection({ itemId, revisionId, candidates, actor, onUpdate
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-1">
         <h2 className="font-semibold text-gray-700">
           Quiz Candidates
           {candidates.length > 0 && <span className="ml-2 text-xs font-normal text-gray-400">{candidates.length}</span>}
@@ -521,6 +523,9 @@ function QuizCandidatesSection({ itemId, revisionId, candidates, actor, onUpdate
           {showCreate ? 'Cancel' : '+ New candidate'}
         </button>
       </div>
+      <p className="text-xs text-gray-400 mb-2">
+        Approved candidates appear as practice questions in any module this item is linked to.
+      </p>
 
       {err && <div className="mb-2 p-2 bg-red-100 text-red-800 rounded text-sm">{err}</div>}
 
@@ -588,17 +593,23 @@ function QuizCandidatesSection({ itemId, revisionId, candidates, actor, onUpdate
 
               {c.status === 'approved' && (
                 promoteTarget === c.id ? (
-                  <span className="flex items-center gap-1">
-                    <input
-                      className="border rounded px-2 py-0.5 text-xs w-36"
-                      placeholder="module-id"
-                      value={promoteModuleId}
-                      onChange={e => setPromoteModuleId(e.target.value)}
-                      autoFocus
-                    />
+                  <span className="flex items-center gap-1 flex-wrap">
+                    {modules.length > 0 ? (
+                      <select
+                        className="border rounded px-2 py-0.5 text-xs"
+                        value={promoteModuleId}
+                        onChange={e => setPromoteModuleId(e.target.value)}
+                        autoFocus
+                      >
+                        <option value="">Select module…</option>
+                        {modules.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
+                      </select>
+                    ) : (
+                      <span className="text-xs text-gray-400">Loading modules…</span>
+                    )}
                     <button
                       onClick={() => doPromote(c.id)}
-                      disabled={acting !== null || !promoteModuleId.trim()}
+                      disabled={acting !== null || !promoteModuleId}
                       className="px-2 py-0.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                     >
                       {acting === c.id + ':promote' ? '…' : 'Confirm'}
@@ -609,10 +620,15 @@ function QuizCandidatesSection({ itemId, revisionId, candidates, actor, onUpdate
                   </span>
                 ) : (
                   <button
-                    onClick={() => setPromoteTarget(c.id)}
+                    onClick={async () => {
+                      setPromoteTarget(c.id);
+                      if (modules.length === 0) {
+                        try { setModules(await api.modules.list()); } catch { /* fall through */ }
+                      }
+                    }}
                     className="px-2 py-0.5 text-xs border rounded hover:bg-gray-50"
                   >
-                    Promote
+                    Promote to module
                   </button>
                 )
               )}
@@ -862,7 +878,7 @@ function LessonsSection({ itemId, actor, lessons, onUpdate }: {
       )}
 
       {lessons.length === 0 ? (
-        <p className="text-sm text-gray-400">Not linked to any modules.</p>
+        <p className="text-sm text-gray-400">Not linked to any modules. Use <span className="font-mono bg-gray-100 px-1 rounded">+ Link to module</span> or the Content panel in Modules.</p>
       ) : (
         <ul className="space-y-1">
           {lessons.map(l => (

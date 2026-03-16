@@ -239,7 +239,7 @@ type IngestTab = 'manual' | 'file' | 'url';
 
 function IngestForm({ onDone }: { onDone: () => void }) {
   const [tab, setTab] = useState<IngestTab>('manual');
-  const [actor, setActor] = useState('admin');
+  const [actor, setActor] = useState(() => getAdminUsername() ?? 'admin');
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 

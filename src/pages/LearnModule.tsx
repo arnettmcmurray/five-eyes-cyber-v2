@@ -492,7 +492,7 @@ function RemediationScreen({ results, nextModuleId, moduleId, onRetry }: {
             to="/learn"
             className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
           >
-            {passed ? 'Back to Learning Hub' : 'Back to Learning Hub'}
+            Back to Learning Hub
           </Link>
         )}
       </div>

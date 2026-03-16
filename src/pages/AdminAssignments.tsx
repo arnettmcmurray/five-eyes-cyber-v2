@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api, type LearningModule, type LearnerSummary, type Assignment } from '../api/client';
-import { getAdminToken } from '../lib/adminSession';
+import { getAdminToken, getAdminUsername, clearAdminSession } from '../lib/adminSession';
 
 export default function AdminAssignments() {
   const navigate = useNavigate();
@@ -66,9 +66,20 @@ export default function AdminAssignments() {
     <div className="max-w-3xl mx-auto p-6">
       <div className="flex items-start justify-between mb-4">
         <div>
+          <div className="flex items-center gap-3 flex-wrap mb-1">
+            <Link to="/kb" className="text-sm text-gray-500 hover:text-gray-800">← KB</Link>
+            <Link to="/kb/modules" className="text-sm text-gray-500 hover:text-gray-800">Modules</Link>
+            <Link to="/admin/progress" className="text-sm text-gray-500 hover:text-gray-800">Progress</Link>
+          </div>
           <h1 className="text-xl font-bold">Module Assignments</h1>
           <p className="text-sm text-gray-500 mt-0.5">Assign learners to modules to grant access and track progress.</p>
         </div>
+        <button
+          onClick={() => { clearAdminSession(); navigate('/admin/login'); }}
+          className="text-xs text-gray-400 hover:text-gray-600"
+        >
+          {getAdminUsername() ?? 'admin'} · Logout
+        </button>
       </div>
 
       <div className="mb-5">

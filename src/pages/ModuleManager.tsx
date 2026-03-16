@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type LearningModule, type ModulePrerequisite, type AdminModuleLink, type KBItem } from '../api/client';
+import { getAdminUsername } from '../lib/adminSession';
 
 export default function ModuleManager() {
   const [modules, setModules] = useState<LearningModule[]>([]);
@@ -57,8 +58,10 @@ export default function ModuleManager() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <Link to="/kb" className="text-blue-600 text-sm hover:underline">&larr; Back to KB</Link>
+        <div className="flex items-center gap-3 flex-wrap">
+          <Link to="/kb" className="text-sm text-gray-500 hover:text-gray-800">← KB</Link>
+          <Link to="/admin/progress" className="text-sm text-gray-500 hover:text-gray-800">Progress</Link>
+          <Link to="/admin/assignments" className="text-sm text-gray-500 hover:text-gray-800">Assignments</Link>
           <h1 className="text-2xl font-bold">Modules</h1>
         </div>
         <button
@@ -75,7 +78,7 @@ export default function ModuleManager() {
         <ModuleForm
           allModules={modules}
           onSave={async data => {
-            const created = await api.modules.create({ ...data, createdBy: 'admin' });
+            const created = await api.modules.create({ ...data, createdBy: getAdminUsername() ?? 'admin' });
             setModules(ms => [...ms, created].sort((a, b) => a.displayOrder - b.displayOrder));
             setShowCreate(false);
           }}
@@ -340,7 +343,7 @@ function ContentPanel({ module, onClose }: { module: LearningModule; onClose: ()
     setAdding(true);
     setErr(null);
     try {
-      await api.lessons.link(module.id, { kbItemId: selectedItemId, role, order, addedBy: 'admin' });
+      await api.lessons.link(module.id, { kbItemId: selectedItemId, role, order, addedBy: getAdminUsername() ?? 'admin' });
       // Reload content to get enriched item details
       const updated = await api.modules.content(module.id);
       setLinks(updated.items);
@@ -440,7 +443,10 @@ function ContentPanel({ module, onClose }: { module: LearningModule; onClose: ()
       {loading ? (
         <p className="text-sm text-gray-400">Loading…</p>
       ) : links.length === 0 ? (
-        <p className="text-sm text-gray-400">No items linked to this module.</p>
+        <div className="text-sm text-gray-400 bg-white border rounded p-3">
+          <p className="font-medium text-gray-500 mb-1">No items linked yet.</p>
+          <p>Click <span className="font-mono bg-gray-100 px-1 rounded">+ Add item</span> above to link KB items to this module. Published items become study content for learners; approved quiz candidates on those items appear as practice questions.</p>
+        </div>
       ) : (
         <table className="w-full text-sm border-collapse">
           <thead>

@@ -1,5 +1,5 @@
 import { useState, useEffect, Fragment } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   api,
   type LearnerSummary,
@@ -7,7 +7,7 @@ import {
   type LearningModule,
   type ModuleProgressDetail,
 } from '../api/client';
-import { getAdminToken } from '../lib/adminSession';
+import { getAdminToken, getAdminUsername, clearAdminSession } from '../lib/adminSession';
 
 type Tab = 'learners' | 'modules';
 
@@ -21,7 +21,20 @@ export default function AdminProgress() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-xl font-bold mb-4">Learner Progress</h1>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Link to="/kb" className="text-sm text-gray-500 hover:text-gray-800">← KB</Link>
+          <Link to="/kb/modules" className="text-sm text-gray-500 hover:text-gray-800">Modules</Link>
+          <Link to="/admin/assignments" className="text-sm text-gray-500 hover:text-gray-800">Assignments</Link>
+          <h1 className="text-xl font-bold">Progress</h1>
+        </div>
+        <button
+          onClick={() => { clearAdminSession(); navigate('/admin/login'); }}
+          className="text-xs text-gray-400 hover:text-gray-600"
+        >
+          {getAdminUsername() ?? 'admin'} · Logout
+        </button>
+      </div>
       <div className="flex gap-1 border-b mb-5">
         {(['learners', 'modules'] as Tab[]).map(t => (
           <button

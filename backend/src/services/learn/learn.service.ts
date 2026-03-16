@@ -1,4 +1,4 @@
-import { eq, inArray, and } from 'drizzle-orm';
+import { eq, inArray, and, or } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import { db } from '../../db/client.js';
 import { learningModules, modulePrerequisites } from '../../db/schema/modules.js';
@@ -140,13 +140,13 @@ export class LearnService {
       : [];
     const revMap = new Map(revisions.map(r => [r.id, r]));
 
-    // Fetch approved quiz candidates for all published items
+    // Fetch approved (or promoted) quiz candidates for all published items
     const qcs = await db
       .select()
       .from(quizCandidates)
       .where(and(
         inArray(quizCandidates.kbItemId, [...publishedIds]),
-        eq(quizCandidates.status, 'approved'),
+        or(eq(quizCandidates.status, 'approved'), eq(quizCandidates.status, 'promoted')),
       ));
 
     // Fetch topic relationships and resolve names
@@ -233,7 +233,7 @@ export class LearnService {
       .from(quizCandidates)
       .where(and(
         inArray(quizCandidates.id, questionIds),
-        eq(quizCandidates.status, 'approved'),
+        or(eq(quizCandidates.status, 'approved'), eq(quizCandidates.status, 'promoted')),
       ));
 
     const qcMap = new Map(qcRows.map(q => [q.id, q]));
