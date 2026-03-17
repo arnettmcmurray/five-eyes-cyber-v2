@@ -25,6 +25,7 @@ import ttxScenariosRouter from './routes/ttx/scenarios.js';
 import ttxSessionsRouter from './routes/ttx/sessions.js';
 import ttxParticipateRouter from './routes/ttx/participate.js';
 import ttxAssistRouter from './routes/ttx/assist.js';
+import adminGovernanceRouter from './routes/admin/governance.js';
 import { requireAdmin } from './middleware/requireAdmin.js';
 import {
   authRateLimit,
@@ -107,6 +108,7 @@ app.use('/admin/packages', requireAdmin, adminPackagesRouter);
 app.use('/admin/profile', requireAdmin, adminProfileRouter);
 app.use('/admin/content-blocks', requireAdmin, adminContentBlocksRouter);
 app.use('/admin/access', requireAdmin, adminAccessOverridesRouter);
+app.use('/admin', requireAdmin, adminGovernanceRouter);
 // TTX — facilitator/admin routes (all require admin auth)
 app.use('/ttx/scenarios', requireAdmin, ttxScenariosRouter);
 app.use('/ttx/sessions', requireAdmin, ttxSessionsRouter);

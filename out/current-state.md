@@ -482,6 +482,53 @@ T1→T2→T3→T4→T5→T6→T7→T8→T9→T10 complete
 - out/content-intelligence-plan.md — coverage standard, gap types, freshness model, scoring framework
 - out/kb-governance-model.md — content lifecycle, review-first publish rules, alert priorities
 
+## Source Governance Backend (2026-03-17)
+
+Full governance layer implemented. Backend-only (no admin UI yet).
+
+### Schema (8 new tables, applied via db-push.sh)
+- `source_trust_levels` — canonical/approved/monitored/blocked (seeded)
+- `sources` — source registry (name, domain, trustLevelId, sourceType, ingestMode)
+- `source_domains` — domain allowlist/blocklist with optional source/trust linkage
+- `freshness_rules` — review/expiry windows by content dimension (type, tag, trust code, topic)
+- `governance_ingest_jobs` — separate from ingestion_jobs; tracks governance source pulls
+- `review_queue` — content items needing human review; priority/status/assignment
+- `content_alerts` — alerts on published content (freshness expired, source blocked, etc.)
+- `publish_decisions` — audit trail of approve/reject/defer decisions per item
+
+### KB items governance fields added (nullable for backwards compat)
+- `sourceId`, `sourceUrl`, `sourceTrustLevelId` — source linkage
+- `reviewStatus` — 'pending' | 'in_review' | 'approved' | 'rejected' | 'deferred'
+- `freshnessStatus` — 'current' | 'stale' | 'expired'
+- `nextReviewAt` — when item next needs review
+- `learnerVisible` — boolean, default true (safe default for existing published items)
+- Existing: `freshnessCycle`, `publishedAt`, `lastReviewedAt` kept
+
+### Backfill applied
+- 74 published KB items: learnerVisible=true, reviewStatus='approved', freshnessStatus='current'
+- 5 draft/non-published items: no backfill (reviewStatus=null, freshnessStatus=null)
+
+### Admin endpoints (all behind requireAdmin)
+- `GET /admin/source-trust-levels`
+- `GET /admin/sources`, `POST /admin/sources`, `GET /admin/sources/:id`, `PATCH /admin/sources/:id`
+- `GET /admin/freshness-rules`, `POST /admin/freshness-rules`, `PATCH /admin/freshness-rules/:id`
+- `GET /admin/review-queue`, `GET /admin/review-queue/:id`, `POST /admin/review-queue/:id/decision`
+- `GET /admin/content-alerts`, `PATCH /admin/content-alerts/:id`
+- `GET /admin/kb/governance-summary` — system-wide counts
+- `GET /admin/kb/items/:id/governance` — per-item governance context
+- `POST /admin/kb/governance/backfill` — backfill existing published items with defaults
+- `GET /admin/kb/governance/stale-scan` — returns items with overdue nextReviewAt
+
+### Seed data
+- 4 trust levels seeded: canonical (rank 0, T0), approved (rank 1, T1), monitored (rank 2, T2), blocked (rank 3, T3)
+- NIST Cybersecurity source created as example canonical source
+
+### Not yet built (next session)
+- Admin UI for source registry and review queue
+- Freshness rules seed data (standard rules per content type and freshness cycle)
+- Automated stale-scan scheduling
+- Review queue population from freshness rule violations
+
 ## Resume Notes
 - Free learner → 403 on /learn/* — must have assignment or override to get paid tier
 - Assessment flow is pre-auth marketing only; never creates a learner_sessions row
