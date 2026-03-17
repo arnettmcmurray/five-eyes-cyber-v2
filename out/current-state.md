@@ -433,8 +433,59 @@ Use scripts/ingest-first-tranche.ts as template; create ingest-second-tranche.ts
 - T6 regulatory: 12 months + event-driven (TSA renewal October; CIRCIA final rule)
 - T7 mobile: 6–12 months; CargoNet quarterly triggers
 
+## KB Second Tranche Ingest (2026-03-17)
+
+All Second Tranche content live in-system. T5/T6/T7 chain wired.
+
+- 23 KB items published (t5-*, t6-*, t7-* slugs)
+- 3 topics: ransomware-operational-resilience, incident-reporting-response, mobile-byod-security
+- 3 modules: T5 (30min), T6 (25min), T7 (20min)
+- 69 quiz candidates approved
+- content_chunks populated for FTS search
+- T4→T5→T6→T7→T8 chain wired (2026-03-17)
+- testlearner assigned to T5/T6/T7
+
+## KB Third Tranche Content and Ingest (2026-03-17)
+
+All Third Tranche content written and live in-system. T8/T9/T10 chain wired.
+
+### Files written
+| Group | Articles | Module | Practice Qs | Remediation | Dir |
+|-------|----------|--------|-------------|-------------|-----|
+| T8: Secure Systems Hygiene | 6 | 1 (20 min) | 23 | 2 cards | out/kb-content/t8-it-hygiene/ |
+| T9: Third-Party/Vendor Risk | 6 | 1 (20 min) | 23 | 2 cards | out/kb-content/t9-vendor-risk/ |
+| T10: Data and Document Security | 6 | 1 (20 min) | 23 | 2 cards | out/kb-content/t10-data-security/ |
+| **Total** | **18** | **3** | **69** | **6 cards** | |
+
+### What's in-system
+- 18 KB items published (t8-*, t9-*, t10-* slugs)
+- 3 topics: secure-systems-hygiene, third-party-vendor-risk, data-document-security
+- 3 modules: T8 (20min), T9 (20min), T10 (20min)
+- 69 quiz candidates approved (23/23/23)
+- content_chunks populated — FTS verified (patch management → t8-patch-management, etc.)
+- T7→T8→T9→T10 chain wired
+- testlearner assigned to T8/T9/T10
+
+### Full module chain (T1–T10)
+T1→T2→T3→T4→T5→T6→T7→T8→T9→T10 complete
+
+### Verified (2026-03-17)
+- T8: study=3, refs=3, practice=23 ✓
+- T9: study=2, refs=4, practice=23 ✓
+- T10: study=3, refs=3, practice=23 ✓
+- FTS: patch management, vendor access, driver PII, RDP, BEC vendor, data breach all returning correct results ✓
+- Module chain verified end-to-end ✓
+- Rate limiter fires at 10 req/15min on /auth/* (expected behavior)
+
+### Governance docs written (2026-03-17)
+- out/source-registry-plan.md — 5 source categories, trust tiers T0–T3, platform trustMap
+- out/content-intelligence-plan.md — coverage standard, gap types, freshness model, scoring framework
+- out/kb-governance-model.md — content lifecycle, review-first publish rules, alert priorities
+
 ## Resume Notes
 - Free learner → 403 on /learn/* — must have assignment or override to get paid tier
 - Assessment flow is pre-auth marketing only; never creates a learner_sessions row
 - api.learn.* uses Bearer header (no learnerId param); api.modules.*/api.items.* uses adminReq
 - TTX: read out/ttx-mvp-direction.md before starting; branch feature/ttx-core; no merge until end-to-end working
+- All auth routes require x-api-key: dev-local-key header (API_KEY guard in app.ts line 76)
+- Learner session token: get from DB (learner_sessions table) when rate-limited on OTP
