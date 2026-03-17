@@ -319,6 +319,120 @@ All 4 accounts verified with individual passwords (2026-03-16). See out/admin-cr
 - Module content panel header shows item count
 - local-proof-status.md updated: module study/practice rows now ✅ (data set up in prior session)
 
+## KB First Tranche Content Build (2026-03-16)
+
+All 48 files authored and committed (`3cd9d4e` and parent). KB was previously empty — all four First Tranche topic groups are now complete.
+
+### What was built
+| Group | Articles | Module | Questions | Cards | Dir |
+|-------|----------|--------|-----------|-------|-----|
+| T1: Phishing & Email Security | 7 | 1 | 30 | 2 | out/kb-content/t1-phishing/ |
+| T2: BEC & Payment Fraud | 8 | 1 | 30 | 2 | out/kb-content/t2-bec-payment/ |
+| T3: Passwords & MFA | 7 | 1 | 28 | 2 | out/kb-content/t3-passwords-mfa/ |
+| T4: Freight Identity, Verification & Fraud | 9 | 1 | 32 | 2 | out/kb-content/t4-freight-identity/ |
+| **Total** | **31** | **4** | **120** | **8** | |
+
+### Content model
+- KB articles: YAML frontmatter (title, type, topics, source_trust) + markdown body
+- Types used: `training-content`, `threat-brief`, `policy`, `faq`
+- Module outlines: frontmatter (title, module_type, estimated_minutes, topics) + objectives + lesson structure + remediation path
+- Practice questions: scenario-based 4-option MCQ, correct answer marked `*`, 25–32 per group
+- Remediation cards: fast-action numbered steps, one page
+
+### Key reference docs used
+- out/kb-coverage-audit.md — gap audit (all 12 topics scored No across all surfaces)
+- out/kb-build-order.md — article lists, module counts, content velocity targets
+
+### Next: Ingest
+All content exists as markdown in out/kb-content/. To put it in the platform:
+1. Create topics in admin KB → Topics (match the `topics:` frontmatter values)
+2. Ingest each KB article via admin KB → Ingest → Manual text or file upload
+3. Tag each item to its topic(s)
+4. Create modules via admin KB → Modules; link KB items as content; set estimatedMinutes from module outline
+5. Approve quiz candidates for each module to enable practice
+
+### Second Tranche (not started)
+- Ransomware & Operational Resilience
+- Incident Reporting & Response
+- Mobile Device / BYOD Security
+Target: 30 days post-launch
+
+## KB First Tranche Ingest (2026-03-16)
+
+All First Tranche content is now live in-system. Verified end-to-end.
+
+### What's in-system
+- 31 KB items published (t1-*, t2-*, t3-*, t4-* slugs)
+- 7 First Tranche topics created and assigned
+- 4 modules published: t1-phishing-email-security, t2-bec-payment-fraud, t3-passwords-mfa, t4-freight-identity
+- estimatedMinutes: 20/25/20/30
+- 126 quiz candidates approved (distributed across items)
+- content_chunks populated for FTS search — all 31 items searchable
+- See out/kb-first-tranche-ingest-status.md for full verification detail
+
+### Learner flow verified
+- /learn/modules/:id → study items (training-content/primary), references (policy/faq/threat-brief), practice questions
+- /learn/modules/:id/practice → correct scoring, wrong-answer remediation via topic graph
+- FTS: "FMCSA verification" → Carrier Identity Verification; "pickup code" → Pickup Integrity; "BEC invoice" → BEC in Freight
+
+### Still manual (not blockers)
+- Remediation cards (8 markdown files) not ingested as KB items
+
+### Completed after ingest
+- ✓ Module chain: T1→T2→T3→T4 nextModuleId set (2026-03-16)
+- ✓ testlearner assigned to all 4 First Tranche modules (2026-03-16)
+- Ingestion script: scripts/ingest-first-tranche.ts (idempotent, safe to re-run)
+
+## KB Second Tranche Content (2026-03-17)
+
+All 35 Second Tranche files written. Content on disk — not yet ingested into system.
+
+### Files written
+| Group | Articles | Module | Practice Qs | Remediation | Dir |
+|-------|----------|--------|-------------|-------------|-----|
+| T5: Ransomware & Operational Resilience | 8 | 1 (30 min) | 30 | 2 cards | out/kb-content/t5-ransomware/ |
+| T6: Incident Reporting & Response | 8 | 1 (25 min) | 30 | 2 cards | out/kb-content/t6-incident-response/ |
+| T7: Mobile Device / BYOD Security | 7 | 1 (20 min) | 28 | 2 cards | out/kb-content/t7-mobile-byod/ |
+| **Total** | **23** | **3** | **88** | **6 cards** | |
+
+### Content model (same as First Tranche)
+- YAML frontmatter: title, type, topics, source_trust, freshness_cycle
+- Types: training-content (study items), threat-brief / policy / faq (references)
+- All articles freight-specific with named real-world sources (ORBCOMM, NMFTA, FMCSA, TSA, CISA)
+
+### Next: Ingest (same process as First Tranche)
+Use scripts/ingest-first-tranche.ts as template; create ingest-second-tranche.ts:
+1. Create 3 new topics (Ransomware & Operational Resilience, Incident Reporting & Response, Mobile Device and BYOD Security)
+2. Ingest 23 KB articles via the same workflow (create item → revision → submit → publish → assign topic)
+3. Create 3 modules with correct estimatedMinutes; link items
+4. Create and approve quiz candidates from practice-questions.md files
+5. Populate content_chunks for FTS search
+
+### Second Tranche Plan
+- Full plan: out/kb-second-tranche-build.md
+
+### Key intelligence from research files
+- ENISA 2025: ransomware = 83.9% of cybercrime against EU transport
+- ORBCOMM attack (Sept 2023): ELD disabled 3 weeks across major carriers
+- NMFTA discovered CVE-2024-12054 in ELD systems (freight-specific attack surface)
+- NIST SP 800-61r2 withdrawn; superseded by r3 (2025) — T6 must cite r3
+- TSA SD 1580-21-01 version C (Oct 2024 effective, annual renewal) — time-sensitive
+- CIRCIA rulemaking in progress — cannot state final thresholds yet
+- CargoNet Q1 2025: BEC-enabled cargo theft now "predominant strategy" via mobile/account compromise
+- CISA #StopRansomware advisories contain TTPs/IOCs → human curation required before learner publish
+
+### Output dirs
+- out/kb-content/t5-ransomware/
+- out/kb-content/t6-incident-response/
+- out/kb-content/t7-mobile-byod/
+- Full plan: out/kb-second-tranche-build.md
+
+### Freshness cycles
+- T5 ELD/telematics: 90 days (freight-specific)
+- T5 ransomware: 6 months
+- T6 regulatory: 12 months + event-driven (TSA renewal October; CIRCIA final rule)
+- T7 mobile: 6–12 months; CargoNet quarterly triggers
+
 ## Resume Notes
 - Free learner → 403 on /learn/* — must have assignment or override to get paid tier
 - Assessment flow is pre-auth marketing only; never creates a learner_sessions row
