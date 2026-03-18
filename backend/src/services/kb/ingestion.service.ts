@@ -13,6 +13,11 @@ const itemSvc = new KBItemService();
 const revSvc = new KBRevisionService();
 const chunkSvc = new KBChunkService();
 
+export interface IngestionJobWithSource extends IngestionJob {
+  label: string;
+  sourceType: RawSource['type'];
+}
+
 function toJob(row: typeof ingestionJobs.$inferSelect): IngestionJob {
   return {
     id: row.id,
@@ -41,26 +46,15 @@ async function createSourceAndJob(
   const [source] = await db
     .insert(rawSources)
     .values({
-      id: sourceId,
-      type,
-      label,
-      origin,
-      rawContent,
-      mimeType,
-      byteSize: Buffer.byteLength(rawContent, 'utf8'),
-      uploadedBy: createdBy,
-      ingestionJobId: jobId,
+      id: sourceId, type, label, origin, rawContent,
+      mimeType, byteSize: Buffer.byteLength(rawContent, 'utf8'),
+      uploadedBy: createdBy, ingestionJobId: jobId,
     })
     .returning();
 
   const [job] = await db
     .insert(ingestionJobs)
-    .values({
-      id: jobId,
-      sourceId,
-      status: 'pending',
-      createdBy,
-    })
+    .values({ id: jobId, sourceId, status: 'pending', createdBy })
     .returning();
 
   return { source, job };
@@ -70,14 +64,12 @@ async function runJob(
   source: typeof rawSources.$inferSelect,
   job: typeof ingestionJobs.$inferSelect,
 ): Promise<IngestionJob> {
-  // Mark as extracting
   await db
     .update(ingestionJobs)
     .set({ status: 'extracting', startedAt: new Date() })
     .where(eq(ingestionJobs.id, job.id));
 
   try {
-    // Create a draft KB item placeholder
     const kbItem = await itemSvc.create({
       slug: `draft-${job.id}`,
       title: source.label,
@@ -89,10 +81,8 @@ async function runJob(
       currentRevisionId: null,
     });
 
-    // Create initial revision
-    const revision = await revSvc.createRevision(kbItem.id, source.rawContent, job.createdBy);
+    const revision = await revSvc.createRevision(kbItem.id, source.rawContent || source.label, job.createdBy);
 
-    // Run pipeline (sync — stages 01–04)
     const sourceModel: RawSource = {
       id: source.id,
       type: source.type,
@@ -111,20 +101,27 @@ async function runJob(
       .set({ status: 'processing' })
       .where(eq(ingestionJobs.id, job.id));
 
-    const result = runPipeline(sourceModel, job.id, kbItem.id, revision.id);
+    const result = await runPipeline(sourceModel, job.id, kbItem.id, revision.id);
 
-    // Persist chunks
+    // For URL fetch, update the revision content with the fetched text
+    if (source.type === 'url-fetch' && result.extracted.rawText) {
+      await revSvc.createRevision(kbItem.id, result.extracted.rawText, job.createdBy);
+    }
+
     await chunkSvc.saveChunks(result.chunks);
 
-    // Update KB item with pipeline-proposed metadata
+    // Guard against slug collisions by appending job ID prefix
+    const baseSlug = result.processed.proposedSlug || `item-${kbItem.id.slice(0, 8)}`;
+    const safeSlug = `${baseSlug}-${job.id.slice(0, 8)}`;
+
     await itemSvc.update(kbItem.id, {
-      slug: result.processed.proposedSlug || `item-${kbItem.id}`,
+      slug: safeSlug,
       title: result.processed.proposedTitle || source.label,
       type: result.processed.proposedType,
       tags: result.processed.proposedTags,
     });
 
-    const finalStatus: IngestionStatus = result.errors.length > 0 ? 'review-ready' : 'review-ready';
+    const finalStatus: IngestionStatus = 'review-ready';
 
     const [updated] = await db
       .update(ingestionJobs)
@@ -171,6 +168,7 @@ export class KBIngestionService {
   }
 
   async ingestUrl(url: string, fetchedBy: string): Promise<IngestionJob> {
+    // rawContent starts empty — stage 01 fetches it live
     const { source, job } = await createSourceAndJob(
       'url-fetch', url, url, '', 'text/html', fetchedBy,
     );
@@ -187,15 +185,25 @@ export class KBIngestionService {
     return toJob(row);
   }
 
-  async listJobs(filters?: { status?: IngestionStatus; createdBy?: string }): Promise<IngestionJob[]> {
+  async listJobs(filters?: { status?: IngestionStatus; createdBy?: string }): Promise<IngestionJobWithSource[]> {
     const conditions = [];
     if (filters?.status) conditions.push(eq(ingestionJobs.status, filters.status));
     if (filters?.createdBy) conditions.push(eq(ingestionJobs.createdBy, filters.createdBy));
 
-    const rows = conditions.length
-      ? await db.select().from(ingestionJobs).where(and(...conditions))
-      : await db.select().from(ingestionJobs);
+    const rows = await db
+      .select({
+        job: ingestionJobs,
+        sourceLabel: rawSources.label,
+        sourceType: rawSources.type,
+      })
+      .from(ingestionJobs)
+      .leftJoin(rawSources, eq(rawSources.id, ingestionJobs.sourceId))
+      .where(conditions.length ? and(...conditions) : undefined);
 
-    return rows.map(toJob);
+    return rows.map(({ job: row, sourceLabel, sourceType }) => ({
+      ...toJob(row),
+      label: sourceLabel ?? '',
+      sourceType: (sourceType ?? 'manual-entry') as RawSource['type'],
+    }));
   }
 }

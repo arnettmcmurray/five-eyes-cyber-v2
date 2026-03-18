@@ -61,3 +61,22 @@ router.post('/:id/assign', validateBody(assignSchema), async (req, res) => {
     res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
+
+// GET /kb/topics/for-item/:itemId
+router.get('/for-item/:itemId', async (req, res) => {
+  try {
+    res.json(await svc.getTopicsForItem(req.params.itemId));
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// DELETE /kb/topics/:id/items/:itemId
+router.delete('/:id/items/:itemId', async (req, res) => {
+  try {
+    await svc.unassignTopic(req.params.itemId, req.params.id);
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});

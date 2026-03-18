@@ -1,9 +1,10 @@
-import { Router } from 'express';
+import { Router, type Request } from 'express';
 import { KBQuizCandidateService } from '../../services/kb/quiz-candidate.service.js';
 import { validateBody } from '../../validation/middleware.js';
 import { createQuizCandidateSchema } from '../../validation/kb.schemas.js';
 import { z } from 'zod';
 
+type AdminReq = Request & { adminUsername: string };
 const router = Router({ mergeParams: true });
 const svc = new KBQuizCandidateService();
 
@@ -23,22 +24,23 @@ router.post('/', validateBody(createQuizCandidateSchema), async (req, res) => {
   }
 });
 
-const reviewSchema = z.object({ reviewedBy: z.string().min(1) });
 const promoteSchema = z.object({ moduleId: z.string().min(1) });
 
 const standalone = Router();
 
-standalone.post('/:id/approve', validateBody(reviewSchema), async (req, res) => {
+standalone.post('/:id/approve', async (req, res) => {
+  const adminUsername = (req as unknown as AdminReq).adminUsername;
   try {
-    res.json(await svc.approve(String(req.params.id), req.body.reviewedBy as string));
+    res.json(await svc.approve(String(req.params.id), adminUsername));
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 
-standalone.post('/:id/reject', validateBody(reviewSchema), async (req, res) => {
+standalone.post('/:id/reject', async (req, res) => {
+  const adminUsername = (req as unknown as AdminReq).adminUsername;
   try {
-    res.json(await svc.reject(String(req.params.id), req.body.reviewedBy as string));
+    res.json(await svc.reject(String(req.params.id), adminUsername));
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
   }

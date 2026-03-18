@@ -5,7 +5,6 @@ import { extractContent } from './stages/02-extract.js';
 import { processContent } from './stages/03-process.js';
 import { chunkContent } from './stages/04-chunk.js';
 
-/** Summary result returned after a full pipeline run. */
 export interface PipelineResult {
   jobId: string;
   sourceId: string;
@@ -16,46 +15,28 @@ export interface PipelineResult {
   errors: string[];
 }
 
-/**
- * Orchestrates all four pipeline stages for a given ingestion job.
- * Runs stages 01 → 02 → 03 → 04 in sequence and catches per-stage errors.
- * Returns a PipelineResult with all outputs.
- */
-export function runPipeline(
+export async function runPipeline(
   source: RawSource,
   jobId: string,
   itemId: string,
   revisionId: string,
-): PipelineResult {
+): Promise<PipelineResult> {
   const errors: string[] = [];
 
   // --- Stage 01: Read Source ---
   let sourceResult;
   try {
-    sourceResult = readSource(source);
+    sourceResult = await readSource(source);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     errors.push(`Stage 01 (readSource): ${message}`);
-    // Cannot continue without source content
     return {
       jobId,
       sourceId: source.id,
-      extracted: {
-        jobId,
-        rawText: '',
-        detectedLanguage: 'en',
-        wordCount: 0,
-        sections: [],
-      },
+      extracted: { jobId, rawText: '', detectedLanguage: 'en', wordCount: 0, sections: [] },
       processed: {
-        jobId,
-        proposedTitle: '',
-        proposedSlug: '',
-        proposedType: 'training-content',
-        proposedTags: [],
-        markdownBody: '',
-        qualityScore: 0,
-        reviewNotes: [],
+        jobId, proposedTitle: '', proposedSlug: '', proposedType: 'training-content',
+        proposedTags: [], markdownBody: '', qualityScore: 0, reviewNotes: [],
       },
       chunks: [],
       completedAt: new Date().toISOString(),
@@ -71,11 +52,7 @@ export function runPipeline(
     const message = err instanceof Error ? err.message : String(err);
     errors.push(`Stage 02 (extractContent): ${message}`);
     extracted = {
-      jobId,
-      rawText: sourceResult.content,
-      detectedLanguage: 'en',
-      wordCount: 0,
-      sections: [],
+      jobId, rawText: sourceResult.content, detectedLanguage: 'en', wordCount: 0, sections: [],
     };
   }
 
@@ -87,14 +64,9 @@ export function runPipeline(
     const message = err instanceof Error ? err.message : String(err);
     errors.push(`Stage 03 (processContent): ${message}`);
     processed = {
-      jobId,
-      proposedTitle: extracted.title ?? 'Untitled Content',
-      proposedSlug: '',
-      proposedType: 'training-content',
-      proposedTags: [],
-      markdownBody: extracted.rawText,
-      qualityScore: 0,
-      reviewNotes: [],
+      jobId, proposedTitle: extracted.title ?? 'Untitled Content', proposedSlug: '',
+      proposedType: 'training-content', proposedTags: [], markdownBody: extracted.rawText,
+      qualityScore: 0, reviewNotes: [],
     };
   }
 
@@ -109,12 +81,7 @@ export function runPipeline(
   }
 
   return {
-    jobId,
-    sourceId: source.id,
-    extracted,
-    processed,
-    chunks,
-    completedAt: new Date().toISOString(),
-    errors,
+    jobId, sourceId: source.id, extracted, processed, chunks,
+    completedAt: new Date().toISOString(), errors,
   };
 }

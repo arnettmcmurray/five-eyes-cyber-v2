@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import { db } from '../../db/client.js';
 import { topics, topicRelationships } from '../../db/schema/topics.js';
@@ -78,5 +78,11 @@ export class KBTopicService {
       .from(topicRelationships)
       .where(eq(topicRelationships.topicId, topicId));
     return rows.map(toRelationship);
+  }
+
+  async unassignTopic(itemId: string, topicId: string): Promise<void> {
+    await db
+      .delete(topicRelationships)
+      .where(and(eq(topicRelationships.itemId, itemId), eq(topicRelationships.topicId, topicId)));
   }
 }

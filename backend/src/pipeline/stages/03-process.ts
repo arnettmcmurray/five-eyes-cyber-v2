@@ -28,7 +28,7 @@ export function processContent(extracted: ExtractedContent, jobId: string): Proc
     extracted.sections.find((s) => s.heading !== undefined)?.heading ??
     'Untitled Content';
 
-  const proposedSlug = slugify(proposedTitle);
+  const proposedSlug = slugify(proposedTitle).slice(0, 190);
 
   // Build markdown body by joining sections
   const markdownBody = extracted.sections
