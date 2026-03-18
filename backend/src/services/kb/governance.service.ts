@@ -288,7 +288,145 @@ export class GovernanceService {
     };
   }
 
-  // ── Stale Scan ────────────────────────────────────────────────────────────────
+  // ── KB Item Governance Patch ──────────────────────────────────────────────────
+
+  async updateItemGovernance(id: string, data: Partial<{
+    sourceId: string | null;
+    sourceUrl: string | null;
+    sourceTrustLevelId: string | null;
+    reviewStatus: string | null;
+    freshnessStatus: string | null;
+    freshnessCycle: string | null;
+    nextReviewAt: Date | null;
+    lastReviewedAt: Date | null;
+    learnerVisible: boolean;
+  }>) {
+    const [row] = await db
+      .update(kbItems)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(kbItems.id, id))
+      .returning();
+    return row ?? null;
+  }
+
+  // ── Full Governance Scan ──────────────────────────────────────────────────────
+
+  async runGovernanceScan(): Promise<{
+    itemsScanned: number;
+    nextReviewAtSet: number;
+    freshnessUpdated: number;
+    reviewQueueEnqueued: number;
+    alertsCreated: number;
+  }> {
+    const now = new Date();
+    const DAY_MS = 86_400_000;
+
+    // Load all active freshness rules once
+    const rules = await db.select().from(freshnessRules).where(eq(freshnessRules.active, true));
+
+    // Load all published items
+    const items = await db
+      .select()
+      .from(kbItems)
+      .where(eq(kbItems.status, 'published'));
+
+    // Existing open review queue entries (avoid duplicates)
+    const openQueueRows = await db
+      .select({ contentItemId: reviewQueue.contentItemId })
+      .from(reviewQueue)
+      .where(eq(reviewQueue.status, 'pending'));
+    const inQueue = new Set(openQueueRows.map(r => r.contentItemId));
+
+    // Existing open alerts by item (avoid duplicates)
+    const openAlertRows = await db
+      .select({ contentItemId: contentAlerts.contentItemId, alertType: contentAlerts.alertType })
+      .from(contentAlerts)
+      .where(eq(contentAlerts.status, 'open'));
+    const alertKey = (itemId: string, type: string) => `${itemId}::${type}`;
+    const openAlertSet = new Set(openAlertRows.map(a => alertKey(a.contentItemId, a.alertType)));
+
+    let nextReviewAtSet = 0;
+    let freshnessUpdated = 0;
+    let reviewQueueEnqueued = 0;
+    let alertsCreated = 0;
+
+    for (const item of items) {
+      // Pick the best matching rule: type first, then freshnessCycle
+      const rule =
+        rules.find(r => r.appliesToType === 'kb_item_type' && r.appliesToValue === item.type) ??
+        rules.find(r => r.appliesToType === 'freshness_cycle' && item.freshnessCycle && r.appliesToValue === item.freshnessCycle) ??
+        null;
+
+      const reviewDays = rule?.reviewAfterDays ?? 365;
+      const expireDays = rule?.expireAfterDays ?? 730;
+      const alertDays = rule?.alertBeforeDays ?? 30;
+
+      // Anchor: last review → published → created
+      const anchor = item.lastReviewedAt ?? item.publishedAt ?? item.createdAt;
+      const anchorMs = anchor.getTime();
+
+      const nextReview = new Date(anchorMs + reviewDays * DAY_MS);
+      const expiresAt  = new Date(anchorMs + expireDays * DAY_MS);
+      const alertAt    = new Date(nextReview.getTime() - alertDays * DAY_MS);
+
+      // Determine freshness status
+      const freshnessStatus =
+        now >= expiresAt  ? 'expired' :
+        now >= nextReview ? 'stale'   : 'current';
+
+      // Build update patch
+      const patch: Parameters<typeof this.updateItemGovernance>[1] = {};
+
+      // Set nextReviewAt if not already set or if it shifted
+      if (!item.nextReviewAt || Math.abs(item.nextReviewAt.getTime() - nextReview.getTime()) > DAY_MS) {
+        patch.nextReviewAt = nextReview;
+        nextReviewAtSet++;
+      }
+
+      if (item.freshnessStatus !== freshnessStatus) {
+        patch.freshnessStatus = freshnessStatus;
+        freshnessUpdated++;
+      }
+
+      if (Object.keys(patch).length > 0) {
+        await this.updateItemGovernance(item.id, patch);
+      }
+
+      // Enqueue for review if stale/expired and not already in queue
+      if ((freshnessStatus === 'stale' || freshnessStatus === 'expired') && !inQueue.has(item.id)) {
+        const priority = freshnessStatus === 'expired' ? 'high' : 'normal';
+        await this.enqueueForReview({
+          contentItemId: item.id,
+          reasonCode: freshnessStatus === 'expired' ? 'freshness_expired' : 'freshness_stale',
+          priority,
+        });
+        inQueue.add(item.id);
+        reviewQueueEnqueued++;
+      }
+
+      // Alert if past alertAt and no open alert of this type
+      if (now >= alertAt) {
+        const type = freshnessStatus === 'expired' ? 'freshness_expired' : 'freshness_approaching';
+        const severity = freshnessStatus === 'expired' ? ('critical' as const) : ('warning' as const);
+        if (!openAlertSet.has(alertKey(item.id, type))) {
+          await this.createAlert({
+            contentItemId: item.id,
+            alertType: type,
+            severity,
+            message: freshnessStatus === 'expired'
+              ? `"${item.title}" is past its expiry window (>${expireDays}d since last review)`
+              : `"${item.title}" review due ${nextReview.toISOString().slice(0, 10)}`,
+          });
+          openAlertSet.add(alertKey(item.id, type));
+          alertsCreated++;
+        }
+      }
+    }
+
+    return { itemsScanned: items.length, nextReviewAtSet, freshnessUpdated, reviewQueueEnqueued, alertsCreated };
+  }
+
+  // ── Stale Scan (lightweight read-only preview) ────────────────────────────────
 
   async scanForStaleItems(): Promise<{ flagged: number; items: { id: string; slug: string; reason: string }[] }> {
     const now = new Date();
@@ -313,12 +451,8 @@ export class GovernanceService {
         flagged.push({ id: item.id, slug: item.slug, reason: 'next_review_overdue' });
         continue;
       }
-      // Flag items published over 365 days ago with no freshnessCycle set
-      if (item.publishedAt && !item.freshnessCycle) {
-        const daysSincePublish = (now.getTime() - item.publishedAt.getTime()) / (1000 * 60 * 60 * 24);
-        if (daysSincePublish > 365) {
-          flagged.push({ id: item.id, slug: item.slug, reason: 'no_freshness_cycle_over_365d' });
-        }
+      if (!item.freshnessCycle) {
+        flagged.push({ id: item.id, slug: item.slug, reason: 'no_freshness_cycle' });
       }
     }
 

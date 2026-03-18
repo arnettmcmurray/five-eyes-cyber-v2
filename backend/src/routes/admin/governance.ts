@@ -220,4 +220,91 @@ router.get('/kb/governance/stale-scan', async (_req, res) => {
   }
 });
 
+// POST /admin/kb/governance/run-scan — full scan: sets nextReviewAt, updates freshnessStatus, enqueues reviews, creates alerts
+router.post('/kb/governance/run-scan', async (_req, res) => {
+  try {
+    res.json(await svc.runGovernanceScan());
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// PATCH /admin/kb/items/:id/governance — update governance fields on a KB item
+router.patch('/kb/items/:id/governance', async (req, res) => {
+  const { sourceId, sourceUrl, sourceTrustLevelId, reviewStatus, freshnessStatus,
+          freshnessCycle, nextReviewAt, lastReviewedAt, learnerVisible } = req.body ?? {};
+  try {
+    const patch: Record<string, unknown> = {};
+    if (sourceId !== undefined)          patch['sourceId'] = sourceId;
+    if (sourceUrl !== undefined)         patch['sourceUrl'] = sourceUrl;
+    if (sourceTrustLevelId !== undefined) patch['sourceTrustLevelId'] = sourceTrustLevelId;
+    if (reviewStatus !== undefined)      patch['reviewStatus'] = reviewStatus;
+    if (freshnessStatus !== undefined)   patch['freshnessStatus'] = freshnessStatus;
+    if (freshnessCycle !== undefined)    patch['freshnessCycle'] = freshnessCycle;
+    if (nextReviewAt !== undefined)      patch['nextReviewAt'] = nextReviewAt ? new Date(nextReviewAt as string) : null;
+    if (lastReviewedAt !== undefined)    patch['lastReviewedAt'] = lastReviewedAt ? new Date(lastReviewedAt as string) : null;
+    if (learnerVisible !== undefined)    patch['learnerVisible'] = Boolean(learnerVisible);
+
+    const updated = await svc.updateItemGovernance(req.params.id, patch as Parameters<typeof svc.updateItemGovernance>[1]);
+    if (!updated) { res.status(404).json({ error: 'Not found' }); return; }
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// POST /admin/kb/items/:id/governance/enqueue — manually enqueue an item for review
+router.post('/kb/items/:id/governance/enqueue', async (req, res) => {
+  const { reasonCode = 'manual', priority } = req.body ?? {};
+  try {
+    res.status(201).json(await svc.enqueueForReview({
+      contentItemId: req.params.id,
+      reasonCode,
+      priority,
+    }));
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// POST /admin/kb/items/:id/governance/alert — create an alert on a KB item
+router.post('/kb/items/:id/governance/alert', async (req, res) => {
+  const { alertType, severity, message } = req.body ?? {};
+  if (!alertType || !message) {
+    res.status(400).json({ error: 'alertType and message are required' });
+    return;
+  }
+  try {
+    res.status(201).json(await svc.createAlert({
+      contentItemId: req.params.id,
+      alertType,
+      severity,
+      message,
+    }));
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// POST /admin/kb/items/:id/governance/publish-decision
+router.post('/kb/items/:id/governance/publish-decision', async (req, res) => {
+  const adminUsername = (req as unknown as AdminReq).adminUsername;
+  const { decision, reasonCode, notes } = req.body ?? {};
+  if (!decision || !['approved', 'rejected', 'deferred'].includes(decision)) {
+    res.status(400).json({ error: 'decision must be approved, rejected, or deferred' });
+    return;
+  }
+  try {
+    res.status(201).json(await svc.recordPublishDecision({
+      contentItemId: req.params.id,
+      decision,
+      reasonCode,
+      notes,
+      decidedByUserId: adminUsername,
+    }));
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
 export default router;
