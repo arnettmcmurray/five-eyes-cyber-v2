@@ -321,7 +321,7 @@ export default function TtxScenarioEdit() {
             <div className="flex gap-3 mt-2">
             <button onClick={() => setEditingMeta(true)} className="text-xs text-blue-600 hover:underline">Edit</button>
             {scenario.objective && (
-              <button onClick={draftScenarioWithAI} disabled={aiDrafting}
+              <button onClick={() => draftScenarioWithAI()} disabled={aiDrafting}
                 className="text-xs text-purple-600 hover:underline disabled:opacity-50">
                 {aiDrafting ? 'Drafting…' : '✦ Draft structure with AI'}
               </button>
