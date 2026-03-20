@@ -10,12 +10,14 @@ import AdminProgress from './pages/AdminProgress';
 import AdminAssignments from './pages/AdminAssignments';
 import AdminLogin from './pages/AdminLogin';
 import AdminProfile from './pages/AdminProfile';
+/* TTX isolated from staging build
 import TtxScenarios from './pages/TtxScenarios';
 import TtxScenarioEdit from './pages/TtxScenarioEdit';
 import TtxSessions from './pages/TtxSessions';
 import TtxConsole from './pages/TtxConsole';
 import TtxAAR from './pages/TtxAAR';
 import TtxParticipant from './pages/TtxParticipant';
+*/
 
 export default function App() {
   return (
