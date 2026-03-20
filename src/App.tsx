@@ -32,12 +32,14 @@ export default function App() {
         <Route path="/admin/assignments" element={<AdminAssignments />} />
         <Route path="/learn" element={<LearnHub />} />
         <Route path="/learn/modules/:id" element={<LearnModule />} />
+        {/* TTX routes safely isolated prior to AWS launch
         <Route path="/ttx/scenarios" element={<TtxScenarios />} />
         <Route path="/ttx/scenarios/:id" element={<TtxScenarioEdit />} />
         <Route path="/ttx/sessions" element={<TtxSessions />} />
         <Route path="/ttx/sessions/:id" element={<TtxConsole />} />
         <Route path="/ttx/sessions/:id/aar" element={<TtxAAR />} />
         <Route path="/ttx/sessions/:id/participate" element={<TtxParticipant />} />
+        */}
         <Route path="*" element={<Navigate to="/learn" replace />} />
       </Routes>
     </BrowserRouter>

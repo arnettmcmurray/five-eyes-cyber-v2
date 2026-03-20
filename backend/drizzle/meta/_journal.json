@@ -1,1 +1,13 @@
-{"version":"6","dialect":"postgresql","entries":[]}
+{
+  "version": "6",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1773952167632,
+      "tag": "0000_heavy_redwing",
+      "breakpoints": true
+    }
+  ]
+}
