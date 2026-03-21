@@ -8,9 +8,9 @@
 ## Admin Accounts Seeded
 Four real admin accounts seeded (email as username):
 - arnettmcmurray@gmail.com
-- mike@fiveeyesltd.com
-- darren.mott@fiveeyesltd.com
-- support@fiveeyesltd.com
+- michaelm@fiveyesltd.com
+- dmott@fiveyesltd.com
+- support@fiveyesltd.com
 
 All use ADMIN_PASSWORD from .env. No generic 'admin' user — stale one deleted on startup.
 server.ts seeds on startup (idempotent — skips if username already exists).

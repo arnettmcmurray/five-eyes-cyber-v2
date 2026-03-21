@@ -257,6 +257,46 @@ export const api = {
         `${BASE}/ttx/sessions/${sessionId}/stream?token=${getAdminToken() ?? ''}&x-api-key=${API_KEY}`,
     },
   },
+  governance: {
+    trustLevels: () => adminReq<SourceTrustLevel[]>('GET', '/admin/source-trust-levels'),
+    sources: {
+      list: () => adminReq<Source[]>('GET', '/admin/sources'),
+      get: (id: string) => adminReq<Source>('GET', `/admin/sources/${id}`),
+      create: (body: Partial<Source>) => adminReq<Source>('POST', '/admin/sources', body),
+      update: (id: string, body: Partial<Source>) => adminReq<Source>('PATCH', `/admin/sources/${id}`, body),
+    },
+    freshnessRules: {
+      list: () => adminReq<FreshnessRule[]>('GET', '/admin/freshness-rules'),
+      create: (body: Partial<FreshnessRule>) => adminReq<FreshnessRule>('POST', '/admin/freshness-rules', body),
+      update: (id: string, body: Partial<FreshnessRule>) => adminReq<FreshnessRule>('PATCH', `/admin/freshness-rules/${id}`, body),
+    },
+    reviewQueue: {
+      list: (params?: { status?: string; priority?: string }) => {
+        const qs = params ? '?' + new URLSearchParams(params as Record<string, string>).toString() : '';
+        return adminReq<ReviewQueueItem[]>('GET', `/admin/review-queue${qs}`);
+      },
+      get: (id: string) => adminReq<ReviewQueueItem>('GET', `/admin/review-queue/${id}`),
+      decision: (id: string, body: { status: string; resolutionNotes?: string }) => adminReq<ReviewQueueItem>('POST', `/admin/review-queue/${id}/decision`, body),
+    },
+    contentAlerts: {
+      list: (params?: { status?: string; severity?: string }) => {
+        const qs = params ? '?' + new URLSearchParams(params as Record<string, string>).toString() : '';
+        return adminReq<ContentAlert[]>('GET', `/admin/content-alerts${qs}`);
+      },
+      update: (id: string, body: { status: string }) => adminReq<ContentAlert>('PATCH', `/admin/content-alerts/${id}`, body),
+    },
+    summary: () => adminReq<GovernanceAdminSummary>('GET', '/admin/kb/governance-summary'),
+    staleScan: () => adminReq<{ flagged: number; items: any[] }>('GET', '/admin/kb/governance/stale-scan'),
+    runScan: () => adminReq<{ itemsScanned: number; nextReviewAtSet: number; freshnessUpdated: number; reviewQueueEnqueued: number; alertsCreated: number }>('POST', '/admin/kb/governance/run-scan', {}),
+    backfill: () => adminReq<{ updated: number }>('POST', '/admin/kb/governance/backfill', {}),
+  },
+  itemsGov: {
+    summary: (id: string) => adminReq<KBGovernanceSummary>('GET', `/admin/kb/items/${id}/governance`),
+    update: (id: string, body: Partial<KBGovernanceSummary['item']>) => adminReq<KBItem>('PATCH', `/admin/kb/items/${id}/governance`, body),
+    enqueue: (id: string, body: { reasonCode?: string; priority?: string }) => adminReq<ReviewQueueItem>('POST', `/admin/kb/items/${id}/governance/enqueue`, body),
+    alert: (id: string, body: { alertType: string; severity?: string; message: string }) => adminReq<ContentAlert>('POST', `/admin/kb/items/${id}/governance/alert`, body),
+    publishDecision: (id: string, body: { decision: string; reasonCode?: string; notes?: string }) => adminReq<PublishDecision>('POST', `/admin/kb/items/${id}/governance/publish-decision`, body),
+  },
 };
 
 export interface KBItem {
@@ -271,6 +311,16 @@ export interface KBItem {
   createdAt: string;
   updatedAt: string;
   currentRevisionId: string | null;
+  reviewStatus: string | null;
+  freshnessStatus: string | null;
+  freshnessCycle: string | null;
+  nextReviewAt: string | null;
+  lastReviewedAt: string | null;
+  sourceId: string | null;
+  sourceUrl: string | null;
+  sourceTrustLevelId: string | null;
+  learnerVisible: boolean;
+  publishedAt: string | null;
 }
 
 export interface QuizCandidate {
@@ -639,4 +689,101 @@ export interface WorkflowEvent {
   fromStatus: string;
   toStatus: string;
   performedAt: string;
+}
+
+export interface SourceTrustLevel {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  rank: number;
+}
+
+export interface Source {
+  id: string;
+  name: string;
+  sourceType: string;
+  domain: string;
+  baseUrl: string | null;
+  trustLevelId: string;
+  status: string;
+  ingestMode: string;
+  ownerUserId: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FreshnessRule {
+  id: string;
+  appliesToType: string;
+  appliesToValue: string;
+  reviewAfterDays: number;
+  expireAfterDays: number;
+  alertBeforeDays: number | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReviewQueueItem {
+  id: string;
+  contentItemId: string;
+  sourceId: string | null;
+  reasonCode: string;
+  priority: string;
+  status: string;
+  assignedToUserId: string | null;
+  resolutionNotes: string | null;
+  resolvedByUserId: string | null;
+  openedAt: string;
+  resolvedAt: string | null;
+}
+
+export interface ContentAlert {
+  id: string;
+  contentItemId: string;
+  sourceId: string | null;
+  alertType: string;
+  severity: string;
+  status: string;
+  message: string;
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
+export interface GovernanceAdminSummary {
+  total: number;
+  published: number;
+  learnerVisible: number;
+  byReviewStatus: Record<string, number>;
+  byFreshnessStatus: Record<string, number>;
+  openAlerts: number;
+  criticalAlerts: number;
+  pendingReviews: number;
+  blockingReviews: number;
+}
+
+export interface PublishDecision {
+  id: string;
+  contentItemId: string;
+  decision: string;
+  reasonCode: string | null;
+  notes: string | null;
+  decidedByUserId: string;
+  decidedAt: string;
+}
+
+export interface KBGovernanceSummary {
+  item: {
+    id: string; slug: string; title: string; status: string;
+    reviewStatus: string | null; freshnessStatus: string | null; freshnessCycle: string | null;
+    learnerVisible: boolean; lastReviewedAt: string | null; nextReviewAt: string | null;
+    publishedAt: string | null; sourceId: string | null; sourceUrl: string | null; sourceTrustLevelId: string | null;
+  };
+  source: Source | null;
+  trustLevel: SourceTrustLevel | null;
+  openReviewItems: ReviewQueueItem[];
+  openAlerts: ContentAlert[];
+  recentDecisions: PublishDecision[];
 }

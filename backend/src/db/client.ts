@@ -7,6 +7,11 @@ if (!connectionString) {
   throw new Error('DATABASE_URL environment variable is required');
 }
 
-const pool = new Pool({ connectionString });
+const pool = new Pool({ 
+  connectionString,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 export const db = drizzle(pool, { schema });
 export type DB = typeof db;

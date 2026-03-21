@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api, type KBItem, type WorkflowEvent, type Topic, type TopicRelationship, type Revision, type LessonLink, type QuizCandidate, type LearningModule } from '../api/client';
 import { getAdminUsername } from '../lib/adminSession';
+import ItemGovernanceDetail from '../components/admin/ItemGovernanceDetail';
 
 const WORKFLOW_ACTIONS: Record<string, string[]> = {
   draft: ['submit', 'archive'],
@@ -174,6 +175,9 @@ export default function KBItemDetail() {
           </div>
         )}
       </div>
+
+      {/* Governance details */}
+      <ItemGovernanceDetail itemId={item.id} />
 
       {/* Content */}
       <div>

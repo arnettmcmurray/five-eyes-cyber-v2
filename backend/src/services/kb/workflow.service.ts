@@ -49,6 +49,12 @@ async function transition(
     );
   }
 
+  if (action === 'publish') {
+    if (!item.sourceId && !item.sourceTrustLevelId) {
+      throw new Error("Cannot publish item: Missing required governance tracking. A valid Source or Trust Level must be assigned.");
+    }
+  }
+
   // Update item status
   await db
     .update(kbItems)

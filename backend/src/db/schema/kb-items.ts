@@ -32,7 +32,7 @@ export const kbItems = pgTable('kb_items', {
   reviewStatus:      text('review_status'),          // 'pending' | 'in_review' | 'approved' | 'rejected' | 'deferred'
   freshnessStatus:   text('freshness_status'),       // 'current' | 'stale' | 'expired'
   nextReviewAt:      timestamp('next_review_at'),    // when this item should next be reviewed
-  learnerVisible:    boolean('learner_visible').notNull().default(true),  // false = hidden from learner API
+  learnerVisible:    boolean('learner_visible').notNull().default(false),  // false = hidden from learner API
   createdAt:         timestamp('created_at').notNull().defaultNow(),
   updatedAt:         timestamp('updated_at').notNull().defaultNow(),
 });

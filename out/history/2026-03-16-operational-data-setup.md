@@ -47,7 +47,7 @@ Also imported `or` from `drizzle-orm`.
 
 ### Admin password fixes
 - `arnettmcmurray@gmail.com` was on seed password → changed to `arnett-five-eyes-2026` via change-password API
-- `darren.mott@fiveeyesltd.com` was on seed password → changed to `darren-five-eyes-2026` via change-password API
+- `dmott@fiveyesltd.com` was on seed password → changed to `darren-five-eyes-2026` via change-password API
 - All 4 accounts verified; see out/admin-credentials.md
 
 ## TypeScript

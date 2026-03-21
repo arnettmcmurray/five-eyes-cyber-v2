@@ -86,9 +86,15 @@ app.get('/health', async (_req, res) => {
   try {
     await db.execute(sql`SELECT 1`);
     res.json({ status: 'ok', db: 'ok', ts: new Date().toISOString() });
-  } catch {
+  } catch (err) {
     // DB down — return 503 so load balancers/orchestrators can route around this instance
-    res.status(503).json({ status: 'degraded', db: 'unreachable', ts: new Date().toISOString() });
+    console.error('[Healthcheck] DB Connection failed:', err instanceof Error ? err.message : String(err));
+    res.status(503).json({ 
+      status: 'degraded', 
+      db: 'unreachable', 
+      error: err instanceof Error ? err.message : 'Unknown error',
+      ts: new Date().toISOString() 
+    });
   }
 });
 

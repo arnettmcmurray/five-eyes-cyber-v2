@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, type KBItem, type IngestJob } from '../api/client';
 import { getAdminToken, getAdminUsername, clearAdminSession } from '../lib/adminSession';
+import GovernancePanel from '../components/admin/GovernancePanel';
 
 const STATUSES = ['', 'draft', 'under-review', 'published', 'archived'];
 const TYPES = ['', 'training-content', 'threat-brief', 'policy', 'faq', 'glossary-term'];
@@ -20,6 +21,7 @@ export default function KBAdmin() {
   const [error, setError] = useState<string | null>(null);
   const [showIngest, setShowIngest] = useState(false);
   const [showJobs, setShowJobs] = useState(false);
+  const [showGovernance, setShowGovernance] = useState(false);
   const [jobs, setJobs] = useState<IngestJob[]>([]);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterType, setFilterType] = useState('');
@@ -73,6 +75,12 @@ export default function KBAdmin() {
             title={`Logged in as ${adminUsername}`}
           >
             Logout
+          </button>
+          <button
+            onClick={() => setShowGovernance(v => !v)}
+            className={`px-3 py-2 border rounded text-sm ${showGovernance ? 'bg-gray-100 text-gray-800' : 'text-gray-600 hover:bg-gray-50'}`}
+          >
+            Governance
           </button>
           <button
             onClick={async () => {
@@ -153,6 +161,12 @@ export default function KBAdmin() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {showGovernance && (
+        <div className="mb-6">
+          <GovernancePanel />
         </div>
       )}
 

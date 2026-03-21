@@ -27,7 +27,7 @@ function getClient() {
 
 // POST /ttx/assist/scenario
 // Body: { title: string, objective: string }
-// Returns: { sections: Array<{ title, steps: Array<{ prompt, facilitatorNotes, injects: Array<{ body, injectType, targetRoles, suggestedTimingMinutes }> }> }> }
+// Returns: { executiveSummary, goals, targetAudience, signatureTheme, sections: Array<{ title, background, steps: Array<{ title, facilitatorNarrative, participantSituationRoom, prompts, whatGoodLooksLike, consequenceNote, injects: Array<{ content, injectType, targetRoles, consequenceLogic }> }> }> }
 router.post('/scenario', async (req, res) => {
   const { title, objective } = req.body ?? {};
   const adminUsername = (req as unknown as AdminReq).adminUsername;
@@ -39,26 +39,35 @@ router.post('/scenario', async (req, res) => {
 
   const prompt = `You are a tabletop exercise (TTX) designer for cybersecurity and organizational resilience training.
 
-Given the following scenario title and objective, generate a structured TTX scenario with 3-5 sections, each containing 2-4 steps, each step containing 1-3 injects.
+Given the following scenario title and objective, generate a structured TTX scenario in the "Executive Standard" format.
 
 Title: ${title}
 Objective: ${objective}
 
 Return ONLY valid JSON in this exact shape:
 {
+  "executiveSummary": "High-level summary for leadership",
+  "goals": ["Goal 1", "Goal 2"],
+  "targetAudience": ["Role 1", "Role 2"],
+  "signatureTheme": "e.g. Physical-Cyber Convergence",
   "sections": [
     {
       "title": "Section title",
+      "background": "Context for this phase",
       "steps": [
         {
-          "prompt": "Discussion prompt for facilitator",
-          "facilitatorNotes": "Optional background or facilitator guidance",
+          "title": "Step title",
+          "facilitatorNarrative": "Facilitator-only read-aloud text",
+          "participantSituationRoom": "Public narrative feed for learners",
+          "prompts": ["Question 1", "Question 2"],
+          "whatGoodLooksLike": "Guidance for facilitator on ideal responses",
+          "consequenceNote": "Instruction for branching or pacing",
           "injects": [
             {
-              "body": "The inject message delivered to participants",
-              "injectType": "technical|legal|media|customer|other",
+              "content": "The inject message delivered to participants",
+              "injectType": "technical|legal|media|regulatory|other",
               "targetRoles": ["CISO", "Legal"],
-              "suggestedTimingMinutes": 10
+              "consequenceLogic": "How this inject changes the scenario landscape"
             }
           ]
         }
@@ -68,11 +77,10 @@ Return ONLY valid JSON in this exact shape:
 }
 
 Rules:
-- injectType must be one of: technical, legal, media, customer, other
-- targetRoles is an array of role strings (can be empty [])
-- suggestedTimingMinutes is a number (minutes) or null
+- injectType must be one of: technical, legal, media, regulatory, other
+- targetRoles is an array of role strings
 - Make injects realistic, concrete, and progressively escalating
-- facilitatorNotes should help the facilitator guide discussion, not repeat the inject
+- facilitatorNarrative should be distinct from the participantSituatonRoom text
 - Return only the JSON, no prose`;
 
   try {
@@ -105,7 +113,7 @@ Rules:
 
 // POST /ttx/assist/injects
 // Body: { stepPrompt: string, scenarioContext?: string, count?: number }
-// Returns: { injects: Array<{ body, injectType, targetRoles, suggestedTimingMinutes }> }
+// Returns: { injects: Array<{ content, injectType, targetRoles, consequenceLogic }> }
 router.post('/injects', async (req, res) => {
   const { stepPrompt, scenarioContext, count = 3 } = req.body ?? {};
   const adminUsername = (req as unknown as AdminReq).adminUsername;
@@ -124,20 +132,19 @@ Return ONLY valid JSON in this shape:
 {
   "injects": [
     {
-      "body": "The inject message delivered to participants",
-      "injectType": "technical|legal|media|customer|other",
+      "content": "The inject message delivered to participants",
+      "injectType": "technical|legal|media|regulatory|other",
       "targetRoles": ["CISO"],
-      "suggestedTimingMinutes": 10
+      "consequenceLogic": "How this inject changes the scenario landscape"
     }
   ]
 }
 
 Rules:
-- injectType must be one of: technical, legal, media, customer, other
+- injectType must be one of: technical, legal, media, regulatory, other
 - targetRoles is an array (can be empty [])
-- suggestedTimingMinutes is a number or null
 - Each inject should be distinct in type, angle, or severity
-- Keep inject body concise and actionable (1-3 sentences)
+- Keep inject content concise and actionable (1-3 sentences)
 - Return only the JSON, no prose`;
 
   try {

@@ -4,12 +4,13 @@ import { eq, asc, count, sql } from 'drizzle-orm';
 import { db } from '../../db/client.js';
 import {
   ttxScenarios,
-  ttxSessions,
-  ttxSessionParticipants,
-  ttxSessionEvents,
-  ttxAfterActionReviews,
+  ttxExerciseRuns,
+  ttxRunParticipants,
+  ttxRunEvents,
   ttxActionItems,
   ttxInjects,
+  ttxScenarioSections,
+  ttxScenarioSteps,
 } from '../../db/schema/ttx.js';
 import { adminUsers } from '../../db/schema/admin-auth.js';
 import { addClient, broadcast } from '../../lib/ttx-sse.js';
@@ -23,7 +24,7 @@ type AdminReq = Request & { adminUsername: string };
 // ---------------------------------------------------------------------------
 
 async function getSession(id: string) {
-  const [session] = await db.select().from(ttxSessions).where(eq(ttxSessions.id, id)).limit(1);
+  const [session] = await db.select().from(ttxExerciseRuns).where(eq(ttxExerciseRuns.id, id)).limit(1);
   return session ?? null;
 }
 
@@ -31,8 +32,8 @@ async function getSessionDetail(id: string) {
   const session = await getSession(id);
   if (!session) return null;
   const [participants, events] = await Promise.all([
-    db.select().from(ttxSessionParticipants).where(eq(ttxSessionParticipants.sessionId, id)).orderBy(asc(ttxSessionParticipants.joinedAt)),
-    db.select().from(ttxSessionEvents).where(eq(ttxSessionEvents.sessionId, id)).orderBy(asc(ttxSessionEvents.occurredAt)),
+    db.select().from(ttxRunParticipants).where(eq(ttxRunParticipants.runId, id)).orderBy(asc(ttxRunParticipants.joinedAt)),
+    db.select().from(ttxRunEvents).where(eq(ttxRunEvents.runId, id)).orderBy(asc(ttxRunEvents.occurredAt)),
   ]);
   return { ...session, participants, events };
 }
@@ -59,20 +60,20 @@ router.get('/:id/stream', async (req, res) => {
 
 // GET /ttx/sessions
 router.get('/', async (_req, res) => {
-  const rows = await db.select().from(ttxSessions).orderBy(asc(ttxSessions.createdAt));
+  const rows = await db.select().from(ttxExerciseRuns).orderBy(asc(ttxExerciseRuns.createdAt));
   const counts = await db
-    .select({ sessionId: ttxSessionParticipants.sessionId, n: count(ttxSessionParticipants.id) })
-    .from(ttxSessionParticipants)
-    .groupBy(ttxSessionParticipants.sessionId);
-  const countMap = Object.fromEntries(counts.map(c => [c.sessionId, c.n]));
+    .select({ runId: ttxRunParticipants.runId, n: count(ttxRunParticipants.id) })
+    .from(ttxRunParticipants)
+    .groupBy(ttxRunParticipants.runId);
+  const countMap = Object.fromEntries(counts.map(c => [c.runId, c.n]));
   res.json(rows.map(r => ({ ...r, participantCount: countMap[r.id] ?? 0 })));
 });
 
 // POST /ttx/sessions — create (status: planned)
 router.post('/', async (req, res) => {
-  const { scenarioId, title, scheduledAt } = req.body ?? {};
+  const { scenarioId, scheduledAt } = req.body ?? {};
   const adminUsername = (req as unknown as AdminReq).adminUsername;
-  if (!scenarioId || !title) { res.status(400).json({ error: 'scenarioId and title are required' }); return; }
+  if (!scenarioId) { res.status(400).json({ error: 'scenarioId is required' }); return; }
 
   let scheduledAtDate: Date | null = null;
   if (scheduledAt !== undefined && scheduledAt !== null) {
@@ -86,13 +87,40 @@ router.post('/', async (req, res) => {
   const [admin] = await db.select({ id: adminUsers.id }).from(adminUsers).where(eq(adminUsers.username, adminUsername)).limit(1);
   if (!admin) { res.status(400).json({ error: 'Facilitator admin account not found' }); return; }
 
-  const [scenario] = await db.select({ id: ttxScenarios.id }).from(ttxScenarios).where(eq(ttxScenarios.id, scenarioId)).limit(1);
+  const [scenario] = await db.select().from(ttxScenarios).where(eq(ttxScenarios.id, scenarioId)).limit(1);
   if (!scenario) { res.status(404).json({ error: 'Scenario not found' }); return; }
 
-  const [row] = await db.insert(ttxSessions).values({
-    id: uuid(), scenarioId, title,
+  // Snapshot the scenario content at creation time
+  const sections = await db.select().from(ttxScenarioSections).where(eq(ttxScenarioSections.scenarioId, scenarioId)).orderBy(asc(ttxScenarioSections.order));
+  const allSteps: (typeof ttxScenarioSteps.$inferSelect)[] = [];
+  for (const s of sections) {
+    const steps = await db.select().from(ttxScenarioSteps).where(eq(ttxScenarioSteps.sectionId, s.id)).orderBy(asc(ttxScenarioSteps.order));
+    allSteps.push(...steps);
+  }
+  const allInjects: (typeof ttxInjects.$inferSelect)[] = [];
+  for (const st of allSteps) {
+    const injects = await db.select().from(ttxInjects).where(eq(ttxInjects.stepId, st.id)).orderBy(asc(ttxInjects.order));
+    allInjects.push(...injects);
+  }
+
+  const snapshot = {
+    ...scenario,
+    sections: sections.map(sec => ({
+      ...sec,
+      steps: allSteps.filter(step => step.sectionId === sec.id).map(step => ({
+        ...step,
+        injects: allInjects.filter(inj => inj.stepId === step.id)
+      }))
+    }))
+  };
+
+  const [row] = await db.insert(ttxExerciseRuns).values({
+    id: uuid(),
+    scenarioId,
+    snapshot,
     scheduledAt: scheduledAtDate,
-    status: 'planned', facilitatorId: admin.id,
+    status: 'planned',
+    facilitatorId: admin.id,
   }).returning();
   res.status(201).json(row);
 });
@@ -110,7 +138,7 @@ router.post('/:id/start', async (req, res) => {
   if (!session) { res.status(404).json({ error: 'Not found' }); return; }
   if (session.status !== 'planned') { res.status(400).json({ error: `Cannot start: session is ${session.status}` }); return; }
 
-  const [row] = await db.update(ttxSessions).set({ status: 'active', startedAt: new Date() }).where(eq(ttxSessions.id, req.params.id)).returning();
+  const [row] = await db.update(ttxExerciseRuns).set({ status: 'active', startedAt: new Date() }).where(eq(ttxExerciseRuns.id, req.params.id)).returning();
   broadcast(req.params.id, { type: 'session_started', session: row });
   res.json(row);
 });
@@ -121,32 +149,46 @@ router.post('/:id/end', async (req, res) => {
   if (!session) { res.status(404).json({ error: 'Not found' }); return; }
   if (session.status !== 'active') { res.status(400).json({ error: `Cannot end: session is ${session.status}` }); return; }
 
-  const [row] = await db.update(ttxSessions).set({ status: 'ended', endedAt: new Date() }).where(eq(ttxSessions.id, req.params.id)).returning();
+  const [row] = await db.update(ttxExerciseRuns).set({ status: 'complete', endedAt: new Date() }).where(eq(ttxExerciseRuns.id, req.params.id)).returning();
   broadcast(req.params.id, { type: 'session_ended', session: row });
   res.json(row);
 });
 
-// POST /ttx/sessions/:id/advance — deliver inject, set currentInjectId
+// POST /ttx/sessions/:id/advance — deliver step or inject
 router.post('/:id/advance', async (req, res) => {
-  const { injectId } = req.body ?? {};
+  const { stepId, injectId } = req.body ?? {};
   const adminUsername = (req as unknown as AdminReq).adminUsername;
   const session = await getSession(req.params.id);
   if (!session) { res.status(404).json({ error: 'Not found' }); return; }
   if (session.status !== 'active') { res.status(400).json({ error: 'Session is not active' }); return; }
-  if (!injectId) { res.status(400).json({ error: 'injectId is required' }); return; }
 
-  const [inject] = await db.select().from(ttxInjects).where(eq(ttxInjects.id, injectId)).limit(1);
-  if (!inject) { res.status(404).json({ error: 'Inject not found' }); return; }
+  if (stepId) {
+    const [step] = await db.select().from(ttxScenarioSteps).where(eq(ttxScenarioSteps.id, stepId)).limit(1);
+    if (!step) { res.status(404).json({ error: 'Step not found' }); return; }
+    await db.update(ttxExerciseRuns).set({ currentStepId: stepId }).where(eq(ttxExerciseRuns.id, session.id));
+    const [event] = await db.insert(ttxRunEvents).values({
+      id: uuid(), runId: session.id, eventType: 'narrative_delivered',
+      actorHandle: adminUsername, body: step.participantSituationRoom,
+    }).returning();
+    broadcast(req.params.id, { type: 'step_advanced', currentStepId: stepId, step, event });
+    res.json({ currentStepId: stepId, event });
+    return;
+  }
 
-  await db.update(ttxSessions).set({ currentInjectId: injectId }).where(eq(ttxSessions.id, session.id));
-  const [event] = await db.insert(ttxSessionEvents).values({
-    id: uuid(), sessionId: session.id, eventType: 'inject_delivered',
-    actorHandle: adminUsername, body: inject.body, linkedInjectId: injectId,
-  }).returning();
+  if (injectId) {
+    const [inject] = await db.select().from(ttxInjects).where(eq(ttxInjects.id, injectId)).limit(1);
+    if (!inject) { res.status(404).json({ error: 'Inject not found' }); return; }
+    await db.update(ttxExerciseRuns).set({ currentStepId: injectId }).where(eq(ttxExerciseRuns.id, session.id));
+    const [event] = await db.insert(ttxRunEvents).values({
+      id: uuid(), runId: session.id, eventType: 'inject_delivered',
+      actorHandle: adminUsername, body: inject.content, linkedInjectId: injectId,
+    }).returning();
+    broadcast(req.params.id, { type: 'inject_advanced', currentStepId: injectId, inject, event });
+    res.json({ currentStepId: injectId, event });
+    return;
+  }
 
-  const data = { type: 'inject_advanced', currentInjectId: injectId, inject: { ...inject, targetRoles: JSON.parse(inject.targetRoles ?? '[]') }, event };
-  broadcast(req.params.id, data);
-  res.json({ currentInjectId: injectId, event });
+  res.status(400).json({ error: 'stepId or injectId is required' });
 });
 
 // POST /ttx/sessions/:id/join — admin force-add participant
@@ -156,17 +198,17 @@ router.post('/:id/join', async (req, res) => {
 
   const session = await getSession(req.params.id);
   if (!session) { res.status(404).json({ error: 'Session not found' }); return; }
-  if (session.status === 'ended') { res.status(400).json({ error: 'Session has ended' }); return; }
+  if (session.status === 'complete') { res.status(400).json({ error: 'Session has ended' }); return; }
 
-  const all = await db.select().from(ttxSessionParticipants).where(eq(ttxSessionParticipants.sessionId, session.id));
+  const all = await db.select().from(ttxRunParticipants).where(eq(ttxRunParticipants.runId, session.id));
   const match = all.find(p => p.handle === handle);
 
   if (match) {
-    const [row] = await db.update(ttxSessionParticipants).set({ role: role ?? match.role }).where(eq(ttxSessionParticipants.id, match.id)).returning();
+    const [row] = await db.update(ttxRunParticipants).set({ role: role ?? match.role }).where(eq(ttxRunParticipants.id, match.id)).returning();
     broadcast(req.params.id, { type: 'participant_joined', participant: row });
     res.json(row);
   } else {
-    const [row] = await db.insert(ttxSessionParticipants).values({ id: uuid(), sessionId: session.id, handle, role: role ?? '' }).returning();
+    const [row] = await db.insert(ttxRunParticipants).values({ id: uuid(), runId: session.id, handle, role: role ?? '' }).returning();
     broadcast(req.params.id, { type: 'participant_joined', participant: row });
     res.status(201).json(row);
   }
@@ -182,8 +224,8 @@ router.post('/:id/events', async (req, res) => {
   if (!session) { res.status(404).json({ error: 'Session not found' }); return; }
   if (session.status !== 'active') { res.status(400).json({ error: 'Session is not active' }); return; }
 
-  const [event] = await db.insert(ttxSessionEvents).values({
-    id: uuid(), sessionId: session.id, eventType, actorHandle, body,
+  const [event] = await db.insert(ttxRunEvents).values({
+    id: uuid(), runId: session.id, eventType, actorHandle, body,
     linkedInjectId: linkedInjectId ?? null,
   }).returning();
   broadcast(req.params.id, { type: 'event_logged', event });
@@ -195,51 +237,33 @@ router.post('/:id/events', async (req, res) => {
 // ---------------------------------------------------------------------------
 
 router.post('/:id/aar', async (req, res) => {
-  const { summary, strengths, improvements } = req.body ?? {};
-  const adminUsername = (req as unknown as AdminReq).adminUsername;
-
+  // In v1 Executive Standard, AAR data is stored in the ExerciseRun 'decisions' or 'snapshot'
+  // and Action Items. This endpoint can be used to update the Run summary.
+  const { summary } = req.body ?? {};
   const session = await getSession(req.params.id);
   if (!session) { res.status(404).json({ error: 'Session not found' }); return; }
 
-  const [existing] = await db.select().from(ttxAfterActionReviews).where(eq(ttxAfterActionReviews.sessionId, session.id)).limit(1);
-  if (existing) {
-    const [row] = await db.update(ttxAfterActionReviews).set({
-      ...(summary !== undefined && { summary }),
-      ...(strengths !== undefined && { strengths }),
-      ...(improvements !== undefined && { improvements }),
-      updatedAt: new Date(),
-    }).where(eq(ttxAfterActionReviews.id, existing.id)).returning();
-    res.json(row);
-  } else {
-    const [row] = await db.insert(ttxAfterActionReviews).values({
-      id: uuid(), sessionId: session.id,
-      summary: summary ?? '', strengths: strengths ?? '', improvements: improvements ?? '',
-      status: 'draft', createdBy: adminUsername,
-    }).returning();
-    res.status(201).json(row);
-  }
+  const [row] = await db.update(ttxExerciseRuns)
+    .set({ decisions: { ...(session.decisions as object), summary: summary ?? '' } })
+    .where(eq(ttxExerciseRuns.id, session.id))
+    .returning();
+  res.json(row);
 });
 
 router.get('/:id/aar', async (req, res) => {
   const session = await getSession(req.params.id);
   if (!session) { res.status(404).json({ error: 'Session not found' }); return; }
 
-  const [aar] = await db.select().from(ttxAfterActionReviews).where(eq(ttxAfterActionReviews.sessionId, session.id)).limit(1);
-  if (!aar) { res.status(404).json({ error: 'No AAR yet' }); return; }
-
-  const actionItems = await db.select().from(ttxActionItems).where(eq(ttxActionItems.aarId, aar.id)).orderBy(asc(ttxActionItems.dueAt));
-  res.json({ ...aar, actionItems });
+  const actionItems = await db.select().from(ttxActionItems).where(eq(ttxActionItems.runId, session.id)).orderBy(asc(ttxActionItems.dueAt));
+  res.json({ ...(session.decisions as object), actionItems });
 });
 
 router.patch('/:id/aar/finalize', async (req, res) => {
   const session = await getSession(req.params.id);
   if (!session) { res.status(404).json({ error: 'Session not found' }); return; }
+  if (session.status === 'complete') { res.status(400).json({ error: 'Already finalized' }); return; }
 
-  const [aar] = await db.select().from(ttxAfterActionReviews).where(eq(ttxAfterActionReviews.sessionId, session.id)).limit(1);
-  if (!aar) { res.status(404).json({ error: 'No AAR to finalize' }); return; }
-  if (aar.status === 'final') { res.status(400).json({ error: 'Already finalized' }); return; }
-
-  const [row] = await db.update(ttxAfterActionReviews).set({ status: 'final', updatedAt: new Date() }).where(eq(ttxAfterActionReviews.id, aar.id)).returning();
+  const [row] = await db.update(ttxExerciseRuns).set({ status: 'complete', endedAt: new Date() }).where(eq(ttxExerciseRuns.id, session.id)).returning();
   res.json(row);
 });
 
@@ -253,7 +277,7 @@ function parseDateField(value: unknown, fieldName: string): { date: Date | null;
 }
 
 router.post('/:id/aar/action-items', async (req, res) => {
-  const { body, owner, dueAt } = req.body ?? {};
+  const { title, body, owner, dueAt } = req.body ?? {};
   if (!body) { res.status(400).json({ error: 'body is required' }); return; }
 
   const { date: dueAtDate, error: dueAtErr } = parseDateField(dueAt, 'dueAt');
@@ -262,12 +286,8 @@ router.post('/:id/aar/action-items', async (req, res) => {
   const session = await getSession(req.params.id);
   if (!session) { res.status(404).json({ error: 'Session not found' }); return; }
 
-  const [aar] = await db.select({ id: ttxAfterActionReviews.id, status: ttxAfterActionReviews.status }).from(ttxAfterActionReviews).where(eq(ttxAfterActionReviews.sessionId, session.id)).limit(1);
-  if (!aar) { res.status(404).json({ error: 'Create the AAR first' }); return; }
-  if (aar.status === 'final') { res.status(400).json({ error: 'AAR is finalized' }); return; }
-
   const [row] = await db.insert(ttxActionItems).values({
-    id: uuid(), aarId: aar.id, body, owner: owner ?? '',
+    id: uuid(), runId: session.id, title: title ?? '', body, owner: owner ?? '',
     dueAt: dueAtDate, status: 'open',
   }).returning();
   res.status(201).json(row);
@@ -300,15 +320,11 @@ router.get('/:id/export', async (req, res) => {
   const session = await getSession(req.params.id);
   if (!session) { res.status(404).json({ error: 'Not found' }); return; }
 
-  const [scenario] = await db.select().from(ttxScenarios).where(eq(ttxScenarios.id, session.scenarioId)).limit(1);
-  const [participants, events] = await Promise.all([
-    db.select().from(ttxSessionParticipants).where(eq(ttxSessionParticipants.sessionId, session.id)).orderBy(asc(ttxSessionParticipants.joinedAt)),
-    db.select().from(ttxSessionEvents).where(eq(ttxSessionEvents.sessionId, session.id)).orderBy(asc(ttxSessionEvents.occurredAt)),
-  ]);
-  const [aar] = await db.select().from(ttxAfterActionReviews).where(eq(ttxAfterActionReviews.sessionId, session.id)).limit(1);
-  const actionItems = aar ? await db.select().from(ttxActionItems).where(eq(ttxActionItems.aarId, aar.id)).orderBy(asc(ttxActionItems.dueAt)) : [];
+  const participants = await db.select().from(ttxRunParticipants).where(eq(ttxRunParticipants.runId, session.id)).orderBy(asc(ttxRunParticipants.joinedAt));
+  const events = await db.select().from(ttxRunEvents).where(eq(ttxRunEvents.runId, session.id)).orderBy(asc(ttxRunEvents.occurredAt));
+  const actionItems = await db.select().from(ttxActionItems).where(eq(ttxActionItems.runId, session.id)).orderBy(asc(ttxActionItems.dueAt));
 
-  res.json({ session, scenario: scenario ?? null, participants, events, aar: aar ? { ...aar, actionItems } : null });
+  res.json({ session, participants, events, actionItems });
 });
 
 export default router;
