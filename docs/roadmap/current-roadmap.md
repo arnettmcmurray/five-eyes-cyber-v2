@@ -25,15 +25,15 @@ This roadmap defines the prioritized execution order to reach a stable, governed
 - [x] **3B: Portal Dashboards**: Built and wired Admin and Learner overview pages.
 - [x] **3C: TTX v1 Thin Slice**: Re-integrated core TTX routes into the main application.
 
-### Phase 4: TTX v1 "Executive Standard" (Status: IN PROGRESS)
+### Phase 4: TTX v1 "Executive Standard" (Status: COMPLETED)
 - [x] **4A: Product Standard**: Defined `ttx-executive-standard.md` and "Scenario -> Sections -> Steps" model.
 - [x] **4B: Flagship Scenario**: Created high-fidelity `compromised-at-the-perimeter.md`.
-- [ ] **4C: Schema Refinement**: Implement the full TTX domain model (Scenario/Section/Step/Inject/Run/Action).
-- [ ] **4D: Facilitator/Participant UI**: Build the Conduct Mode and Situation Room interfaces.
-- [ ] **4E: Action Catalog**: Implement the persistent remediation tracking and AAR workflow.
+- [x] **4C: Schema Refinement**: Implement the full TTX domain model (Scenario/Section/Step/Inject/Run/Action).
+- [x] **4D: Facilitator/Participant UI**: Build the Conduct Mode and Situation Room interfaces.
+- [x] **4E: Action Catalog**: Implement the persistent remediation tracking and AAR workflow.
 
-### Phase 5: Meaningful Staging Validation (Status: NEXT)
-- [ ] **5A: Frontend Deployment**: Build and deploy the frontend to AWS (S3/CloudFront).
+### Phase 5: Meaningful Staging Validation (Status: IN PROGRESS)
+- [/] **5A: Frontend Deployment**: Build and deploy the frontend to AWS (S3/CloudFront).
 - [ ] **5B: End-to-End Smoke**: Verify full path on the staging environment.
 
 ### Phase 6: Style Pass (Status: LATER)

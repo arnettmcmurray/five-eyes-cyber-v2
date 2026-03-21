@@ -16,11 +16,17 @@ This directory contains the executive-grade specifications and content for the F
 
 - **[Industry Standard Scenarios](file:///Users/arnettmcmurray/Desktop/five-eyes-dashboard-v2/docs/ttx/reference/)**: Raw material from NIST, CIS, and FEMA used to ground our simulations.
 
-## Implementation Path
+## Operational Surfaces
 
-The TTX system is currently in the **Build Execution** phase:
+The TTX platform provides three primary interfaces for exercise management and execution:
 
-1.  **Architecture**: Finalized schema for the "Scenario -> Sections -> Steps" hierarchy.
-2.  **Content**: Authored the flagship "Compromised at the Perimeter" scenario.
-3.  **UI/UX**: Designing the **Conduct Mode** (Facilitator) and **Situation Room** (Participant) surfaces.
-4.  **Output**: Implementing the **Action Catalog** for persistent remediation tracking.
+- **[Facilitator Conduct Mode](file:///Users/arnettmcmurray/Desktop/five-eyes-dashboard-v2/src/pages/TtxConduct.tsx)**: The command center for managing the narrative flow, delivering tactical injects, and monitoring participant decision-making in real-time.
+- **[Participant Situation Room](file:///Users/arnettmcmurray/Desktop/five-eyes-dashboard-v2/src/pages/TtxParticipate.tsx)**: The immersive interface where learners receive narratives and tactical updates, and commit their decisions to the official record.
+- **[After-Action Review (AAR)](file:///Users/arnettmcmurray/Desktop/five-eyes-dashboard-v2/src/pages/TtxAAR.tsx)**: The post-mission reporting module for drafting executive summaries and tracking prioritized remediation findings in the **Action Catalog**.
+
+## Workflow
+
+1.  **Scenario Authoring**: Use the [Scenario Editor](file:///Users/arnettmcmurray/Desktop/five-eyes-dashboard-v2/src/pages/TtxScenarioEdit.tsx) to define the Sections, Steps, and Injects based on the [Executive Standard](file:///Users/arnettmcmurray/Desktop/five-eyes-dashboard-v2/docs/ttx/ttx-executive-standard.md).
+2.  **Session Initialization**: Create a new session from the [TTX Sessions Dashboard](file:///Users/arnettmcmurray/Desktop/five-eyes-dashboard-v2/src/pages/TtxSessions.tsx).
+3.  **Exercise Conduct**: The facilitator uses **Conduct Mode** to advance through the narrative. Participants join the **Situation Room** via the provided invitation link.
+4.  **AAR Generation**: Upon conclusion, the facilitator finalizes the **After-Action Report** and populates the **Action Catalog** for persistent remediation tracking.
