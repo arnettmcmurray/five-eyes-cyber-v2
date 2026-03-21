@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Five Eyes Current Flowchart</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+    .container { display: flex; min-height: 100vh; }
+    .sidebar { width: 240px; background: #111827; padding: 24px 18px; border-right: 1px solid #334155; display: flex; flex-direction: column; }
+    .sidebar h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 14px; }
+    .legend-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 12px; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; margin-right: 10px; flex-shrink: 0; }
+    .metrics { margin-top: auto; padding-top: 24px; border-top: 1px solid #334155; }
+    .metric { margin-bottom: 14px; }
+    .metric-label { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: #64748b; margin-bottom: 4px; }
+    .metric-value { font-size: 24px; font-weight: 700; color: #f8fafc; }
+    .metric-sub { font-size: 11px; color: #94a3b8; }
+    .main { flex: 1; padding: 30px; overflow: auto; }
+    .header { text-align: center; margin-bottom: 26px; }
+    .header h1 { font-size: 28px; color: #f8fafc; margin-bottom: 6px; }
+    .header p { color: #94a3b8; font-size: 14px; }
+    #chart { display: flex; justify-content: center; }
+    .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; fill: #64748b; font-weight: 700; }
+    .checkpoint-line { stroke: #334155; stroke-width: 1; stroke-dasharray: 4 4; }
+    .checkpoint-label { font-size: 10px; fill: #64748b; }
+    .link { fill: none; stroke: #475569; stroke-width: 2; }
+    .node rect { rx: 9; ry: 9; stroke-width: 2; }
+    .node-title { font-size: 13px; font-weight: 700; }
+    .node-subtitle { font-size: 11px; fill: #94a3b8; }
+    .phase-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; }
+    .footer { position: fixed; bottom: 0; left: 240px; right: 0; background: #111827; border-top: 1px solid #334155; padding: 14px 28px; display: flex; justify-content: space-between; gap: 20px; }
+    .footer span { font-size: 12px; color: #94a3b8; }
+    .footer strong { color: #f8fafc; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h3>Legend</h3>
+      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><span>Current truth</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div><span>Auth & control</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span>Learning spine</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div><span>Governance / KB</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div><span>Staging readiness</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div><span>Later polish</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div><span>Do not drift</span></div>
+
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">Current mode</div><div class="metric-value">Now</div><div class="metric-sub">Staging prep, not public launch</div></div>
+        <div class="metric"><div class="metric-label">Core focus</div><div class="metric-value">3</div><div class="metric-sub">Flowchart, roadmap, smoke path</div></div>
+        <div class="metric"><div class="metric-label">Auth split</div><div class="metric-value">2</div><div class="metric-sub">Admin password / user OTP</div></div>
+        <div class="metric"><div class="metric-label">Style return</div><div class="metric-value">After</div><div class="metric-sub">Truth first, then polish</div></div>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="header">
+        <h1>Five Eyes Current App Flow</h1>
+        <p>What exists, what gets protected, what gets finished next</p>
+      </div>
+      <div id="chart"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span><strong>Rule:</strong> protect the real app spine before chasing shine.</span>
+    <span><strong>Style comes back</strong> after core truth is stable and smoke-tested.</span>
+  </div>
+
+  <script>
+    const width = 1220, height = 2500;
+    const svg = d3.select('#chart').append('svg').attr('width', width).attr('height', height);
+    svg.append('defs').append('marker')
+      .attr('id','arrowhead').attr('viewBox','-0 -5 10 10').attr('refX',8).attr('refY',0)
+      .attr('orient','auto').attr('markerWidth',6).attr('markerHeight',6)
+      .append('path').attr('d','M 0,-5 L 10,0 L 0,5').attr('fill','#475569');
+
+    const colors = {
+      current:'#3b82f6', auth:'#8b5cf6', spine:'#f97316', gov:'#06b6d4', ready:'#22c55e', later:'#eab308', stop:'#ef4444', track:'#64748b'
+    };
+
+    const sections = [
+      { y: 30, label: 'CURRENT TRUTH' },
+      { y: 300, label: 'AUTH & ROUTING CONTRACT' },
+      { y: 640, label: 'LEARNING SPINE' },
+      { y: 1180, label: 'KNOWLEDGE BASE / GOVERNANCE' },
+      { y: 1560, label: 'STAGING & SMOKE PATH' },
+      { y: 1960, label: 'WHEN STYLE RETURNS' },
+      { y: 2260, label: 'DO NOT DRIFT' }
+    ];
+    sections.forEach(s => svg.append('text').attr('x', 20).attr('y', s.y).attr('class','section-label').text(s.label));
+
+    const checkpoints = [
+      { y: 250, label: 'Reality checkpoint: app spine exists' },
+      { y: 590, label: 'Contract checkpoint: no auth leakage' },
+      { y: 1110, label: 'Learner checkpoint: teach, do not just quiz' },
+      { y: 1490, label: 'Governance checkpoint: publish gates hold' },
+      { y: 1880, label: 'Smoke checkpoint: prove it on fresh staging path' },
+      { y: 2200, label: 'Style checkpoint: clarity before cosmetics' }
+    ];
+    checkpoints.forEach(cp => {
+      svg.append('line').attr('x1', 200).attr('y1', cp.y).attr('x2', width - 20).attr('y2', cp.y).attr('class','checkpoint-line');
+      svg.append('text').attr('x', width - 25).attr('y', cp.y - 6).attr('text-anchor','end').attr('class','checkpoint-label').text(cp.label);
+    });
+
+    const nodes = [
+      { id:'app', x:430, y:80, w:260, h:85, color:colors.current, title:'Current App Reality', subtitle:'Learner/module spine, KB, governance, admin hub exist', badge:'REAL BASE' },
+      { id:'aws', x:770, y:80, w:220, h:85, color:colors.current, title:'Current Deployment Stance', subtitle:'AWS staging next, not public go-live', badge:'NOW' },
+
+      { id:'adminAuth', x:210, y:360, w:210, h:80, color:colors.auth, title:'Admin Path', subtitle:'Password only → admin dashboard', badge:'LOCKED' },
+      { id:'userAuth', x:510, y:360, w:210, h:80, color:colors.auth, title:'Learner Path', subtitle:'OTP only → learner/user dashboard', badge:'LOCKED' },
+      { id:'routeRule', x:810, y:360, w:210, h:80, color:colors.auth, title:'Routing Rule', subtitle:'No portal leakage, no redirect loops', badge:'MUST HOLD' },
+
+      { id:'modules', x:180, y:720, w:170, h:65, color:colors.spine, title:'Modules', subtitle:'T1–T10 spine' },
+      { id:'quizzes', x:390, y:720, w:170, h:65, color:colors.spine, title:'Quizzes / Practice', subtitle:'Teach + check' },
+      { id:'remediation', x:600, y:720, w:170, h:65, color:colors.spine, title:'Remediation', subtitle:'Wrong answer → next help' },
+      { id:'progress', x:810, y:720, w:170, h:65, color:colors.spine, title:'Progress Truth', subtitle:'Learner + admin reflection' },
+      { id:'learnerGoal', x:430, y:900, w:300, h:85, color:colors.spine, title:'Learner Experience Goal', subtitle:'Users should learn, not just get bounced around by a test', badge:'CENTER' },
+
+      { id:'kb', x:230, y:1260, w:200, h:70, color:colors.gov, title:'KB Content/Search', subtitle:'Grounded help exists' },
+      { id:'gov', x:500, y:1260, w:220, h:70, color:colors.gov, title:'Governance Controls', subtitle:'Draft/publish, lineage, review rules' },
+      { id:'visible', x:790, y:1260, w:210, h:70, color:colors.gov, title:'Learner Exposure Safety', subtitle:'Draft items stay out of learner view' },
+      { id:'kbRule', x:430, y:1390, w:360, h:80, color:colors.gov, title:'Product Rule', subtitle:'KB truth first. AI supports only when useful, not as a freestyling oracle.', badge:'PRIMARY' },
+
+      { id:'env', x:190, y:1640, w:190, h:70, color:colors.ready, title:'Env / Boot', subtitle:'JWT, DB, SES, frontend URL, admin password' },
+      { id:'smoke', x:430, y:1640, w:220, h:70, color:colors.ready, title:'Smoke Path', subtitle:'Admin login, learner OTP, modules, KB, governance' },
+      { id:'awsPrep', x:730, y:1640, w:220, h:70, color:colors.ready, title:'AWS Staging Prep', subtitle:'ECR, ECS, RDS, SES, light-resource setup' },
+      { id:'stageGoal', x:430, y:1760, w:300, h:80, color:colors.ready, title:'Staging Goal', subtitle:'Editable, credible, cheap enough to test without pretending it is launch day', badge:'NEXT' },
+
+      { id:'styleAfter1', x:180, y:2020, w:220, h:70, color:colors.later, title:'1. Freeze truth', subtitle:'Flow + roadmap + auth contract + learner path' },
+      { id:'styleAfter2', x:460, y:2020, w:220, h:70, color:colors.later, title:'2. Prove smoke path', subtitle:'Fresh login, module, KB, governance checks' },
+      { id:'styleAfter3', x:740, y:2020, w:220, h:70, color:colors.later, title:'3. Then style pass', subtitle:'Return to previous vibe with confidence' },
+      { id:'styleRule', x:430, y:2135, w:300, h:80, color:colors.later, title:'Styling Return Point', subtitle:'After the app stops lying to us. Pretty is welcome; fake certainty is not.', badge:'THEN' },
+
+      { id:'stop1', x:170, y:2320, w:190, h:70, color:colors.stop, title:'Do Not Drift Into', subtitle:'TTX build right now' },
+      { id:'stop2', x:420, y:2320, w:190, h:70, color:colors.stop, title:'Do Not Drift Into', subtitle:'broad redesign reset' },
+      { id:'stop3', x:670, y:2320, w:190, h:70, color:colors.stop, title:'Do Not Drift Into', subtitle:'visual polish before truth' },
+      { id:'stop4', x:920, y:2320, w:190, h:70, color:colors.stop, title:'Do Not Drift Into', subtitle:'fake progress / stub comfort' }
+    ];
+
+    const links = [
+      ['app','adminAuth'], ['app','userAuth'], ['aws','routeRule'], ['adminAuth','routeRule'], ['userAuth','routeRule'],
+      ['routeRule','modules'], ['routeRule','quizzes'], ['routeRule','remediation'], ['routeRule','progress'],
+      ['modules','learnerGoal'], ['quizzes','learnerGoal'], ['remediation','learnerGoal'], ['progress','learnerGoal'],
+      ['learnerGoal','kb'], ['learnerGoal','gov'], ['learnerGoal','visible'], ['kb','kbRule'], ['gov','kbRule'], ['visible','kbRule'],
+      ['kbRule','env'], ['kbRule','smoke'], ['kbRule','awsPrep'], ['env','stageGoal'], ['smoke','stageGoal'], ['awsPrep','stageGoal'],
+      ['stageGoal','styleAfter1'], ['stageGoal','styleAfter2'], ['stageGoal','styleAfter3'], ['styleAfter1','styleRule'], ['styleAfter2','styleRule'], ['styleAfter3','styleRule']
+    ];
+
+    function edge(node, dir) {
+      if (dir === 'top') return { x: node.x + node.w / 2, y: node.y };
+      if (dir === 'bottom') return { x: node.x + node.w / 2, y: node.y + node.h };
+      if (dir === 'left') return { x: node.x, y: node.y + node.h / 2 };
+      return { x: node.x + node.w, y: node.y + node.h / 2 };
+    }
+    function byId(id){ return nodes.find(n => n.id === id); }
+
+    links.forEach(([s,t]) => {
+      const source = byId(s), target = byId(t);
+      let start, end;
+      if (target.y > source.y + source.h) { start = edge(source,'bottom'); end = edge(target,'top'); }
+      else if (target.x > source.x + source.w) { start = edge(source,'right'); end = edge(target,'left'); }
+      else { start = edge(source,'left'); end = edge(target,'right'); }
+      const midY = (start.y + end.y) / 2;
+      svg.append('path').attr('class','link').attr('d', `M ${start.x} ${start.y} C ${start.x} ${midY}, ${end.x} ${midY}, ${end.x} ${end.y}`).attr('marker-end','url(#arrowhead)');
+    });
+
+    const groups = svg.selectAll('.node').data(nodes).enter().append('g').attr('class','node').attr('transform', d => `translate(${d.x},${d.y})`);
+    groups.append('rect').attr('width', d => d.w).attr('height', d => d.h).attr('fill', d => d.color + '20').attr('stroke', d => d.color);
+    groups.append('text').attr('class','node-title').attr('x', d => d.w/2).attr('y', d => d.badge ? 33 : d.h/2 - 5).attr('text-anchor','middle').attr('fill', d => d.color).text(d => d.title);
+    groups.append('text').attr('class','node-subtitle').attr('x', d => d.w/2).attr('y', d => d.badge ? 52 : d.h/2 + 14).attr('text-anchor','middle').text(d => d.subtitle);
+    groups.filter(d => d.badge).append('rect').attr('x', d => (d.w - (d.badge.length * 6 + 16))/2).attr('y', 8).attr('width', d => d.badge.length * 6 + 16).attr('height', 15).attr('rx',3).attr('fill', d => d.color);
+    groups.filter(d => d.badge).append('text').attr('class','phase-badge').attr('x', d => d.w/2).attr('y', 19).attr('text-anchor','middle').attr('fill','#fff').text(d => d.badge);
+
+    svg.append('rect').attr('x', 950).attr('y', 200).attr('width', 200).attr('height', 120).attr('rx', 8).attr('fill', colors.stop + '18').attr('stroke', colors.stop);
+    svg.append('text').attr('x', 1050).attr('y', 225).attr('text-anchor','middle').attr('fill', colors.stop).attr('font-size', 11).attr('font-weight', 700).text('MENTAL NOTE');
+    ['Current app first','Roadmap before paint','Staging before launch talk','Flow before flair'].forEach((t,i)=>{
+      svg.append('text').attr('x', 966).attr('y', 250 + i*18).attr('fill','#fca5a5').attr('font-size', 11).text('• ' + t);
+    });
+  </script>
+</body>
+</html>

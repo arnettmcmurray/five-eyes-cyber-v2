@@ -9,7 +9,7 @@ export const createItemSchema = z.object({
   title: z.string().min(1).max(500),
   type: kbItemType,
   tags: z.array(z.string()).default([]),
-  status: kbItemStatus.default('draft'),
+  status: z.literal('draft').default('draft'),
   sourceTrust,
   currentRevisionId: z.string().nullable().default(null),
 });

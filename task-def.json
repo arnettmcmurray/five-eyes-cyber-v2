@@ -1,0 +1,37 @@
+{
+  "family": "five-eyes-v2-backend-task",
+  "executionRoleArn": "arn:aws:iam::125140433567:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "containerDefinitions": [
+    {
+      "name": "backend",
+      "image": "125140433567.dkr.ecr.us-east-1.amazonaws.com/five-eyes-v2-backend:latest",
+      "portMappings": [
+        {
+          "containerPort": 3001,
+          "hostPort": 3001,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {"name": "API_KEY", "value": "dev-local-key"},
+        {"name": "PORT", "value": "3001"},
+        {"name": "DATABASE_URL", "value": "postgresql://postgres:five_eyes_staging_secure!@five-eyes-staging-db.ce7i0was6bvk.us-east-1.rds.amazonaws.com:5432/postgres?sslmode=require"},
+        {"name": "JWT_SECRET", "value": "five_eyes_jwt_staging_secret"},
+        {"name": "TRUST_PROXY", "value": "1"},
+        {"name": "OPENAI_API_KEY", "value": "sk-REPLACEME"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/five-eyes-v2-backend",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ],
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024"
+}

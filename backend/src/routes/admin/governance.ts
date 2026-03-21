@@ -146,7 +146,12 @@ router.post('/review-queue/:id/decision', async (req, res) => {
     if (!resolved) { res.status(404).json({ error: 'Not found' }); return; }
     res.json(resolved);
   } catch (err) {
-    res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.startsWith('CONFLICT:')) {
+      res.status(409).json({ error: msg.replace('CONFLICT: ', '') });
+    } else {
+      res.status(400).json({ error: msg });
+    }
   }
 });
 
@@ -176,7 +181,12 @@ router.patch('/content-alerts/:id', async (req, res) => {
     if (!updated) { res.status(404).json({ error: 'Not found' }); return; }
     res.json(updated);
   } catch (err) {
-    res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.startsWith('CONFLICT:')) {
+      res.status(409).json({ error: msg.replace('CONFLICT: ', '') });
+    } else {
+      res.status(400).json({ error: msg });
+    }
   }
 });
 

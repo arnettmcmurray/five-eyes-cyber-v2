@@ -1,8 +1,10 @@
-import 'dotenv/config';
+// import 'dotenv/config'; // Redundant in Node 20 with --env-file and ECS environment injection
 import { app } from './app.js';
 import { AdminAuthService } from './services/auth/admin-auth.service.js';
 import { db } from './db/client.js';
 import { adminUsers } from './db/schema/admin-auth.js';
+import { sourceTrustLevels } from './db/schema/source-trust-levels.js';
+import { v4 as uuidv4 } from 'uuid';
 import { eq } from 'drizzle-orm';
 
 // ---------------------------------------------------------------------------
@@ -53,9 +55,9 @@ const PORT = parseInt(process.env['PORT'] ?? '3001', 10);
 
 const ADMIN_ACCOUNTS = [
   'arnettmcmurray@gmail.com',
-  'mike@fiveeyesltd.com',
-  'darren.mott@fiveeyesltd.com',
-  'support@fiveeyesltd.com',
+  'michaelm@fiveyesltd.com',
+  'dmott@fiveyesltd.com',
+  'support@fiveyesltd.com',
 ];
 
 async function start() {
@@ -78,6 +80,20 @@ async function start() {
       console.error('[FATAL] ADMIN_PASSWORD is not set and no admin accounts exist in the database. The system will be inaccessible. Set ADMIN_PASSWORD to seed admin accounts.');
       process.exit(1);
     }
+  }
+
+  const existingTrust = await db.select({ id: sourceTrustLevels.id }).from(sourceTrustLevels).limit(1).catch(() => []);
+  if (existingTrust.length === 0) {
+    await db.insert(sourceTrustLevels).values({
+      id: uuidv4(),
+      code: 'monitored',
+      name: 'Default AI Ingestion (Monitored)',
+      description: 'System default trust level for newly ingested content.',
+      rank: 2,
+    }).catch(err => {
+      console.error('[Bootstrap] Failed to seed default source trust level:', err instanceof Error ? err.message : String(err));
+    });
+    console.log('[Bootstrap] Seeded default source trust level.');
   }
 
   app.listen(PORT, () => {

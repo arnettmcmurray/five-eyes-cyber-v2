@@ -139,6 +139,12 @@ export class GovernanceService {
     resolutionNotes?: string | null;
     resolvedByUserId?: string;
   }) {
+    const [existing] = await db.select().from(reviewQueue).where(eq(reviewQueue.id, id)).limit(1);
+    if (!existing) return null;
+    if (existing.status !== 'pending' && existing.status !== 'in_review') {
+      throw new Error('CONFLICT: Queue item is already in a terminal state');
+    }
+
     const [row] = await db
       .update(reviewQueue)
       .set({
@@ -179,6 +185,14 @@ export class GovernanceService {
     status: typeof contentAlerts.$inferSelect['status'];
     resolvedAt: Date | null;
   }>) {
+    if (data.status === 'resolved') {
+      const [existing] = await db.select().from(contentAlerts).where(eq(contentAlerts.id, id)).limit(1);
+      if (!existing) return null;
+      if (existing.status === 'resolved') {
+        throw new Error('CONFLICT: Alert is already resolved');
+      }
+    }
+
     const [row] = await db
       .update(contentAlerts)
       .set(data)
