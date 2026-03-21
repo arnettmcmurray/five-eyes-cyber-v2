@@ -203,17 +203,17 @@ export const api = {
           adminReq<void>('DELETE', `/ttx/scenarios/${scenarioId}/sections/${sectionId}`),
       },
       steps: {
-        create: (scenarioId: string, sectionId: string, body: { prompt: string; facilitatorNotes?: string; order?: number }) =>
+        create: (scenarioId: string, sectionId: string, body: { prompt: string; facilitatorNarrative?: string; participantSituationRoom?: string; order?: number }) =>
           adminReq<TtxStep>('POST', `/ttx/scenarios/${scenarioId}/sections/${sectionId}/steps`, body),
-        update: (scenarioId: string, sectionId: string, stepId: string, body: Partial<{ prompt: string; facilitatorNotes: string; order: number }>) =>
+        update: (scenarioId: string, sectionId: string, stepId: string, body: Partial<{ prompt: string; facilitatorNarrative: string; participantSituationRoom: string; order: number }>) =>
           adminReq<TtxStep>('PATCH', `/ttx/scenarios/${scenarioId}/sections/${sectionId}/steps/${stepId}`, body),
         delete: (scenarioId: string, sectionId: string, stepId: string) =>
           adminReq<void>('DELETE', `/ttx/scenarios/${scenarioId}/sections/${sectionId}/steps/${stepId}`),
       },
       injects: {
-        create: (scenarioId: string, sectionId: string, stepId: string, body: { body: string; injectType?: string; targetRoles?: string[]; suggestedTimingMinutes?: number; order?: number }) =>
+        create: (scenarioId: string, sectionId: string, stepId: string, body: { content: string; injectType?: string; targetRoles?: string[]; consequenceLogic?: string; order?: number }) =>
           adminReq<TtxInject>('POST', `/ttx/scenarios/${scenarioId}/sections/${sectionId}/steps/${stepId}/injects`, body),
-        update: (scenarioId: string, sectionId: string, stepId: string, injectId: string, body: Partial<{ body: string; injectType: string; targetRoles: string[]; suggestedTimingMinutes: number; order: number }>) =>
+        update: (scenarioId: string, sectionId: string, stepId: string, injectId: string, body: Partial<{ content: string; injectType: string; targetRoles: string[]; consequenceLogic: string; order: number }>) =>
           adminReq<TtxInject>('PATCH', `/ttx/scenarios/${scenarioId}/sections/${sectionId}/steps/${stepId}/injects/${injectId}`, body),
         delete: (scenarioId: string, sectionId: string, stepId: string, injectId: string) =>
           adminReq<void>('DELETE', `/ttx/scenarios/${scenarioId}/sections/${sectionId}/steps/${stepId}/injects/${injectId}`),
@@ -230,24 +230,24 @@ export const api = {
         `${BASE}/ttx/participate/${sessionId}/stream?token=${getLearnerToken() ?? ''}&x-api-key=${API_KEY}`,
     },
     sessions: {
-      list: () => adminReq<TtxSession[]>('GET', '/ttx/sessions'),
-      get: (id: string) => adminReq<TtxSessionDetail>('GET', `/ttx/sessions/${id}`),
+      list: () => adminReq<TtxExerciseRun[]>('GET', '/ttx/sessions'),
+      get: (id: string) => adminReq<TtxExerciseRunDetail>('GET', `/ttx/sessions/${id}`),
       create: (body: { scenarioId: string; title: string; scheduledAt?: string }) =>
-        adminReq<TtxSession>('POST', '/ttx/sessions', body),
-      start: (id: string) => adminReq<TtxSession>('POST', `/ttx/sessions/${id}/start`, {}),
-      end: (id: string) => adminReq<TtxSession>('POST', `/ttx/sessions/${id}/end`, {}),
-      advance: (id: string, injectId: string) =>
-        adminReq<{ currentInjectId: string; event: TtxEvent }>('POST', `/ttx/sessions/${id}/advance`, { injectId }),
+        adminReq<TtxExerciseRun>('POST', '/ttx/sessions', body),
+      start: (id: string) => adminReq<TtxExerciseRun>('POST', `/ttx/sessions/${id}/start`, {}),
+      end: (id: string) => adminReq<TtxExerciseRun>('POST', `/ttx/sessions/${id}/end`, {}),
+      advance: (id: string, params: { stepId?: string; injectId?: string }) =>
+        adminReq<{ currentStepId: string; event: TtxEvent }>('POST', `/ttx/sessions/${id}/advance`, params),
       join: (id: string, handle: string, role: string) =>
         adminReq<TtxParticipant>('POST', `/ttx/sessions/${id}/join`, { handle, role }),
       submitEvent: (id: string, body: { eventType: string; actorHandle: string; body: string; linkedInjectId?: string }) =>
         adminReq<TtxEvent>('POST', `/ttx/sessions/${id}/events`, body),
       aar: {
-        get: (sessionId: string) => adminReq<TtxAAR>('GET', `/ttx/sessions/${sessionId}/aar`),
-        save: (sessionId: string, body: { summary?: string; strengths?: string; improvements?: string }) =>
-          adminReq<TtxAAR>('POST', `/ttx/sessions/${sessionId}/aar`, body),
-        finalize: (sessionId: string) => adminReq<TtxAAR>('PATCH', `/ttx/sessions/${sessionId}/aar/finalize`, {}),
-        addActionItem: (sessionId: string, body: { body: string; owner?: string; dueAt?: string }) =>
+        get: (sessionId: string) => adminReq<TtxAARSummary>('GET', `/ttx/sessions/${sessionId}/aar`),
+        save: (sessionId: string, body: { summary?: string }) =>
+          adminReq<TtxExerciseRun>('POST', `/ttx/sessions/${sessionId}/aar`, body),
+        finalize: (sessionId: string) => adminReq<TtxExerciseRun>('PATCH', `/ttx/sessions/${sessionId}/aar/finalize`, {}),
+        addActionItem: (sessionId: string, body: { title?: string; body: string; owner?: string; dueAt?: string }) =>
           adminReq<TtxActionItem>('POST', `/ttx/sessions/${sessionId}/aar/action-items`, body),
         updateActionItem: (sessionId: string, itemId: string, body: Partial<{ body: string; owner: string; dueAt: string; status: string; evidence: string }>) =>
           adminReq<TtxActionItem>('PATCH', `/ttx/sessions/${sessionId}/aar/action-items/${itemId}`, body),
@@ -585,23 +585,50 @@ export interface ModuleProgressDetail {
 // ---------------------------------------------------------------------------
 
 export interface TtxInject {
-  id: string; stepId: string; body: string; injectType: string;
-  targetRoles: string[]; suggestedTimingMinutes: number | null; order: number;
+  id: string;
+  stepId: string;
+  content: string;
+  injectType: string;
+  targetRoles: string[];
+  consequenceLogic: string;
+  order: number;
 }
 
 export interface TtxStep {
-  id: string; sectionId: string; prompt: string; facilitatorNotes: string; order: number;
+  id: string;
+  sectionId: string;
+  prompt: string;
+  facilitatorNarrative: string;
+  participantSituationRoom: string;
+  prompts: string[];
+  whatGoodLooksLike: string;
+  consequenceNote: string;
+  order: number;
   injects: TtxInject[];
 }
 
 export interface TtxSection {
-  id: string; scenarioId: string; title: string; order: number;
+  id: string;
+  scenarioId: string;
+  title: string;
+  background: string;
+  order: number;
   steps: TtxStep[];
 }
 
 export interface TtxScenario {
-  id: string; slug: string; title: string; description: string;
-  objective: string; createdBy: string; createdAt: string; updatedAt: string;
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  executiveSummary: string;
+  objective: string;
+  goals: string[];
+  targetAudience: string[];
+  signatureTheme: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TtxScenarioDetail extends TtxScenario {
@@ -609,74 +636,107 @@ export interface TtxScenarioDetail extends TtxScenario {
 }
 
 export interface TtxEvent {
-  id: string; sessionId: string; eventType: string; actorHandle: string;
-  body: string; linkedInjectId: string | null; occurredAt: string;
+  id: string;
+  runId: string;
+  eventType: string;
+  actorHandle: string;
+  body: string;
+  linkedInjectId: string | null;
+  occurredAt: string;
 }
 
 export interface TtxParticipant {
-  id: string; sessionId: string; handle: string; role: string; joinedAt: string;
+  id: string;
+  runId: string;
+  handle: string;
+  role: string;
+  joinedAt: string;
 }
 
-export interface TtxSession {
-  id: string; scenarioId: string; title: string;
-  scheduledAt: string | null; startedAt: string | null; endedAt: string | null;
-  status: 'planned' | 'active' | 'ended';
-  facilitatorId: string; currentInjectId: string | null; createdAt: string;
+export interface TtxExerciseRun {
+  id: string;
+  scenarioId: string;
+  title: string;
+  snapshot: TtxScenarioDetail; // The snapshotted scenario content
+  decisions: any;
+  scheduledAt: string | null;
+  startedAt: string | null;
+  endedAt: string | null;
+  status: 'planned' | 'active' | 'complete';
+  facilitatorId: string;
+  currentStepId: string | null;
+  createdAt: string;
 }
 
-export interface TtxSessionDetail extends TtxSession {
+export interface TtxExerciseRunDetail extends TtxExerciseRun {
   participants: TtxParticipant[];
   events: TtxEvent[];
 }
 
 export interface TtxActionItem {
-  id: string; aarId: string; body: string; owner: string;
-  dueAt: string | null; status: string; closedAt: string | null; evidence: string;
+  id: string;
+  runId: string;
+  title: string;
+  body: string;
+  owner: string;
+  dueAt: string | null;
+  status: 'open' | 'closed' | 'retesting';
+  closedAt: string | null;
+  evidence: string;
+  createdAt: string;
 }
 
-export interface TtxAAR {
-  id: string; sessionId: string; summary: string; strengths: string;
-  improvements: string; status: string; createdBy: string;
-  createdAt: string; updatedAt: string;
+export interface TtxAARSummary {
+  summary: string;
   actionItems: TtxActionItem[];
+  [key: string]: any;
 }
 
 export interface TtxExport {
-  session: TtxSession;
-  scenario: TtxScenario | null;
+  session: TtxExerciseRun;
   participants: TtxParticipant[];
   events: TtxEvent[];
-  aar: TtxAAR | null;
+  actionItems: TtxActionItem[];
 }
 
 export interface TtxParticipateView {
-  session: TtxSession;
+  session: TtxExerciseRun;
   scenarioTitle: string;
   participants: TtxParticipant[];
   events: TtxEvent[];
-  currentInject: (TtxInject & { stepPrompt: string }) | null;
+  currentStep: TtxStep | null;
   myHandle: string;
 }
 
 export interface TtxDraftInject {
-  body: string;
+  content: string;
   injectType: string;
   targetRoles: string[];
-  suggestedTimingMinutes: number | null;
+  consequenceLogic: string;
 }
 
 export interface TtxDraftStep {
   prompt: string;
-  facilitatorNotes: string;
+  facilitatorNarrative: string;
+  participantSituationRoom: string;
+  prompts: string[];
+  whatGoodLooksLike: string;
+  consequenceNote: string;
   injects: TtxDraftInject[];
 }
 
 export interface TtxDraftSection {
   title: string;
+  background: string;
   steps: TtxDraftStep[];
 }
 
 export interface TtxDraftScenario {
+  title: string;
+  executiveSummary: string;
+  goals: string[];
+  targetAudience: string[];
+  signatureTheme: string;
   sections: TtxDraftSection[];
 }
 

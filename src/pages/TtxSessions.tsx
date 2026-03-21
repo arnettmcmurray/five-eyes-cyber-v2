@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api, TtxSession, TtxScenario } from '../api/client';
+import { api, TtxExerciseRun, TtxScenario } from '../api/client';
 import { getAdminToken, getAdminUsername } from '../lib/adminSession';
 
 export default function TtxSessions() {
   const navigate = useNavigate();
-  const [sessions, setSessions] = useState<TtxSession[]>([]);
+  const [sessions, setSessions] = useState<TtxExerciseRun[]>([]);
   const [scenarios, setScenarios] = useState<TtxScenario[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export default function TtxSessions() {
         title: form.title,
         scheduledAt: form.scheduledAt || undefined,
       });
-      navigate(`/ttx/sessions/${s.id}`);
+      navigate(`/ttx/sessions/${s.id}/conduct`);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -112,12 +112,12 @@ export default function TtxSessions() {
             {sessions.map(s => (
               <tr key={s.id} className="border-b hover:bg-gray-50">
                 <td className="py-2 pr-4">
-                  <Link to={`/ttx/sessions/${s.id}`} className="text-blue-600 hover:underline font-medium">
+                  <Link to={`/ttx/sessions/${s.id}/conduct`} className="text-blue-600 hover:underline font-medium">
                     {s.title}
                   </Link>
                 </td>
                 <td className="py-2 pr-4">{statusBadge(s.status)}</td>
-                <td className="py-2 pr-4 text-gray-500 text-xs">
+                <td className="py-2 pr-4 text-gray-500 text-xs text-center">
                   {(s as any).participantCount ?? 0}
                 </td>
                 <td className="py-2 pr-4 text-gray-400 text-xs">
@@ -127,14 +127,14 @@ export default function TtxSessions() {
                   {s.startedAt ? new Date(s.startedAt).toLocaleString() : '—'}
                 </td>
                 <td className="py-2 flex gap-3 items-center">
-                  <Link to={`/ttx/sessions/${s.id}`} className="text-xs text-blue-600 hover:underline">
-                    {s.status === 'active' ? 'Console' : s.status === 'ended' ? 'View' : 'Setup'}
+                  <Link to={`/ttx/sessions/${s.id}/conduct`} className="text-xs text-blue-600 hover:underline">
+                    {s.status === 'active' ? 'Conduct' : s.status === 'complete' ? 'View' : 'Initialize'}
                   </Link>
-                  {s.status !== 'ended' && (
+                  {s.status !== 'complete' && (
                     <button
                       onClick={() => navigator.clipboard.writeText(`${window.location.origin}/ttx/sessions/${s.id}/participate`)}
-                      className="text-xs text-gray-400 hover:text-gray-600 hover:underline">
-                      Copy join link
+                      className="text-xs text-gray-400 hover:text-gray-600 hover:underline border px-1.5 py-0.5 rounded">
+                      Join link
                     </button>
                   )}
                 </td>

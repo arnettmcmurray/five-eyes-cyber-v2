@@ -8,4 +8,4 @@
 - KB/governance gates must stay enforced
 - AWS is staging first, not public go‑live
 - styling is not first priority
-- TTX is a narrow v1 slice later, not a broad system now
+- TTX is a flagship executive-grade product lane (Scenario -> Section -> Step model)

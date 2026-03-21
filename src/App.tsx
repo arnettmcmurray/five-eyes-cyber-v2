@@ -18,9 +18,9 @@ import LearnDashboard from './pages/LearnDashboard';
 import TtxScenarios from './pages/TtxScenarios';
 import TtxScenarioEdit from './pages/TtxScenarioEdit';
 import TtxSessions from './pages/TtxSessions';
-import TtxConsole from './pages/TtxConsole';
+import TtxConduct from './pages/TtxConduct';
 import TtxAAR from './pages/TtxAAR';
-import TtxParticipant from './pages/TtxParticipant';
+import TtxParticipate from './pages/TtxParticipate';
 
 export default function App() {
   return (
@@ -50,13 +50,15 @@ export default function App() {
           <Route path="/ttx/scenarios" element={<TtxScenarios />} />
           <Route path="/ttx/scenarios/:id" element={<TtxScenarioEdit />} />
           <Route path="/ttx/sessions" element={<TtxSessions />} />
-          <Route path="/ttx/sessions/:id" element={<TtxConsole />} />
           <Route path="/ttx/sessions/:id/aar" element={<TtxAAR />} />
-          <Route path="/ttx/sessions/:id/participate" element={<TtxParticipant />} />
           
           <Route path="/" element={<Navigate to="/learn/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/learn/dashboard" replace />} />
         </Route>
+
+        {/* Full-screen TTX Apps */}
+        <Route path="/ttx/sessions/:id/conduct" element={<TtxConduct />} />
+        <Route path="/ttx/sessions/:id/participate" element={<TtxParticipate />} />
       </Routes>
     </BrowserRouter>
   );

@@ -27,11 +27,11 @@ export default function TtxScenarioEdit() {
 
   // Add step: keyed by sectionId
   const [addingStep, setAddingStep] = useState<string | null>(null);
-  const [newStep, setNewStep] = useState({ prompt: '', facilitatorNotes: '' });
+  const [newStep, setNewStep] = useState({ prompt: '', facilitatorNarrative: '' });
 
   // Add inject: keyed by stepId
   const [addingInject, setAddingInject] = useState<string | null>(null);
-  const [newInject, setNewInject] = useState({ body: '', injectType: 'other', targetRoles: '', suggestedTimingMinutes: '' });
+  const [newInject, setNewInject] = useState({ content: '', injectType: 'other', targetRoles: '', consequenceLogic: '' });
 
   // AI assist
   const [aiDrafting, setAiDrafting] = useState(false);
@@ -117,7 +117,7 @@ export default function TtxScenarioEdit() {
           sec.id === sectionId ? { ...sec, steps: [...sec.steps, { ...step, injects: [] }] } : sec
         ),
       } : s);
-      setNewStep({ prompt: '', facilitatorNotes: '' });
+      setNewStep({ prompt: '', facilitatorNarrative: '' });
       setAddingStep(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -140,18 +140,17 @@ export default function TtxScenarioEdit() {
   }
 
   async function addInject(sectionId: string, stepId: string) {
-    if (!newInject.body) return;
+    if (!newInject.content) return;
     try {
       const section = scenario!.sections.find(s => s.id === sectionId)!;
       const step = section.steps.find(s => s.id === stepId)!;
       const order = step.injects.length + 1;
       const roles = newInject.targetRoles.split(',').map(r => r.trim()).filter(Boolean);
-      const timing = newInject.suggestedTimingMinutes ? parseInt(newInject.suggestedTimingMinutes) : undefined;
       const inject = await api.ttx.scenarios.injects.create(id!, sectionId, stepId, {
-        body: newInject.body,
+        content: newInject.content,
         injectType: newInject.injectType,
         targetRoles: roles,
-        suggestedTimingMinutes: timing,
+        consequenceLogic: newInject.consequenceLogic,
         order,
       });
       setScenario(s => s ? {
@@ -169,7 +168,7 @@ export default function TtxScenarioEdit() {
         setAiCreated(prev => new Set([...prev, inject.id]));
         injectFromAI.current = false;
       }
-      setNewInject({ body: '', injectType: 'other', targetRoles: '', suggestedTimingMinutes: '' });
+      setNewInject({ content: '', injectType: 'other', targetRoles: '', consequenceLogic: '' });
       setAddingInject(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -220,14 +219,14 @@ export default function TtxScenarioEdit() {
       let sectionWithSteps = { ...section, steps: [] as TtxStep[] };
       for (let si = 0; si < draftSection.steps.length; si++) {
         const ds = draftSection.steps[si];
-        const step = await api.ttx.scenarios.steps.create(id!, section.id, { prompt: ds.prompt, facilitatorNotes: ds.facilitatorNotes, order: si + 1 });
+        const step = await api.ttx.scenarios.steps.create(id!, section.id, { prompt: ds.prompt, facilitatorNarrative: ds.facilitatorNarrative, order: si + 1 });
         newIds.push(step.id);
         let stepWithInjects = { ...step, injects: [] as TtxInject[] };
         for (let ii = 0; ii < ds.injects.length; ii++) {
           const di = ds.injects[ii];
           const inject = await api.ttx.scenarios.injects.create(id!, section.id, step.id, {
-            body: di.body, injectType: di.injectType, targetRoles: di.targetRoles,
-            suggestedTimingMinutes: di.suggestedTimingMinutes ?? undefined, order: ii + 1,
+            content: di.content, injectType: di.injectType, targetRoles: di.targetRoles,
+            consequenceLogic: di.consequenceLogic, order: ii + 1,
           });
           newIds.push(inject.id);
           stepWithInjects = { ...stepWithInjects, injects: [...stepWithInjects.injects, inject] };
@@ -262,10 +261,10 @@ export default function TtxScenarioEdit() {
     injectFromAI.current = true;
     setAddingInject(stepId);
     setNewInject({
-      body: di.body,
+      content: di.content,
       injectType: di.injectType,
       targetRoles: di.targetRoles.join(', '),
-      suggestedTimingMinutes: di.suggestedTimingMinutes != null ? String(di.suggestedTimingMinutes) : '',
+      consequenceLogic: di.consequenceLogic,
     });
     setInjectSuggestions(null);
   }
@@ -359,7 +358,7 @@ export default function TtxScenarioEdit() {
                         <span className={`font-mono px-1 rounded shrink-0 ${inj.injectType === 'technical' ? 'bg-blue-100' : inj.injectType === 'media' ? 'bg-yellow-100' : inj.injectType === 'legal' ? 'bg-purple-100' : 'bg-gray-100'}`}>
                           {inj.injectType}
                         </span>
-                        <span>{inj.body}</span>
+                        <span>{inj.content}</span>
                       </div>
                     ))}
                   </div>
@@ -390,9 +389,9 @@ export default function TtxScenarioEdit() {
                         {inj.injectType}
                       </span>
                       {inj.targetRoles.length > 0 && <span className="text-xs text-gray-400">→ {inj.targetRoles.join(', ')}</span>}
-                      {inj.suggestedTimingMinutes && <span className="text-xs text-gray-400">{inj.suggestedTimingMinutes}min</span>}
+                      {inj.consequenceLogic && <span className="text-xs text-gray-400">— {inj.consequenceLogic}</span>}
                     </div>
-                    <p className="text-gray-800">{inj.body}</p>
+                    <p className="text-gray-800">{inj.content}</p>
                   </div>
                   <button onClick={() => applyInjectSuggestion(sectionId, injectSuggestions.stepId, inj)}
                     className="text-xs px-2 py-0.5 bg-blue-600 text-white rounded shrink-0">Use</button>
@@ -441,8 +440,8 @@ export default function TtxScenarioEdit() {
                       {si + 1}.{sti + 1} {step.prompt}
                       {aiCreated.has(step.id) && <span className="ml-2 text-xs text-purple-500 font-normal">✦ AI</span>}
                     </p>
-                    {step.facilitatorNotes && (
-                      <p className="text-xs text-gray-500 mt-1 italic">Note: {step.facilitatorNotes}</p>
+                    {step.facilitatorNarrative && (
+                      <p className="text-xs text-gray-500 mt-1 italic">Narrative: {step.facilitatorNarrative.slice(0, 100)}…</p>
                     )}
                   </div>
                   <div className="flex gap-2 ml-3 shrink-0">
@@ -465,12 +464,12 @@ export default function TtxScenarioEdit() {
                           {inject.targetRoles.length > 0 && (
                             <span className="text-xs text-gray-400">→ {inject.targetRoles.join(', ')}</span>
                           )}
-                          {inject.suggestedTimingMinutes && (
-                            <span className="text-xs text-gray-400">{inject.suggestedTimingMinutes}min</span>
+                          {inject.consequenceLogic && (
+                            <span className="text-xs text-gray-400">| {inject.consequenceLogic}</span>
                           )}
                           {aiCreated.has(inject.id) && <span className="text-xs text-purple-400">✦ AI</span>}
                         </div>
-                        <p className="text-gray-800 leading-snug">{inject.body}</p>
+                        <p className="text-gray-800 leading-snug">{inject.content}</p>
                       </div>
                       <button onClick={() => deleteInject(section.id, step.id, inject.id)} className="text-xs text-red-400 hover:underline ml-3 shrink-0">✕</button>
                     </div>
@@ -478,8 +477,8 @@ export default function TtxScenarioEdit() {
 
                   {addingInject === step.id ? (
                     <div className="border rounded p-3 bg-gray-50 space-y-2">
-                      <textarea className="border w-full px-2 py-1 rounded text-sm" rows={2} placeholder="Inject body *"
-                        value={newInject.body} onChange={e => setNewInject(n => ({ ...n, body: e.target.value }))} />
+                      <textarea className="border w-full px-2 py-1 rounded text-sm" rows={2} placeholder="Inject content *"
+                        value={newInject.content} onChange={e => setNewInject(n => ({ ...n, content: e.target.value }))} />
                       <div className="flex gap-2">
                         <select className="border px-2 py-1 rounded text-sm" value={newInject.injectType}
                           onChange={e => setNewInject(n => ({ ...n, injectType: e.target.value }))}>
@@ -487,8 +486,8 @@ export default function TtxScenarioEdit() {
                         </select>
                         <input className="border flex-1 px-2 py-1 rounded text-sm" placeholder="Target roles (comma-separated)"
                           value={newInject.targetRoles} onChange={e => setNewInject(n => ({ ...n, targetRoles: e.target.value }))} />
-                        <input className="border w-20 px-2 py-1 rounded text-sm" placeholder="Min" type="number"
-                          value={newInject.suggestedTimingMinutes} onChange={e => setNewInject(n => ({ ...n, suggestedTimingMinutes: e.target.value }))} />
+                        <input className="border flex-1 px-2 py-1 rounded text-sm" placeholder="Consequence logic"
+                          value={newInject.consequenceLogic} onChange={e => setNewInject(n => ({ ...n, consequenceLogic: e.target.value }))} />
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => addInject(section.id, step.id)} className="px-2 py-1 bg-green-600 text-white rounded text-sm">Add Inject</button>
@@ -496,7 +495,7 @@ export default function TtxScenarioEdit() {
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => { setAddingInject(step.id); setNewInject({ body: '', injectType: 'other', targetRoles: '', suggestedTimingMinutes: '' }); }}
+                    <button onClick={() => { setAddingInject(step.id); setNewInject({ content: '', injectType: 'other', targetRoles: '', consequenceLogic: '' }); }}
                       className="text-xs text-blue-600 hover:underline">+ Inject</button>
                   )}
                 </div>
@@ -507,15 +506,15 @@ export default function TtxScenarioEdit() {
               <div className="border rounded p-3 bg-gray-50 space-y-2">
                 <textarea className="border w-full px-2 py-1 rounded text-sm" rows={2} placeholder="Step prompt *"
                   value={newStep.prompt} onChange={e => setNewStep(s => ({ ...s, prompt: e.target.value }))} />
-                <input className="border w-full px-2 py-1 rounded text-sm" placeholder="Facilitator notes (optional)"
-                  value={newStep.facilitatorNotes} onChange={e => setNewStep(s => ({ ...s, facilitatorNotes: e.target.value }))} />
+                <input className="border w-full px-2 py-1 rounded text-sm" placeholder="Facilitator narrative (read-aloud)"
+                  value={newStep.facilitatorNarrative} onChange={e => setNewStep(s => ({ ...s, facilitatorNarrative: e.target.value }))} />
                 <div className="flex gap-2">
                   <button onClick={() => addStep(section.id)} className="px-2 py-1 bg-green-600 text-white rounded text-sm">Add Step</button>
                   <button onClick={() => setAddingStep(null)} className="px-2 py-1 border rounded text-sm">Cancel</button>
                 </div>
               </div>
             ) : (
-              <button onClick={() => { setAddingStep(section.id); setNewStep({ prompt: '', facilitatorNotes: '' }); }}
+              <button onClick={() => { setAddingStep(section.id); setNewStep({ prompt: '', facilitatorNarrative: '' }); }}
                 className="text-xs text-blue-600 hover:underline">+ Step</button>
             )}
           </div>
