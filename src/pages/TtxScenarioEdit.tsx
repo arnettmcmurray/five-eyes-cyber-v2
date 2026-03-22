@@ -27,7 +27,7 @@ export default function TtxScenarioEdit() {
 
   // Add step: keyed by sectionId
   const [addingStep, setAddingStep] = useState<string | null>(null);
-  const [newStep, setNewStep] = useState({ prompt: '', facilitatorNarrative: '' });
+  const [newStep, setNewStep] = useState({ title: '', facilitatorNarrative: '' });
 
   // Add inject: keyed by stepId
   const [addingInject, setAddingInject] = useState<string | null>(null);
@@ -106,7 +106,7 @@ export default function TtxScenarioEdit() {
   }
 
   async function addStep(sectionId: string) {
-    if (!newStep.prompt) return;
+    if (!newStep.title) return;
     try {
       const section = scenario!.sections.find(s => s.id === sectionId)!;
       const order = section.steps.length + 1;
@@ -117,7 +117,7 @@ export default function TtxScenarioEdit() {
           sec.id === sectionId ? { ...sec, steps: [...sec.steps, { ...step, injects: [] }] } : sec
         ),
       } : s);
-      setNewStep({ prompt: '', facilitatorNarrative: '' });
+      setNewStep({ title: '', facilitatorNarrative: '' });
       setAddingStep(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -219,7 +219,7 @@ export default function TtxScenarioEdit() {
       let sectionWithSteps = { ...section, steps: [] as TtxStep[] };
       for (let si = 0; si < draftSection.steps.length; si++) {
         const ds = draftSection.steps[si];
-        const step = await api.ttx.scenarios.steps.create(id!, section.id, { prompt: ds.prompt, facilitatorNarrative: ds.facilitatorNarrative, order: si + 1 });
+        const step = await api.ttx.scenarios.steps.create(id!, section.id, { title: ds.title, facilitatorNarrative: ds.facilitatorNarrative, order: si + 1 });
         newIds.push(step.id);
         let stepWithInjects = { ...step, injects: [] as TtxInject[] };
         for (let ii = 0; ii < ds.injects.length; ii++) {
@@ -352,7 +352,7 @@ export default function TtxScenarioEdit() {
                 </div>
                 {sec.steps.map((step, sti) => (
                   <div key={sti} className="ml-3 mt-1 text-gray-600 text-xs">
-                    <span className="font-medium text-gray-700">{sti + 1}. {step.prompt}</span>
+                    <span className="font-medium text-gray-700">{sti + 1}. {step.title}</span>
                     {step.injects.map((inj, ii) => (
                       <div key={ii} className="ml-3 mt-0.5 flex gap-1 items-start">
                         <span className={`font-mono px-1 rounded shrink-0 ${inj.injectType === 'technical' ? 'bg-blue-100' : inj.injectType === 'media' ? 'bg-yellow-100' : inj.injectType === 'legal' ? 'bg-purple-100' : 'bg-gray-100'}`}>
@@ -437,7 +437,7 @@ export default function TtxScenarioEdit() {
                 <div className="flex justify-between items-start px-3 py-2 bg-gray-50 border-b">
                   <div className="flex-1">
                     <p className="text-sm font-medium">
-                      {si + 1}.{sti + 1} {step.prompt}
+                      {si + 1}.{sti + 1} {step.title}
                       {aiCreated.has(step.id) && <span className="ml-2 text-xs text-purple-500 font-normal">✦ AI</span>}
                     </p>
                     {step.facilitatorNarrative && (
@@ -445,7 +445,7 @@ export default function TtxScenarioEdit() {
                     )}
                   </div>
                   <div className="flex gap-2 ml-3 shrink-0">
-                    <button onClick={() => suggestInjects(step.id, step.prompt)} disabled={suggestingInjects === step.id}
+                    <button onClick={() => suggestInjects(step.id, step.title)} disabled={suggestingInjects === step.id}
                       className="text-xs text-purple-600 hover:underline disabled:opacity-50">
                       {suggestingInjects === step.id ? 'Suggesting…' : '✦ Suggest injects'}
                     </button>
@@ -505,7 +505,7 @@ export default function TtxScenarioEdit() {
             {addingStep === section.id ? (
               <div className="border rounded p-3 bg-gray-50 space-y-2">
                 <textarea className="border w-full px-2 py-1 rounded text-sm" rows={2} placeholder="Step prompt *"
-                  value={newStep.prompt} onChange={e => setNewStep(s => ({ ...s, prompt: e.target.value }))} />
+                  value={newStep.title} onChange={e => setNewStep(s => ({ ...s, title: e.target.value }))} />
                 <input className="border w-full px-2 py-1 rounded text-sm" placeholder="Facilitator narrative (read-aloud)"
                   value={newStep.facilitatorNarrative} onChange={e => setNewStep(s => ({ ...s, facilitatorNarrative: e.target.value }))} />
                 <div className="flex gap-2">
@@ -514,7 +514,7 @@ export default function TtxScenarioEdit() {
                 </div>
               </div>
             ) : (
-              <button onClick={() => { setAddingStep(section.id); setNewStep({ prompt: '', facilitatorNarrative: '' }); }}
+              <button onClick={() => { setAddingStep(section.id); setNewStep({ title: '', facilitatorNarrative: '' }); }}
                 className="text-xs text-blue-600 hover:underline">+ Step</button>
             )}
           </div>

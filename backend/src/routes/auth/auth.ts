@@ -12,10 +12,22 @@ const adminAuthSvc = new AdminAuthService();
  * Generates a 6-digit OTP for the learner handle (creates learner if new).
  * Code is logged to stdout for now; plug in email/SMS delivery here.
  */
+// Admin accounts are password-only and must never enter the learner OTP flow.
+const ADMIN_EMAILS = new Set([
+  'arnettmcmurray@gmail.com',
+  'michaelm@fiveyesltd.com',
+  'dmott@fiveyesltd.com',
+  'support@fiveyesltd.com',
+]);
+
 router.post('/otp/request', async (req, res) => {
   const { handle } = req.body ?? {};
   if (typeof handle !== 'string' || !handle.trim() || handle.length > 200) {
     res.status(400).json({ error: 'handle is required and must be under 200 characters' });
+    return;
+  }
+  if (ADMIN_EMAILS.has(handle.trim().toLowerCase())) {
+    res.status(400).json({ error: 'This account uses password-based login. Use /auth/admin/login.' });
     return;
   }
   try {

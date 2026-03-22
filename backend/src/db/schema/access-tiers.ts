@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
-import { learners } from './learners';
-import { packages } from './packages';
+import { learners } from './learners.js';
+import { packages } from './packages.js';
 
 /**
  * Access tier rules (Task 23 contract):

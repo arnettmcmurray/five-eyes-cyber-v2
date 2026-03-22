@@ -7,11 +7,12 @@ if (!connectionString) {
   throw new Error('DATABASE_URL environment variable is required');
 }
 
-const pool = new Pool({ 
+// Use SSL only when explicitly required (production/staging).
+// Local dev postgres does not have SSL configured.
+const useSSL = process.env['DB_SSL'] === 'true';
+const pool = new Pool({
   connectionString,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ...(useSSL ? { ssl: { rejectUnauthorized: false } } : {}),
 });
 export const db = drizzle(pool, { schema });
 export type DB = typeof db;

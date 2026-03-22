@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
-import { learningModules } from './modules';
-import { groups } from './groups';
+import { learningModules } from './modules.js';
+import { groups } from './groups.js';
 
 /**
  * A package: a named bundle of modules (e.g. "Cybersecurity Fundamentals", "HIPAA Compliance").

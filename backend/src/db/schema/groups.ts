@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
-import { learners } from './learners';
+import { learners } from './learners.js';
 
 /** A group (team, class, company, cohort). */
 export const groups = pgTable('groups', {

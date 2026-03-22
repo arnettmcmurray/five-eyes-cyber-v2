@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, pgEnum } from 'drizzle-orm/pg-core';
-import { kbItems } from './kb-items';
-import { sources } from './sources';
+import { kbItems } from './kb-items.js';
+import { sources } from './sources.js';
 
 export const reviewQueueStatusEnum = pgEnum('review_queue_status', [
   'pending', 'in_review', 'approved', 'rejected', 'deferred',

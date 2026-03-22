@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
-import { learners } from './learners';
+import { learners } from './learners.js';
 
 /** Registered auth credentials — one per learner handle. Password hash stored separately (not implemented). */
 export const authUsers = pgTable('auth_users', {

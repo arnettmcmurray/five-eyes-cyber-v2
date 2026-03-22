@@ -1,6 +1,6 @@
 import { pgTable, text, integer, boolean, timestamp, jsonb } from 'drizzle-orm/pg-core';
-import { learners } from './learners';
-import { learningModules } from './modules';
+import { learners } from './learners.js';
+import { learningModules } from './modules.js';
 
 /** One full practice attempt for a module. */
 export const practiceAttempts = pgTable('practice_attempts', {
