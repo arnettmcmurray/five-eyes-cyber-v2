@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
-import { learningModules } from './modules.js';
+import { learningModules } from './modules';
 
 /**
  * Assigns a module to a learner OR a group.

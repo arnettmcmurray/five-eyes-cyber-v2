@@ -1,6 +1,6 @@
 import { pgTable, text, integer, timestamp, customType } from 'drizzle-orm/pg-core';
-import { kbItems } from './kb-items.js';
-import { kbRevisions } from './kb-revisions.js';
+import { kbItems } from './kb-items';
+import { kbRevisions } from './kb-revisions';
 
 const vector = customType<{ data: number[]; driverData: string }>({
   dataType() { return 'vector(1536)'; },

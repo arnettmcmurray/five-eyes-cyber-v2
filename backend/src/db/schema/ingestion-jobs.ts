@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, pgEnum } from 'drizzle-orm/pg-core';
-import { rawSources } from './raw-sources.js';
+import { rawSources } from './raw-sources';
 
 export const ingestionStatusEnum = pgEnum('ingestion_status', [
   'pending', 'extracting', 'processing', 'review-ready', 'failed', 'completed'

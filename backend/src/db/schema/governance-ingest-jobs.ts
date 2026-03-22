@@ -1,5 +1,5 @@
 import { pgTable, text, integer, timestamp } from 'drizzle-orm/pg-core';
-import { sources } from './sources.js';
+import { sources } from './sources';
 
 // Separate from the existing ingestion_jobs table (which tracks raw-source processing).
 // This tracks governance-layer source pulls: full refreshes, incremental checks, manual triggers.

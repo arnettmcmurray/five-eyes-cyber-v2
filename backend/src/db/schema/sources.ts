@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, pgEnum } from 'drizzle-orm/pg-core';
-import { sourceTrustLevels } from './source-trust-levels.js';
+import { sourceTrustLevels } from './source-trust-levels';
 
 export const sourceTypeEnum = pgEnum('source_type', [
   'government', 'regulator', 'insurer', 'industry_association',
