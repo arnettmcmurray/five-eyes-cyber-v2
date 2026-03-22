@@ -1,6 +1,6 @@
 import { pgTable, text, boolean, timestamp } from 'drizzle-orm/pg-core';
-import { sources } from './sources.js';
-import { sourceTrustLevels } from './source-trust-levels.js';
+import { sources } from './sources';
+import { sourceTrustLevels } from './source-trust-levels';
 
 export const sourceDomains = pgTable('source_domains', {
   id:              text('id').primaryKey(),

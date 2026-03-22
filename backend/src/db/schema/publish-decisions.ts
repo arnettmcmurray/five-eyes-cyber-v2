@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, pgEnum } from 'drizzle-orm/pg-core';
-import { kbItems } from './kb-items.js';
+import { kbItems } from './kb-items';
 
 export const publishDecisionEnum = pgEnum('publish_decision', [
   'approved', 'rejected', 'deferred',

@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, pgEnum } from 'drizzle-orm/pg-core';
-import { kbItems } from './kb-items.js';
-import { sources } from './sources.js';
+import { kbItems } from './kb-items';
+import { sources } from './sources';
 
 export const alertSeverityEnum = pgEnum('alert_severity', [
   'info', 'warning', 'critical',
