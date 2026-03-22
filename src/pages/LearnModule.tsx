@@ -1,543 +1,741 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   api,
   type LearnModuleResponse,
   type LearnStudyItem,
-  type LearnReference,
   type LearnPracticeQuestion,
-  type PracticeResult,
+  type PracticeResultItem,
   type LearnTopicRef,
-  type RemediationItem,
 } from '../api/client';
 import { getSessionToken } from '../lib/session';
 
-type Phase = 'study' | 'practice' | 'results';
+// ── Types ────────────────────────────────────────────────────────────────────
 
-const ROLE_LABEL: Record<string, string> = {
-  'prerequisite-reading': 'Prerequisite Reading',
-  primary: 'Core Content',
+type Task = {
+  index: number;
+  studyItem: LearnStudyItem;
+  question?: LearnPracticeQuestion;
 };
 
-export default function LearnModule() {
-  const { id } = useParams<{ id: string }>();
+type FlowState =
+  | { screen: 'overview' }
+  | { screen: 'briefing'; taskIndex: number }
+  | { screen: 'checkpoint'; taskIndex: number }
+  | { screen: 'debrief' };
+
+type CheckpointResult = {
+  questionId: string;
+  correct: boolean;
+  explanation?: string;
+  recommendedTopics?: LearnTopicRef[];
+};
+
+// ── Task synthesis ────────────────────────────────────────────────────────────
+
+function buildTasks(
+  studyItems: LearnStudyItem[],
+  questions: LearnPracticeQuestion[],
+): Task[] {
+  const ordered = [...studyItems].sort((a, b) => {
+    if (a.role === 'primary' && b.role !== 'primary') return -1;
+    if (b.role === 'primary' && a.role !== 'primary') return 1;
+    return 0;
+  });
+  return ordered.map((item, i) => ({
+    index: i,
+    studyItem: item,
+    question: questions[i],
+  }));
+}
+
+// ── Hook ─────────────────────────────────────────────────────────────────────
+
+function useModuleFlow(moduleId: string | undefined) {
   const navigate = useNavigate();
   const [data, setData] = useState<LearnModuleResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [phase, setPhase] = useState<Phase>('study');
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [flow, setFlow] = useState<FlowState>({ screen: 'overview' });
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [checkpointResults, setCheckpointResults] = useState<CheckpointResult[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [results, setResults] = useState<PracticeResult | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchHits, setSearchHits] = useState<Array<{ title: string; excerpt: string }> | null>(null);
-  const [searching, setSearching] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
-    if (!getSessionToken()) {
-      navigate('/learn', { replace: true });
-      return;
-    }
-    api.learn.module(id)
-      .then(setData)
+    if (!moduleId) return;
+    if (!getSessionToken()) { navigate('/learn', { replace: true }); return; }
+    api.learn.module(moduleId)
+      .then(d => {
+        setData(d);
+        setTasks(buildTasks(d.studyItems, d.practiceQuestions));
+      })
       .catch(e => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
-  }, [id, navigate]);
+  }, [moduleId, navigate]);
 
-  async function runSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!id || !searchQuery.trim()) return;
-    setSearching(true);
-    setSearchHits(null);
-    try {
-      const result = await api.learn.help(id, searchQuery.trim());
-      setSearchHits(result.hits.map(h => ({ title: h.title, excerpt: h.excerpt })));
-    } catch {
-      setSearchHits([]);
-    } finally {
-      setSearching(false);
+  function beginTraining() {
+    setFlow({ screen: 'briefing', taskIndex: 0 });
+  }
+
+  function advanceFromBriefing(taskIndex: number) {
+    const task = tasks[taskIndex];
+    if (task?.question) {
+      setFlow({ screen: 'checkpoint', taskIndex });
+    } else {
+      advanceFromCheckpoint(taskIndex);
     }
   }
 
-  async function submitPractice() {
-    if (!id || !data) return;
-    const payload = data.practiceQuestions.map(q => ({
-      questionId: q.id,
-      selectedIndex: answers[q.id] ?? -1,
-    }));
+  async function submitCheckpointAnswer(
+    taskIndex: number,
+    optionIndex: number,
+  ): Promise<CheckpointResult | null> {
+    if (!moduleId || !data) return null;
+    const task = tasks[taskIndex];
+    if (!task?.question) return null;
+
     setSubmitting(true);
+    setSubmitError(null);
     try {
-      const result = await api.learn.practice(id, payload);
-      setResults(result);
-      setPhase('results');
+      const result = await api.learn.practice(moduleId, [
+        { questionId: task.question.id, selectedIndex: optionIndex },
+      ]);
+      const item: PracticeResultItem | undefined = result.results[0];
+      const checkpoint: CheckpointResult = {
+        questionId: task.question.id,
+        correct: item?.correct ?? false,
+        explanation: result.remediationItems[0]?.excerpt ?? item?.explanation,
+        recommendedTopics: result.recommendedTopics,
+      };
+      setCheckpointResults(prev => [...prev, checkpoint]);
+      return checkpoint;
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setSubmitError(e instanceof Error ? e.message : 'Submission failed');
+      return null;
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (loading) return <div className="p-6 text-gray-500">Loading…</div>;
-  if (error) {
-    const isLocked = error === 'Prerequisites not completed';
-    if (isLocked) return <LockedScreen moduleId={id!} />;
+  function advanceFromCheckpoint(taskIndex: number) {
+    const nextIndex = taskIndex + 1;
+    if (nextIndex < tasks.length) {
+      setFlow({ screen: 'briefing', taskIndex: nextIndex });
+    } else {
+      setFlow({ screen: 'debrief' });
+    }
+  }
+
+  const score = checkpointResults.filter(r => r.correct).length;
+  const total = checkpointResults.length;
+
+  return {
+    data,
+    loading,
+    error,
+    flow,
+    tasks,
+    checkpointResults,
+    submitting,
+    submitError,
+    score,
+    total,
+    beginTraining,
+    advanceFromBriefing,
+    submitCheckpointAnswer,
+    advanceFromCheckpoint,
+  };
+}
+
+// ── Root component ────────────────────────────────────────────────────────────
+
+export default function LearnModule() {
+  const { id } = useParams<{ id: string }>();
+  const hook = useModuleFlow(id);
+
+  if (hook.loading) return (
+    <div className="flex items-center justify-center h-48">
+      <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>
+        Loading…
+      </span>
+    </div>
+  );
+
+  if (hook.error) return (
+    <div className="p-4 rounded-xl text-sm" style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: 'rgb(244,63,94)' }}>
+      {hook.error}
+    </div>
+  );
+
+  if (!hook.data) return null;
+
+  const { flow, tasks, data, checkpointResults, submitting, submitError, score, total } = hook;
+
+  if (flow.screen === 'overview') {
     return (
-      <div className="max-w-3xl mx-auto p-6">
-        <div className="rounded border p-5 bg-red-50 border-red-200">
-          <p className="font-semibold text-red-700">Error</p>
-          <p className="text-sm mt-1 text-red-600">{error}</p>
-          <a href="/learn" className="inline-block mt-3 text-sm text-blue-600 hover:underline">← Back</a>
-        </div>
-      </div>
+      <OverviewScreen
+        module={data.module}
+        tasks={tasks}
+        onBegin={hook.beginTraining}
+      />
     );
   }
-  if (!data) return <div className="p-6 text-gray-500">Not found.</div>;
 
-  const allAnswered = data.practiceQuestions.every(q => answers[q.id] !== undefined);
+  if (flow.screen === 'briefing') {
+    return (
+      <BriefingScreen
+        task={tasks[flow.taskIndex]}
+        taskIndex={flow.taskIndex}
+        totalTasks={tasks.length}
+        onNext={() => hook.advanceFromBriefing(flow.taskIndex)}
+      />
+    );
+  }
+
+  if (flow.screen === 'checkpoint') {
+    return (
+      <CheckpointScreen
+        task={tasks[flow.taskIndex]}
+        submitting={submitting}
+        submitError={submitError}
+        onAnswer={(optionIndex) => hook.submitCheckpointAnswer(flow.taskIndex, optionIndex)}
+        onContinue={() => hook.advanceFromCheckpoint(flow.taskIndex)}
+      />
+    );
+  }
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
+    <DebriefScreen
+      module={data.module}
+      score={score}
+      total={total}
+      checkpointResults={checkpointResults}
+      tasks={tasks}
+    />
+  );
+}
+
+// ── OverviewScreen ────────────────────────────────────────────────────────────
+
+function OverviewScreen({
+  module,
+  tasks,
+  onBegin,
+}: {
+  module: LearnModuleResponse['module'];
+  tasks: Task[];
+  onBegin: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="max-w-2xl mx-auto space-y-8"
+    >
       {/* Header */}
       <div>
-        <Link to="/learn" className="text-blue-600 text-sm hover:underline">&larr; Learning Hub</Link>
-        <h1 className="text-2xl font-bold mt-2">{data.module.title}</h1>
-        {data.module.description && (
-          <p className="text-gray-500 mt-1">{data.module.description}</p>
+        <p className="label-tag-muted mb-2">Training Module</p>
+        <h1
+          className="font-display font-black text-2xl md:text-3xl tracking-tight mb-3"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          {module.title}
+        </h1>
+        {module.description && (
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            {module.description}
+          </p>
         )}
       </div>
 
-      {/* Phase tabs */}
-      <div className="flex gap-1 border-b">
-        {(['study', 'practice'] as Phase[]).map(p => (
-          <button
-            key={p}
-            onClick={() => { setPhase(p); setResults(null); }}
-            className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px ${
-              phase === p ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+      {/* Task list */}
+      <div
+        className="rounded-xl p-5 space-y-1"
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+      >
+        <p className="label-tag-muted mb-4">
+          {tasks.length} Task{tasks.length !== 1 ? 's' : ''} in this module
+        </p>
+        {tasks.map((task, i) => (
+          <div
+            key={task.studyItem.id}
+            className="flex items-center gap-4 py-3"
+            style={{
+              borderBottom: i < tasks.length - 1 ? '1px solid var(--border-subtle)' : undefined,
+              opacity: i === 0 ? 1 : 0.5,
+            }}
           >
-            {p === 'practice' ? `Practice (${data.practiceQuestions.length})` : 'Study'}
-          </button>
-        ))}
-        {results && (
-          <button
-            onClick={() => setPhase('results')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
-              phase === 'results' ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Results
-          </button>
-        )}
-      </div>
-
-      {/* Study phase */}
-      {phase === 'study' && (
-        <div className="space-y-6">
-          {/* KB Search */}
-          <div className="border rounded p-4 bg-gray-50">
-            <form onSubmit={runSearch} className="flex gap-2">
-              <input
-                className="flex-1 border rounded px-3 py-1.5 text-sm"
-                placeholder="Search knowledge base…"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-              />
-              <button
-                type="submit"
-                disabled={searching || !searchQuery.trim()}
-                className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
-              >
-                {searching ? '…' : 'Search'}
-              </button>
-              {searchHits && (
-                <button type="button" onClick={() => setSearchHits(null)} className="text-xs text-gray-400 px-2">
-                  clear
-                </button>
+            <span
+              className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
+              style={{
+                background: i === 0 ? 'var(--gold-muted)' : 'var(--bg-elevated)',
+                border: `1px solid ${i === 0 ? 'var(--border-gold)' : 'var(--border-subtle)'}`,
+                color: i === 0 ? 'var(--gold-accent)' : 'var(--text-muted)',
+              }}
+            >
+              {i + 1}
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                {task.studyItem.title}
+              </p>
+              {task.question && (
+                <p className="text-[10px] font-bold uppercase tracking-widest mt-0.5" style={{ color: 'var(--gold-accent)', opacity: 0.7 }}>
+                  Includes checkpoint
+                </p>
               )}
-            </form>
-            {searchHits !== null && (
-              <div className="mt-3 space-y-2">
-                {searchHits.length === 0 ? (
-                  <p className="text-sm text-gray-400">No results.</p>
-                ) : searchHits.map((h, i) => (
-                  <div key={i} className="text-sm border rounded p-2 bg-white">
-                    <p className="font-medium text-gray-800">{h.title}</p>
-                    <p className="text-gray-500 text-xs mt-0.5 line-clamp-2">{h.excerpt}</p>
-                  </div>
-                ))}
-              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <button
+        onClick={onBegin}
+        className="w-full py-4 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:scale-[1.01] hover:brightness-110"
+        style={{ background: 'var(--gold-accent)', color: '#000', boxShadow: 'var(--glow-gold)' }}
+      >
+        Begin Training
+      </button>
+
+      {/* Back link */}
+      <div className="text-center">
+        <Link
+          to="/learn/hub"
+          className="text-xs font-medium"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          ← Back to modules
+        </Link>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── BriefingScreen ────────────────────────────────────────────────────────────
+
+function BriefingScreen({
+  task,
+  taskIndex,
+  totalTasks,
+  onNext,
+}: {
+  task: Task;
+  taskIndex: number;
+  totalTasks: number;
+  onNext: () => void;
+}) {
+  const pct = Math.round((taskIndex / totalTasks) * 100);
+
+  return (
+    <motion.div
+      key={taskIndex}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.35 }}
+      className="max-w-2xl mx-auto space-y-6"
+    >
+      {/* Progress bar */}
+      <div>
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            Task {taskIndex + 1} of {totalTasks}
+          </span>
+          <span className="text-[10px] font-black" style={{ color: 'var(--gold-accent)' }}>
+            {pct}%
+          </span>
+        </div>
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-subtle)' }}>
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${pct}%`,
+              background: 'linear-gradient(90deg, var(--gold-accent), #d97706)',
+              boxShadow: '0 0 8px rgba(245,158,11,0.35)',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Content card */}
+      <div
+        className="rounded-xl p-6 md:p-8"
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+      >
+        <p className="label-tag-muted mb-4">
+          {task.studyItem.role === 'primary' ? 'Core Content' : 'Reading'}
+        </p>
+        <h2
+          className="font-display font-black text-xl md:text-2xl mb-5 leading-tight"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          {task.studyItem.title}
+        </h2>
+        <div
+          className="text-sm leading-relaxed whitespace-pre-wrap"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          {task.studyItem.content}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <button
+        onClick={onNext}
+        className="w-full py-4 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:scale-[1.01] hover:brightness-110"
+        style={{ background: 'var(--gold-accent)', color: '#000', boxShadow: 'var(--glow-gold)' }}
+      >
+        {task.question ? 'Proceed to Checkpoint →' : 'Task Complete — Continue →'}
+      </button>
+    </motion.div>
+  );
+}
+
+// ── CheckpointScreen ──────────────────────────────────────────────────────────
+
+function CheckpointScreen({
+  task,
+  submitting,
+  submitError,
+  onAnswer,
+  onContinue,
+}: {
+  task: Task;
+  submitting: boolean;
+  submitError: string | null;
+  onAnswer: (optionIndex: number) => Promise<CheckpointResult | null>;
+  onContinue: () => void;
+}) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const [result, setResult] = useState<CheckpointResult | null>(null);
+
+  async function handleSelect(i: number) {
+    if (selected !== null || submitting) return;
+    setSelected(i);
+    const r = await onAnswer(i);
+    setResult(r);
+  }
+
+  if (!task.question) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.35 }}
+      className="max-w-2xl mx-auto space-y-6"
+    >
+      {/* Checkpoint header */}
+      <div
+        className="rounded-xl px-5 py-4 flex items-center gap-3"
+        style={{
+          background: 'var(--gold-muted)',
+          border: '1px solid var(--border-gold)',
+          boxShadow: 'var(--glow-gold)',
+        }}
+      >
+        <span
+          className="text-[10px] font-black uppercase tracking-ultra"
+          style={{ color: 'var(--gold-accent)' }}
+        >
+          ⬡ Checkpoint
+        </span>
+        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+          Select the correct answer. You cannot go back.
+        </span>
+      </div>
+
+      {/* Question */}
+      <div
+        className="rounded-xl p-6"
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+      >
+        <p
+          className="text-base font-bold leading-snug mb-6"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          {task.question.questionText}
+        </p>
+
+        <div className="space-y-3">
+          {task.question.options.map((opt, i) => {
+            const isSelected = selected === i;
+            const locked = selected !== null;
+            const isCorrect = result?.correct === true && isSelected;
+            const isWrong = result?.correct === false && isSelected;
+
+            let borderColor = 'var(--border-subtle)';
+            let bg = 'transparent';
+            if (isCorrect) { borderColor = 'rgba(16,185,129,0.5)'; bg = 'rgba(16,185,129,0.1)'; }
+            if (isWrong) { borderColor = 'rgba(244,63,94,0.4)'; bg = 'rgba(244,63,94,0.08)'; }
+
+            return (
+              <button
+                key={i}
+                onClick={() => handleSelect(i)}
+                disabled={locked || submitting}
+                className="w-full text-left px-4 py-3.5 rounded-xl text-sm font-medium transition-all"
+                style={{
+                  border: `1px solid ${borderColor}`,
+                  background: bg,
+                  color: 'var(--text-primary)',
+                  cursor: locked ? 'default' : 'pointer',
+                  opacity: locked && !isSelected ? 0.4 : 1,
+                }}
+              >
+                <span
+                  className="inline-block w-5 h-5 rounded-full text-center text-[10px] font-black mr-3 leading-5"
+                  style={{
+                    background: isSelected
+                      ? (isCorrect ? 'rgba(16,185,129,0.3)' : 'rgba(244,63,94,0.3)')
+                      : 'var(--bg-elevated)',
+                    border: `1px solid ${isSelected ? borderColor : 'var(--border-subtle)'}`,
+                    color: 'var(--text-muted)',
+                  }}
+                >
+                  {String.fromCharCode(65 + i)}
+                </span>
+                {opt}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Inline feedback */}
+        {result && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-5 p-4 rounded-xl"
+            style={{
+              background: result.correct ? 'rgba(16,185,129,0.08)' : 'rgba(244,63,94,0.08)',
+              border: `1px solid ${result.correct ? 'rgba(16,185,129,0.3)' : 'rgba(244,63,94,0.2)'}`,
+            }}
+          >
+            <p
+              className="text-sm font-bold mb-1"
+              style={{ color: result.correct ? '#10b981' : 'rgb(244,63,94)' }}
+            >
+              {result.correct ? '✓ Correct' : '✗ Incorrect'}
+            </p>
+            {result.explanation && (
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                {result.explanation}
+              </p>
             )}
-          </div>
+          </motion.div>
+        )}
 
-          {/* Study content */}
-          {data.studyItems.length === 0 && data.references.length === 0 ? (
-            <p className="text-gray-400 text-sm">No published content available for this module yet.</p>
-          ) : (
-            <>
-              {(['prerequisite-reading', 'primary'] as const).map(role => {
-                const items = data.studyItems.filter(i => i.role === role);
-                if (items.length === 0) return null;
-                return (
-                  <div key={role}>
-                    <h2 className="font-semibold text-gray-700 border-b pb-1 mb-4">{ROLE_LABEL[role]}</h2>
-                    <div className="space-y-4">
-                      {items.map(item => <StudyCard key={item.id} item={item} />)}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {data.references.length > 0 && (
-                <div>
-                  <h2 className="font-semibold text-gray-700 border-b pb-1 mb-4">Supporting References</h2>
-                  <div className="space-y-3">
-                    {data.references.map(ref => <ReferenceCard key={ref.id} ref_={ref} />)}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Practice phase */}
-      {phase === 'practice' && (
-        <div className="space-y-4">
-          {data.practiceQuestions.length === 0 ? (
-            <p className="text-gray-400 text-sm">No practice questions available for this module yet.</p>
-          ) : (
-            <>
-              {data.practiceQuestions.map((q, qi) => (
-                <PracticeQuestionCard
-                  key={q.id}
-                  question={q}
-                  index={qi}
-                  selected={answers[q.id]}
-                  onSelect={idx => setAnswers(prev => ({ ...prev, [q.id]: idx }))}
-                />
-              ))}
+        {/* Submit error + retry/skip */}
+        {submitError && !result && (
+          <div className="mt-4 p-3 rounded-lg text-xs space-y-2" style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: 'rgb(244,63,94)' }}>
+            <p>{submitError}</p>
+            <div className="flex gap-3">
               <button
-                onClick={submitPractice}
-                disabled={submitting || !allAnswered}
-                className="w-full py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 disabled:opacity-50"
+                onClick={() => { setSelected(null); }}
+                className="underline"
               >
-                {submitting ? 'Grading…' : allAnswered ? 'Submit answers' : `Answer all ${data.practiceQuestions.length} questions to submit`}
+                Retry
               </button>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Results / Remediation phase */}
-      {phase === 'results' && results && (
-        <RemediationScreen
-          results={results}
-          nextModuleId={data.module.nextModuleId}
-          moduleId={id!}
-          onRetry={() => { setAnswers({}); setPhase('practice'); }}
-        />
-      )}
-    </div>
-  );
-}
-
-function StudyCard({ item }: { item: LearnStudyItem }) {
-  const [expanded, setExpanded] = useState(false);
-  const LIMIT = 600;
-  const isLong = item.content.length > LIMIT;
-
-  return (
-    <div className="border rounded overflow-hidden">
-      <div className="px-4 py-3 bg-gray-50 border-b flex items-center gap-2">
-        <span className="font-medium">{item.title}</span>
-        <span className="px-1.5 py-0.5 bg-white border rounded text-xs text-gray-500">{item.type}</span>
-        {item.topics.map(t => (
-          <span key={t.slug} className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{t.name}</span>
-        ))}
-      </div>
-      <div className="px-4 py-3">
-        <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed text-gray-800">
-          {expanded || !isLong ? item.content : item.content.slice(0, LIMIT) + '…'}
-        </pre>
-        {isLong && (
-          <button onClick={() => setExpanded(v => !v)} className="mt-2 text-xs text-blue-600 hover:underline">
-            {expanded ? 'Show less' : 'Show more'}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ReferenceCard({ ref_ }: { ref_: LearnReference }) {
-  return (
-    <div className="border rounded p-3 flex items-start gap-3">
-      <span className="px-1.5 py-0.5 bg-gray-100 border rounded text-xs text-gray-500 shrink-0 mt-0.5">{ref_.type}</span>
-      <div className="min-w-0">
-        <p className="font-medium text-sm">{ref_.title}</p>
-        <p className="text-xs text-gray-500 mt-0.5 line-clamp-3">{ref_.excerpt}</p>
-        {ref_.topics.length > 0 && (
-          <div className="flex gap-1 mt-1">
-            {ref_.topics.map(t => (
-              <span key={t.slug} className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{t.name}</span>
-            ))}
+              <button
+                onClick={() => {
+                  setResult({ questionId: task.question!.id, correct: false });
+                }}
+                className="underline opacity-70"
+              >
+                Skip (mark incorrect)
+              </button>
+            </div>
           </div>
         )}
       </div>
-    </div>
+
+      {/* Submitting indicator */}
+      {submitting && (
+        <p className="text-center text-xs" style={{ color: 'var(--text-dim)' }}>Submitting…</p>
+      )}
+
+      {/* Continue — appears only after result */}
+      {result && (
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={onContinue}
+          className="w-full py-4 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:scale-[1.01] hover:brightness-110"
+          style={{ background: 'var(--gold-accent)', color: '#000', boxShadow: 'var(--glow-gold)' }}
+        >
+          Continue →
+        </motion.button>
+      )}
+    </motion.div>
   );
 }
 
-function PracticeQuestionCard({ question, index, selected, onSelect }: {
-  question: LearnPracticeQuestion;
-  index: number;
-  selected: number | undefined;
-  onSelect: (i: number) => void;
-}) {
-  return (
-    <div className="border rounded p-4">
-      <p className="font-medium mb-3">
-        <span className="text-gray-400 mr-2">{index + 1}.</span>
-        {question.questionText}
-      </p>
-      <div className="space-y-2">
-        {question.options.map((opt, i) => (
-          <label
-            key={i}
-            className={`flex items-center gap-3 px-3 py-2 border rounded cursor-pointer text-sm ${
-              selected === i ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'
-            }`}
-          >
-            <input
-              type="radio"
-              name={question.id}
-              checked={selected === i}
-              onChange={() => onSelect(i)}
-              className="shrink-0"
-            />
-            <span className="text-gray-400 font-mono text-xs">{String.fromCharCode(65 + i)}.</span>
-            {opt}
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}
+// ── DebriefScreen ─────────────────────────────────────────────────────────────
 
-function RemediationScreen({ results, nextModuleId, moduleId, onRetry }: {
-  results: PracticeResult;
-  nextModuleId: string | null;
-  moduleId: string;
-  onRetry: () => void;
+function DebriefScreen({
+  module,
+  score,
+  total,
+  checkpointResults,
+  tasks,
+}: {
+  module: LearnModuleResponse['module'];
+  score: number;
+  total: number;
+  checkpointResults: CheckpointResult[];
+  tasks: Task[];
 }) {
-  const pct = results.percentage;
-  const passed = pct >= 70;
-  const [helpQuery, setHelpQuery] = useState('');
-  const [helpHits, setHelpHits] = useState<Array<{ title: string; excerpt: string }> | null>(null);
-  const [helpSearching, setHelpSearching] = useState(false);
+  const pct = total > 0 ? Math.round((score / total) * 100) : null;
+  const passed = pct !== null && pct >= 70;
 
-  async function runHelp(e: React.FormEvent) {
-    e.preventDefault();
-    if (!helpQuery.trim()) return;
-    setHelpSearching(true);
-    try {
-      const result = await api.learn.help(moduleId, helpQuery.trim());
-      setHelpHits(result.hits.map(h => ({ title: h.title, excerpt: h.excerpt })));
-    } catch {
-      setHelpHits([]);
-    } finally {
-      setHelpSearching(false);
+  const questionTaskMap = new Map<string, string>();
+  for (const task of tasks) {
+    if (task.question) questionTaskMap.set(task.question.id, task.studyItem.title);
+  }
+
+  // Collect deduped recommended topics from wrong answers
+  const remediationTopics: LearnTopicRef[] = [];
+  const seenTopics = new Set<string>();
+  for (const r of checkpointResults) {
+    if (!r.correct && r.recommendedTopics) {
+      for (const t of r.recommendedTopics) {
+        if (!seenTopics.has(t.slug)) { seenTopics.add(t.slug); remediationTopics.push(t); }
+      }
     }
   }
 
   return (
-    <div className="space-y-6">
-      {/* Score summary */}
-      <div className={`rounded border p-5 ${passed ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
-        <div className="flex items-center gap-4">
-          <div className={`text-4xl font-bold ${passed ? 'text-green-700' : 'text-yellow-700'}`}>
-            {pct}%
-          </div>
-          <div>
-            <p className="font-semibold text-gray-800">
-              {results.score} of {results.total} correct
-            </p>
-            <p className="text-sm text-gray-500 mt-0.5">
-              {passed ? 'Good work — you passed this module.' : 'Review the missed questions below, then try again.'}
-            </p>
-          </div>
-        </div>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="max-w-2xl mx-auto space-y-8"
+    >
+      {/* Header */}
+      <div className="text-center">
+        <p className="label-tag-muted mb-2">Module Complete</p>
+        <h1
+          className="font-display font-black text-2xl md:text-3xl tracking-tight"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          {module.title}
+        </h1>
       </div>
 
-      {/* Per-question breakdown */}
-      <div>
-        <h2 className="font-semibold text-gray-700 mb-3">Question breakdown</h2>
-        <div className="space-y-3">
-          {results.results.map((r, i) => (
-            <div key={r.questionId} className={`border rounded p-4 ${r.correct ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
-              <div className="flex items-start gap-2 mb-2">
-                <span className={`text-sm font-bold ${r.correct ? 'text-green-700' : 'text-red-600'}`}>
-                  {r.correct ? '✓' : '✗'}
-                </span>
-                <p className="text-sm font-medium text-gray-800">
-                  {i + 1}. {r.questionText}
-                </p>
-              </div>
-              {r.options.length > 0 && (
-                <div className="ml-5 space-y-1">
-                  {r.options.map((opt, oi) => {
-                    let cls = 'text-xs px-2 py-1 rounded ';
-                    if (oi === r.correctIndex) cls += 'bg-green-200 text-green-900 font-medium';
-                    else if (oi === r.selectedIndex && !r.correct) cls += 'bg-red-200 text-red-800 line-through';
-                    else cls += 'text-gray-500';
-                    return <p key={oi} className={cls}>{String.fromCharCode(65 + oi)}. {opt}</p>;
-                  })}
-                </div>
-              )}
+      {/* Score badge */}
+      {pct !== null ? (
+        <div
+          className="rounded-xl p-6 text-center"
+          style={{
+            background: passed ? 'rgba(16,185,129,0.06)' : 'rgba(244,63,94,0.06)',
+            border: `1px solid ${passed ? 'rgba(16,185,129,0.25)' : 'rgba(244,63,94,0.2)'}`,
+          }}
+        >
+          <p
+            className="font-display font-black text-5xl mb-1"
+            style={{ color: passed ? '#10b981' : 'rgb(244,63,94)' }}
+          >
+            {pct}%
+          </p>
+          <p className="text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
+            {score} of {total} correct
+          </p>
+          <p
+            className="text-xs font-black uppercase tracking-ultra mt-2"
+            style={{ color: passed ? '#10b981' : 'rgb(244,63,94)' }}
+          >
+            {passed ? 'Passed' : 'Needs Review'}
+          </p>
+        </div>
+      ) : (
+        <div
+          className="rounded-xl p-6 text-center"
+          style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+        >
+          <p className="font-display font-black text-2xl mb-1" style={{ color: 'var(--text-primary)' }}>
+            Training Complete
+          </p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No checkpoint questions in this module.</p>
+        </div>
+      )}
+
+      {/* Per-task results */}
+      {checkpointResults.length > 0 && (
+        <div
+          className="rounded-xl p-5 space-y-3"
+          style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+        >
+          <p className="label-tag-muted mb-3">Results by Task</p>
+          {checkpointResults.map((r) => (
+            <div key={r.questionId} className="flex items-center gap-3">
+              <span
+                className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
+                style={{
+                  background: r.correct ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)',
+                  color: r.correct ? '#10b981' : 'rgb(244,63,94)',
+                }}
+              >
+                {r.correct ? '✓' : '✗'}
+              </span>
+              <span className="text-sm flex-1" style={{ color: 'var(--text-secondary)' }}>
+                {questionTaskMap.get(r.questionId) ?? 'Task'}
+              </span>
               {!r.correct && r.explanation && (
-                <p className="ml-5 mt-2 text-xs text-gray-600 italic">{r.explanation}</p>
+                <span className="text-[10px] italic" style={{ color: 'var(--text-muted)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {r.explanation}
+                </span>
               )}
             </div>
           ))}
         </div>
-      </div>
+      )}
 
-      {/* Recommendations + KB help */}
-      {!passed && (
-        <div className="space-y-3">
-          {results.recommendedTopics.length > 0 && (
-            <div className="border rounded p-4 bg-blue-50 border-blue-200">
-              <h3 className="font-semibold text-blue-800 text-sm mb-2">Review these topics</h3>
-              <div className="flex flex-wrap gap-2">
-                {results.recommendedTopics.map((t: LearnTopicRef) => (
-                  <span key={t.slug} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
-                    {t.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-          {results.remediationItems.length > 0 && (
-            <div className="border rounded p-4 bg-white">
-              <h3 className="font-semibold text-gray-700 text-sm mb-2">Suggested reading</h3>
-              <div className="space-y-2">
-                {results.remediationItems.map((item: RemediationItem, i: number) => (
-                  <div key={i} className="text-sm border rounded p-2 bg-gray-50">
-                    <p className="font-medium text-gray-800">{item.title}</p>
-                    {item.topics.length > 0 && (
-                      <div className="flex gap-1 mt-1 flex-wrap">
-                        {item.topics.map(t => (
-                          <span key={t.slug} className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{t.name}</span>
-                        ))}
-                      </div>
-                    )}
-                    <p className="text-gray-500 text-xs mt-1 line-clamp-2">{item.excerpt}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="border rounded p-4 bg-gray-50">
-            <h3 className="font-semibold text-gray-700 text-sm mb-2">Search the knowledge base</h3>
-            <form onSubmit={runHelp} className="flex gap-2">
-              <input
-                className="flex-1 border rounded px-3 py-1.5 text-sm"
-                placeholder="Search for a concept or topic…"
-                value={helpQuery}
-                onChange={e => setHelpQuery(e.target.value)}
-              />
-              <button
-                type="submit"
-                disabled={helpSearching || !helpQuery.trim()}
-                className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
-              >
-                {helpSearching ? '…' : 'Search'}
-              </button>
-            </form>
-            {helpHits !== null && (
-              <div className="mt-3 space-y-2">
-                {helpHits.length === 0 ? (
-                  <p className="text-sm text-gray-400">No results.</p>
-                ) : helpHits.map((h, i) => (
-                  <div key={i} className="text-sm border rounded p-2 bg-white">
-                    <p className="font-medium text-gray-800">{h.title}</p>
-                    <p className="text-gray-500 text-xs mt-0.5 line-clamp-2">{h.excerpt}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+      {/* Remediation — recommended KB topics for wrong answers */}
+      {remediationTopics.length > 0 && (
+        <div
+          className="rounded-xl p-5"
+          style={{ background: 'rgba(244,63,94,0.04)', border: '1px solid rgba(244,63,94,0.15)' }}
+        >
+          <p className="label-tag-muted mb-3">Recommended Review</p>
+          <ul className="space-y-2">
+            {remediationTopics.map(t => (
+              <li key={t.slug}>
+                <Link
+                  to={`/kb/search?q=${encodeURIComponent(t.name)}`}
+                  className="text-xs font-medium underline transition-opacity hover:opacity-75"
+                  style={{ color: 'var(--gold-accent)' }}
+                >
+                  {t.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
-      {/* Actions */}
-      <div className="flex gap-3">
-        <button
-          onClick={onRetry}
-          className="px-4 py-2 border rounded text-sm text-gray-700 hover:bg-gray-50"
+      {/* CTAs */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        {module.nextModuleId && (
+          <Link
+            to={`/learn/modules/${module.nextModuleId}`}
+            className="flex-1 text-center py-4 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:scale-[1.01] hover:brightness-110"
+            style={{ background: 'var(--gold-accent)', color: '#000', boxShadow: 'var(--glow-gold)' }}
+          >
+            Next Module →
+          </Link>
+        )}
+        <Link
+          to="/learn/dashboard"
+          className="flex-1 text-center py-4 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:opacity-80"
+          style={{ background: 'var(--bg-surface)', color: 'var(--gold-accent)', border: '1px solid var(--border-gold)' }}
         >
-          Try again
-        </button>
-        {passed && nextModuleId ? (
-          <Link
-            to={`/learn/modules/${nextModuleId}`}
-            className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-          >
-            Next module →
-          </Link>
-        ) : (
-          <Link
-            to="/learn"
-            className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-          >
-            Back to Learning Hub
-          </Link>
-        )}
+          Back to Dashboard
+        </Link>
       </div>
-    </div>
-  );
-}
-
-function LockedScreen({ moduleId }: { moduleId: string }) {
-  const [prereqs, setPrereqs] = useState<Array<{ id: string; title: string; completed: boolean }>>([]);
-
-  useEffect(() => {
-    api.learn.prerequisites(moduleId)
-      .then(setPrereqs)
-      .catch(() => {});
-  }, [moduleId]);
-
-  return (
-    <div className="max-w-3xl mx-auto p-6">
-      <div className="rounded border p-5 bg-yellow-50 border-yellow-200">
-        <p className="font-semibold text-yellow-800">Module locked</p>
-        {prereqs.length > 0 ? (
-          <div className="mt-2">
-            <p className="text-sm text-yellow-700 mb-2">Complete these modules first:</p>
-            <ul className="space-y-1">
-              {prereqs.map(p => (
-                <li key={p.id} className="text-sm flex items-center gap-2">
-                  <span className={p.completed ? 'text-green-600' : 'text-yellow-700'}>
-                    {p.completed ? '✓' : '○'}
-                  </span>
-                  {p.completed ? (
-                    <span className="text-green-700">{p.title}</span>
-                  ) : (
-                    <Link to={`/learn/modules/${p.id}`} className="text-blue-600 hover:underline">
-                      {p.title}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <p className="text-sm text-yellow-700 mt-1">You must complete prerequisite modules before accessing this one.</p>
-        )}
-        <Link to="/learn" className="inline-block mt-3 text-sm text-blue-600 hover:underline">← Back to My Training</Link>
-      </div>
-    </div>
+    </motion.div>
   );
 }
