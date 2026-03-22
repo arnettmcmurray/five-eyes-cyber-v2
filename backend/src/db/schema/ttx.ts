@@ -68,6 +68,8 @@ export const ttxInjects = pgTable('ttx_injects', {
 export const ttxExerciseRuns = pgTable('ttx_exercise_runs', {
   id:            text('id').primaryKey(),
   scenarioId:    text('scenario_id').notNull().references(() => ttxScenarios.id),
+  /** Human-readable session title set by facilitator at creation. */
+  title:         text('title').notNull().default(''),
   /** Immutable snapshot of scenario data (title, steps, injects) at session start. */
   snapshot:      jsonb('snapshot').notNull().default({}),
   scheduledAt:   timestamp('scheduled_at'),

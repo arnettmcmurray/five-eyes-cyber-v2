@@ -119,7 +119,16 @@ router.get('/:sessionId/view', requireLearner, requireParticipant, async (req, r
     db.select().from(ttxRunEvents).where(eq(ttxRunEvents.runId, runId)).orderBy(asc(ttxRunEvents.occurredAt)),
   ]);
 
-  res.json({ session, participants, events, myHandle: handle });
+  // Derive scenarioTitle and currentStep from the snapshot
+  const snap = session.snapshot as any;
+  const scenarioTitle: string = snap?.title ?? '';
+  let currentStep: any = null;
+  if (session.currentStepId) {
+    const allSteps = (snap?.sections ?? []).flatMap((s: any) => s.steps ?? []);
+    currentStep = allSteps.find((st: any) => st.id === session.currentStepId) ?? null;
+  }
+
+  res.json({ session, scenarioTitle, participants, events, currentStep, myHandle: handle });
 });
 
 // POST /ttx/participate/:sessionId/respond { eventType, body }

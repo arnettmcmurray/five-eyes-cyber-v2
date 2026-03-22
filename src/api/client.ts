@@ -203,9 +203,9 @@ export const api = {
           adminReq<void>('DELETE', `/ttx/scenarios/${scenarioId}/sections/${sectionId}`),
       },
       steps: {
-        create: (scenarioId: string, sectionId: string, body: { prompt: string; facilitatorNarrative?: string; participantSituationRoom?: string; order?: number }) =>
+        create: (scenarioId: string, sectionId: string, body: { title: string; facilitatorNarrative?: string; participantSituationRoom?: string; order?: number }) =>
           adminReq<TtxStep>('POST', `/ttx/scenarios/${scenarioId}/sections/${sectionId}/steps`, body),
-        update: (scenarioId: string, sectionId: string, stepId: string, body: Partial<{ prompt: string; facilitatorNarrative: string; participantSituationRoom: string; order: number }>) =>
+        update: (scenarioId: string, sectionId: string, stepId: string, body: Partial<{ title: string; facilitatorNarrative: string; participantSituationRoom: string; order: number }>) =>
           adminReq<TtxStep>('PATCH', `/ttx/scenarios/${scenarioId}/sections/${sectionId}/steps/${stepId}`, body),
         delete: (scenarioId: string, sectionId: string, stepId: string) =>
           adminReq<void>('DELETE', `/ttx/scenarios/${scenarioId}/sections/${sectionId}/steps/${stepId}`),
@@ -597,7 +597,7 @@ export interface TtxInject {
 export interface TtxStep {
   id: string;
   sectionId: string;
-  prompt: string;
+  title: string;
   facilitatorNarrative: string;
   participantSituationRoom: string;
   prompts: string[];
@@ -716,7 +716,7 @@ export interface TtxDraftInject {
 }
 
 export interface TtxDraftStep {
-  prompt: string;
+  title: string;
   facilitatorNarrative: string;
   participantSituationRoom: string;
   prompts: string[];

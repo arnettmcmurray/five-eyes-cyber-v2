@@ -1,5 +1,5 @@
 import { pgTable, text, integer, timestamp, real, pgEnum } from 'drizzle-orm/pg-core';
-import { kbItems } from './kb-items';
+import { kbItems } from './kb-items.js';
 
 export const quizCandidateStatusEnum = pgEnum('quiz_candidate_status', [
   'pending-review', 'approved', 'rejected', 'promoted'

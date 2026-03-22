@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, real } from 'drizzle-orm/pg-core';
-import { kbItems } from './kb-items';
+import { kbItems } from './kb-items.js';
 
 export const topics = pgTable('topics', {
   id:            text('id').primaryKey(),

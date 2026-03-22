@@ -1,5 +1,5 @@
 import { pgTable, text, integer, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
-import { learningModules } from './modules';
+import { learningModules } from './modules.js';
 
 export const learnerProgress = pgTable('learner_progress', {
   id:            text('id').primaryKey(),

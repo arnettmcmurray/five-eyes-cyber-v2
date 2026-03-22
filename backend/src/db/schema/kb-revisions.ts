@@ -1,5 +1,5 @@
 import { pgTable, text, integer, timestamp } from 'drizzle-orm/pg-core';
-import { kbItems } from './kb-items'; // eslint-disable-line
+import { kbItems } from './kb-items.js'; // eslint-disable-line
 
 export const kbRevisions = pgTable('kb_revisions', {
   id:        text('id').primaryKey(),

@@ -71,7 +71,7 @@ router.get('/', async (_req, res) => {
 
 // POST /ttx/sessions — create (status: planned)
 router.post('/', async (req, res) => {
-  const { scenarioId, scheduledAt } = req.body ?? {};
+  const { scenarioId, title, scheduledAt } = req.body ?? {};
   const adminUsername = (req as unknown as AdminReq).adminUsername;
   if (!scenarioId) { res.status(400).json({ error: 'scenarioId is required' }); return; }
 
@@ -117,6 +117,7 @@ router.post('/', async (req, res) => {
   const [row] = await db.insert(ttxExerciseRuns).values({
     id: uuid(),
     scenarioId,
+    title: title ?? scenario.title,
     snapshot,
     scheduledAt: scheduledAtDate,
     status: 'planned',
@@ -178,13 +179,13 @@ router.post('/:id/advance', async (req, res) => {
   if (injectId) {
     const [inject] = await db.select().from(ttxInjects).where(eq(ttxInjects.id, injectId)).limit(1);
     if (!inject) { res.status(404).json({ error: 'Inject not found' }); return; }
-    await db.update(ttxExerciseRuns).set({ currentStepId: injectId }).where(eq(ttxExerciseRuns.id, session.id));
+    // Do NOT overwrite currentStepId — injects are events ON the current step, not step transitions.
     const [event] = await db.insert(ttxRunEvents).values({
       id: uuid(), runId: session.id, eventType: 'inject_delivered',
       actorHandle: adminUsername, body: inject.content, linkedInjectId: injectId,
     }).returning();
-    broadcast(req.params.id, { type: 'inject_advanced', currentStepId: injectId, inject, event });
-    res.json({ currentStepId: injectId, event });
+    broadcast(req.params.id, { type: 'inject_advanced', currentStepId: session.currentStepId, inject, event });
+    res.json({ currentStepId: session.currentStepId, event });
     return;
   }
 

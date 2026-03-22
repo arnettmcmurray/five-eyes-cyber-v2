@@ -221,7 +221,7 @@ export default function TtxConduct() {
                       >
                         <div className="flex items-center justify-between">
                           <span className="truncate flex-1">
-                            {si + 1}.{sti + 1} {step.prompt}
+                            {si + 1}.{sti + 1} {step.title}
                           </span>
                           {isCurrent && (
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 ml-2 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
@@ -252,7 +252,7 @@ export default function TtxConduct() {
                     Narrative Prompter
                   </div>
                   <h2 className="text-3xl font-bold mb-6 text-white leading-tight">
-                    {selectedStep.prompt}
+                    {selectedStep.title}
                   </h2>
                   
                   <div className="grid grid-cols-2 gap-8 mb-12">
@@ -287,11 +287,11 @@ export default function TtxConduct() {
                   </div>
 
                   {/* Discussion Prompts */}
-                  {selectedStep.prompts.length > 0 && (
+                  {selectedStep.titles.length > 0 && (
                     <div className="mb-12">
                       <div className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-4">Discussion Facilitation</div>
                       <ul className="space-y-3">
-                        {selectedStep.prompts.map((p, idx) => (
+                        {selectedStep.titles.map((p, idx) => (
                           <li key={idx} className="flex gap-4 p-4 bg-gray-900/30 border border-gray-800 rounded text-sm text-gray-400">
                             <span className="text-blue-500 font-mono font-bold">0{idx+1}</span>
                             {p}
