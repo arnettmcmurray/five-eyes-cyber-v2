@@ -1,3 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Inter:wght@300;400;500;600;700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Design Tokens ─────────────────────────────────────── */
+:root {
+  /* Canvas */
+  --bg-canvas: #050b14;
+  --bg-surface: #071020;
+  --bg-elevated: #0a1830;
+  --bg-overlay: rgba(5, 11, 20, 0.85);
+
+  /* Gold */
+  --gold-accent: #f59e0b;
+  --gold-muted: rgba(245, 158, 11, 0.12);
+  --gold-border: rgba(245, 158, 11, 0.25);
+
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.65);
+  --text-muted: rgba(255, 255, 255, 0.40);
+  --text-dim: rgba(255, 255, 255, 0.22);
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-gold: rgba(245, 158, 11, 0.28);
+
+  /* Glow */
+  --glow-gold: 0 0 24px rgba(245, 158, 11, 0.25);
+  --glow-gold-strong: 0 0 40px rgba(245, 158, 11, 0.40);
+
+  /* App status */
+  --status-complete: #10b981;
+  --status-progress: #f59e0b;
+  --status-error: #f43f5e;
+  --status-idle: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Light Theme Override ────────────────────────────────── */
+[data-theme="light"] {
+  --bg-canvas: #f5f7fa;
+  --bg-surface: #ffffff;
+  --bg-elevated: #eef1f6;
+  --bg-overlay: rgba(245, 247, 250, 0.90);
+
+  --gold-accent: #d97706;
+  --gold-muted: rgba(217, 119, 6, 0.10);
+  --gold-border: rgba(217, 119, 6, 0.28);
+
+  --text-primary: #0f172a;
+  --text-secondary: rgba(15, 23, 42, 0.70);
+  --text-muted: rgba(15, 23, 42, 0.50);
+  --text-dim: rgba(15, 23, 42, 0.30);
+
+  --border-subtle: rgba(15, 23, 42, 0.09);
+  --border-strong: rgba(15, 23, 42, 0.16);
+  --border-gold: rgba(217, 119, 6, 0.28);
+
+  --glow-gold: 0 0 20px rgba(217, 119, 6, 0.15);
+  --glow-gold-strong: 0 0 32px rgba(217, 119, 6, 0.28);
+
+  --status-complete: #059669;
+  --status-progress: #d97706;
+  --status-error: #e11d48;
+  --status-idle: rgba(15, 23, 42, 0.35);
+}
+
+/* ── Base Resets ─────────────────────────────────────────── */
+html {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Typography Utilities ────────────────────────────────── */
+.font-display {
+  font-family: 'Barlow Condensed', sans-serif;
+}
+
+.label-tag {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--gold-accent);
+}
+
+.label-tag-muted {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  background: var(--bg-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.35);
+}
+
+/* ── Selection ───────────────────────────────────────────── */
+::selection {
+  background: rgba(245, 158, 11, 0.20);
+  color: #ffffff;
+}
+
+/* ── Focus ring ──────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid rgba(245, 158, 11, 0.6);
+  outline-offset: 3px;
+}
+
+/* ── Glass panel ─────────────────────────────────────────── */
+.glass-panel {
+  background: rgba(7, 16, 32, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ── Gold shimmer on hover ───────────────────────────────── */
+.gold-hover:hover {
+  border-color: var(--border-gold);
+  box-shadow: var(--glow-gold);
+}

@@ -8,6 +8,9 @@ import {
   type LearnPracticeQuestion,
   type PracticeResultItem,
   type LearnTopicRef,
+  type RemediationItem,
+  type LearnReference,
+  type KBHelpResult,
 } from '../api/client';
 import { getSessionToken } from '../lib/session';
 
@@ -30,6 +33,7 @@ type CheckpointResult = {
   correct: boolean;
   explanation?: string;
   recommendedTopics?: LearnTopicRef[];
+  remediationItems?: RemediationItem[];
 };
 
 // ── Task synthesis ────────────────────────────────────────────────────────────
@@ -106,8 +110,9 @@ function useModuleFlow(moduleId: string | undefined) {
       const checkpoint: CheckpointResult = {
         questionId: task.question.id,
         correct: item?.correct ?? false,
-        explanation: result.remediationItems[0]?.excerpt ?? item?.explanation,
+        explanation: item?.explanation ?? result.remediationItems[0]?.excerpt,
         recommendedTopics: result.recommendedTopics,
+        remediationItems: result.remediationItems,
       };
       setCheckpointResults(prev => [...prev, checkpoint]);
       return checkpoint;
@@ -178,6 +183,7 @@ export default function LearnModule() {
       <OverviewScreen
         module={data.module}
         tasks={tasks}
+        references={data.references}
         onBegin={hook.beginTraining}
       />
     );
@@ -189,6 +195,7 @@ export default function LearnModule() {
         task={tasks[flow.taskIndex]}
         taskIndex={flow.taskIndex}
         totalTasks={tasks.length}
+        moduleId={id!}
         onNext={() => hook.advanceFromBriefing(flow.taskIndex)}
       />
     );
@@ -213,6 +220,7 @@ export default function LearnModule() {
       total={total}
       checkpointResults={checkpointResults}
       tasks={tasks}
+      moduleId={id!}
     />
   );
 }
@@ -222,10 +230,12 @@ export default function LearnModule() {
 function OverviewScreen({
   module,
   tasks,
+  references,
   onBegin,
 }: {
   module: LearnModuleResponse['module'];
   tasks: Task[];
+  references: LearnReference[];
   onBegin: () => void;
 }) {
   return (
@@ -292,6 +302,11 @@ function OverviewScreen({
         ))}
       </div>
 
+      {/* Reference materials */}
+      {references.length > 0 && (
+        <ReferencesSection references={references} />
+      )}
+
       {/* CTA */}
       <button
         onClick={onBegin}
@@ -321,11 +336,13 @@ function BriefingScreen({
   task,
   taskIndex,
   totalTasks,
+  moduleId,
   onNext,
 }: {
   task: Task;
   taskIndex: number;
   totalTasks: number;
+  moduleId: string;
   onNext: () => void;
 }) {
   const pct = Math.round((taskIndex / totalTasks) * 100);
@@ -381,6 +398,9 @@ function BriefingScreen({
           {task.studyItem.content}
         </div>
       </div>
+
+      {/* Help panel — available during study, not during checkpoint */}
+      <HelpPanel moduleId={moduleId} />
 
       {/* CTA */}
       <button
@@ -582,12 +602,14 @@ function DebriefScreen({
   total,
   checkpointResults,
   tasks,
+  moduleId,
 }: {
   module: LearnModuleResponse['module'];
   score: number;
   total: number;
   checkpointResults: CheckpointResult[];
   tasks: Task[];
+  moduleId: string;
 }) {
   const pct = total > 0 ? Math.round((score / total) * 100) : null;
   const passed = pct !== null && pct >= 70;
@@ -595,17 +617,6 @@ function DebriefScreen({
   const questionTaskMap = new Map<string, string>();
   for (const task of tasks) {
     if (task.question) questionTaskMap.set(task.question.id, task.studyItem.title);
-  }
-
-  // Collect deduped recommended topics from wrong answers
-  const remediationTopics: LearnTopicRef[] = [];
-  const seenTopics = new Set<string>();
-  for (const r of checkpointResults) {
-    if (!r.correct && r.recommendedTopics) {
-      for (const t of r.recommendedTopics) {
-        if (!seenTopics.has(t.slug)) { seenTopics.add(t.slug); remediationTopics.push(t); }
-      }
-    }
   }
 
   return (
@@ -694,28 +705,11 @@ function DebriefScreen({
         </div>
       )}
 
-      {/* Remediation — recommended KB topics for wrong answers */}
-      {remediationTopics.length > 0 && (
-        <div
-          className="rounded-xl p-5"
-          style={{ background: 'rgba(244,63,94,0.04)', border: '1px solid rgba(244,63,94,0.15)' }}
-        >
-          <p className="label-tag-muted mb-3">Recommended Review</p>
-          <ul className="space-y-2">
-            {remediationTopics.map(t => (
-              <li key={t.slug}>
-                <Link
-                  to={`/kb/search?q=${encodeURIComponent(t.name)}`}
-                  className="text-xs font-medium underline transition-opacity hover:opacity-75"
-                  style={{ color: 'var(--gold-accent)' }}
-                >
-                  {t.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {/* Remediation — KB items for wrong answers */}
+      <RemediationSection checkpointResults={checkpointResults} tasks={tasks} />
+
+      {/* Help panel */}
+      <HelpPanel moduleId={moduleId} />
 
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row gap-3">
@@ -737,5 +731,313 @@ function DebriefScreen({
         </Link>
       </div>
     </motion.div>
+  );
+}
+
+// ── HelpPanel ─────────────────────────────────────────────────────────────────
+// Grounded KB help — calls GET /learn/modules/:id/help?q=...
+// Available during briefing (study) and debrief. NOT during checkpoint.
+
+function HelpPanel({ moduleId }: { moduleId: string }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<KBHelpResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function search() {
+    const q = query.trim();
+    if (!q) return;
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      const r = await api.learn.help(moduleId, q);
+      setResult(r);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Search failed');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{ border: '1px solid var(--border-subtle)' }}
+    >
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left"
+        style={{ background: 'var(--bg-surface)' }}
+      >
+        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+          KB Help
+        </span>
+        <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>
+          {open ? '▲' : '▼'}
+        </span>
+      </button>
+
+      {open && (
+        <div className="px-4 pb-4 pt-2 space-y-3" style={{ background: 'var(--bg-surface)' }}>
+          <p className="text-[10px]" style={{ color: 'var(--text-dim)' }}>
+            Search this module's knowledge base
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') search(); }}
+              placeholder="Ask a question…"
+              className="flex-1 px-3 py-2 rounded-lg text-sm"
+              style={{
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-primary)',
+                outline: 'none',
+              }}
+            />
+            <button
+              onClick={search}
+              disabled={loading || !query.trim()}
+              className="px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest disabled:opacity-40"
+              style={{ background: 'var(--gold-accent)', color: '#000' }}
+            >
+              {loading ? '…' : 'Search'}
+            </button>
+          </div>
+
+          {error && (
+            <p className="text-xs" style={{ color: 'rgb(244,63,94)' }}>{error}</p>
+          )}
+
+          {result && result.hits.length === 0 && (
+            <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
+              No results found. Try different terms.
+            </p>
+          )}
+
+          {result && result.hits.length > 0 && (
+            <div className="space-y-3 pt-1">
+              {result.hits.map((hit, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg p-3 space-y-1"
+                  style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
+                >
+                  <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    {hit.title}
+                  </p>
+                  <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                    {hit.excerpt}
+                  </p>
+                  {hit.topics.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {hit.topics.map(t => (
+                        <span
+                          key={t.slug}
+                          className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest"
+                          style={{ background: 'var(--gold-muted)', color: 'var(--gold-accent)', border: '1px solid var(--border-gold)' }}
+                        >
+                          {t.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── ReferencesSection ─────────────────────────────────────────────────────────
+// Renders the references[] array (faq, glossary-term, policy, threat-brief items)
+// shown on the overview screen as supplementary material.
+
+function ReferencesSection({ references }: { references: LearnReference[] }) {
+  const [open, setOpen] = useState(false);
+
+  const TYPE_LABELS: Record<string, string> = {
+    'faq': 'FAQ',
+    'glossary-term': 'Glossary',
+    'policy': 'Policy',
+    'threat-brief': 'Threat Brief',
+  };
+
+  return (
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{ border: '1px solid var(--border-subtle)' }}
+    >
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-3 text-left"
+        style={{ background: 'var(--bg-surface)' }}
+      >
+        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+          Reference Materials ({references.length})
+        </span>
+        <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>
+          {open ? '▲' : '▼'}
+        </span>
+      </button>
+
+      {open && (
+        <div className="px-5 pb-5 pt-2 space-y-3" style={{ background: 'var(--bg-surface)' }}>
+          {references.map(ref => (
+            <div
+              key={ref.id}
+              className="rounded-lg p-3 space-y-1"
+              style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest"
+                  style={{ background: 'var(--bg-surface)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}
+                >
+                  {TYPE_LABELS[ref.type] ?? ref.type}
+                </span>
+                <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  {ref.title}
+                </p>
+              </div>
+              {ref.excerpt && (
+                <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  {ref.excerpt}
+                </p>
+              )}
+              {ref.topics.length > 0 && (
+                <div className="flex flex-wrap gap-1 pt-1">
+                  {ref.topics.map(t => (
+                    <span
+                      key={t.slug}
+                      className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest"
+                      style={{ background: 'var(--gold-muted)', color: 'var(--gold-accent)', border: '1px solid var(--border-gold)' }}
+                    >
+                      {t.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── RemediationSection ────────────────────────────────────────────────────────
+// Shows KB item cards for wrong answers in debrief.
+// Falls back to topic search links when remediationItems is empty
+// (e.g. bootstrap accounts with no FTS chunks — Phase B will fix this).
+
+function RemediationSection({
+  checkpointResults,
+  tasks,
+}: {
+  checkpointResults: CheckpointResult[];
+  tasks: Task[];
+}) {
+  const wrongAnswers = checkpointResults.filter(r => !r.correct);
+  if (wrongAnswers.length === 0) return null;
+
+  const questionTaskMap = new Map<string, string>();
+  for (const task of tasks) {
+    if (task.question) questionTaskMap.set(task.question.id, task.studyItem.title);
+  }
+
+  // Collect all remediation items across wrong answers (deduped by title)
+  const allItems: RemediationItem[] = [];
+  const seenTitles = new Set<string>();
+  for (const r of wrongAnswers) {
+    if (r.remediationItems) {
+      for (const item of r.remediationItems) {
+        if (!seenTitles.has(item.title)) {
+          seenTitles.add(item.title);
+          allItems.push(item);
+        }
+      }
+    }
+  }
+
+  // Fallback: collect topic links when no KB items were returned
+  const fallbackTopics: LearnTopicRef[] = [];
+  const seenTopics = new Set<string>();
+  if (allItems.length === 0) {
+    for (const r of wrongAnswers) {
+      if (r.recommendedTopics) {
+        for (const t of r.recommendedTopics) {
+          if (!seenTopics.has(t.slug)) { seenTopics.add(t.slug); fallbackTopics.push(t); }
+        }
+      }
+    }
+  }
+
+  if (allItems.length === 0 && fallbackTopics.length === 0) return null;
+
+  return (
+    <div
+      className="rounded-xl p-5 space-y-3"
+      style={{ background: 'rgba(244,63,94,0.04)', border: '1px solid rgba(244,63,94,0.15)' }}
+    >
+      <p className="label-tag-muted">Recommended Review</p>
+
+      {allItems.length > 0 ? (
+        <div className="space-y-3">
+          {allItems.map((item, i) => (
+            <div
+              key={i}
+              className="rounded-lg p-3 space-y-1"
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+            >
+              <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {item.title}
+              </p>
+              {item.excerpt && (
+                <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  {item.excerpt}
+                </p>
+              )}
+              {item.topics.length > 0 && (
+                <div className="flex flex-wrap gap-1 pt-1">
+                  {item.topics.map(t => (
+                    <Link
+                      key={t.slug}
+                      to={`/kb/search?q=${encodeURIComponent(t.name)}`}
+                      className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest transition-opacity hover:opacity-75"
+                      style={{ background: 'var(--gold-muted)', color: 'var(--gold-accent)', border: '1px solid var(--border-gold)' }}
+                    >
+                      {t.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        // Fallback when no FTS chunks exist (Phase B will fix this)
+        <ul className="space-y-2">
+          {fallbackTopics.map(t => (
+            <li key={t.slug}>
+              <Link
+                to={`/kb/search?q=${encodeURIComponent(t.name)}`}
+                className="text-xs font-medium underline transition-opacity hover:opacity-75"
+                style={{ color: 'var(--gold-accent)' }}
+              >
+                {t.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

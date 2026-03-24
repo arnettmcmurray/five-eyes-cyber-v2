@@ -120,6 +120,27 @@ export const ttxRunEvents = pgTable('ttx_run_events', {
 });
 
 // ---------------------------------------------------------------------------
+// KB References (grounding link: TTX → KB)
+// ---------------------------------------------------------------------------
+
+/**
+ * Links TTX scenarios (and optionally specific steps/injects) to published KB items.
+ * This is the structural bridge that enables KB-grounded TTX guidance.
+ * scenarioId is always required; stepId and injectId are both optional and mutually exclusive.
+ */
+export const ttxScenarioKbRefs = pgTable('ttx_scenario_kb_refs', {
+  id:         text('id').primaryKey(),
+  scenarioId: text('scenario_id').notNull().references(() => ttxScenarios.id, { onDelete: 'cascade' }),
+  /** When set, this ref applies to a specific step within the scenario. */
+  stepId:     text('step_id').references(() => ttxScenarioSteps.id, { onDelete: 'cascade' }),
+  /** When set, this ref applies to a specific inject within the scenario. */
+  injectId:   text('inject_id').references(() => ttxInjects.id, { onDelete: 'cascade' }),
+  kbItemId:   text('kb_item_id').notNull(),
+  addedBy:    text('added_by').notNull(),
+  addedAt:    timestamp('added_at').notNull().defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
 // Action Catalog (AAR Output)
 // ---------------------------------------------------------------------------
 

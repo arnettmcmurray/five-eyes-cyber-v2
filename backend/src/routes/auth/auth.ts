@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { LearnerAuthService } from '../../services/auth/learner-auth.service.js';
 import { AdminAuthService } from '../../services/auth/admin-auth.service.js';
+import { LearnerService } from '../../services/learn/learner.service.js';
 
 const router = Router();
 const authSvc = new LearnerAuthService();
 const adminAuthSvc = new AdminAuthService();
+const learnerSvc = new LearnerService();
 
 /**
  * POST /auth/otp/request
@@ -91,11 +93,63 @@ router.post('/logout', async (req, res) => {
 });
 
 /**
- * POST /auth/register — stub (deferred)
+ * POST /auth/register
+ * Body: { email: string; fullName?: string; company?: string; role?: string }
+ *
+ * Creates or upserts a non-admin learner identity (no password stored).
+ * Persists contact/profile fields. Triggers OTP delivery so the client
+ * can immediately proceed to /auth/otp/verify to get a session token.
+ *
+ * Free-tier is the default — tier is derived from package assignments
+ * via AccessService, not stored here.
+ */
+router.post('/register', async (req, res) => {
+  const { email, fullName, company, role } = req.body ?? {};
+
+  if (typeof email !== 'string' || !email.includes('@') || email.length > 320) {
+    res.status(400).json({ error: 'Valid work email is required' });
+    return;
+  }
+
+  const rawEmail = email.trim().toLowerCase();
+
+  if (ADMIN_EMAILS.has(rawEmail)) {
+    res.status(400).json({ error: 'This account uses password-based login. Use /auth/admin/login.' });
+    return;
+  }
+
+  // Validate optional string fields — reject non-strings or excessively long values
+  const safeStr = (v: unknown, max: number): string | undefined => {
+    if (v === undefined || v === null || v === '') return undefined;
+    if (typeof v !== 'string' || v.length > max) return undefined;
+    return v.trim();
+  };
+
+  try {
+    // findOrCreate learner (handle = normalized email, no password stored)
+    const learner = await learnerSvc.findOrCreate(rawEmail);
+
+    // Persist profile fields — only overwrites if non-empty
+    await learnerSvc.updateProfile(learner.learnerId, {
+      rawEmail,
+      fullName: safeStr(fullName, 200),
+      company:  safeStr(company, 200),
+      role:     safeStr(role, 200),
+    });
+
+    // Trigger OTP — delivers to rawEmail via SES/SMTP/stdout
+    await authSvc.requestOtp(rawEmail);
+
+    res.status(204).send();
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+/**
  * POST /auth/login/password — stub (deferred)
  * POST /auth/password/reset — stub (deferred)
  */
-router.post('/register', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
 router.post('/login/password', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
 router.post('/password/reset', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
 

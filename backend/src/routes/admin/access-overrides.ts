@@ -25,8 +25,9 @@ router.post('/', async (req, res) => {
     res.status(400).json({ error: 'learnerId and tier are required' });
     return;
   }
-  if (tier !== 'free' && tier !== 'paid') {
-    res.status(400).json({ error: 'tier must be free or paid' });
+  const validTiers = ['free', 'individual', 'professional', 'paid'];
+  if (!validTiers.includes(tier)) {
+    res.status(400).json({ error: `tier must be one of: ${validTiers.join(', ')}` });
     return;
   }
   let expiresAtDate: Date | null = null;

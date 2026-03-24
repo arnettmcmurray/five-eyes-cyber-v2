@@ -1,13 +1,17 @@
 import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, and, inArray, sql } from 'drizzle-orm';
 import { db } from '../../db/client.js';
 import {
   ttxScenarios,
   ttxScenarioSections,
   ttxScenarioSteps,
   ttxInjects,
+  ttxScenarioKbRefs,
 } from '../../db/schema/ttx.js';
+import { kbItems } from '../../db/schema/kb-items.js';
+import { kbRevisions } from '../../db/schema/kb-revisions.js';
+import { topicRelationships, topics } from '../../db/schema/topics.js';
 import type { Request } from 'express';
 
 const router = Router();
@@ -305,6 +309,108 @@ router.patch('/:id/sections/:sectionId/steps/:stepId/injects/:injectId', async (
 // DELETE /ttx/scenarios/:id/sections/:sectionId/steps/:stepId/injects/:injectId
 router.delete('/:id/sections/:sectionId/steps/:stepId/injects/:injectId', async (req, res) => {
   await db.delete(ttxInjects).where(eq(ttxInjects.id, req.params.injectId));
+  res.status(204).end();
+});
+
+// ---------------------------------------------------------------------------
+// KB References — link KB items to a scenario (with optional step/inject scope)
+// ---------------------------------------------------------------------------
+
+type KbRefRow = typeof ttxScenarioKbRefs.$inferSelect;
+
+async function enrichKbRefs(refs: KbRefRow[]) {
+  if (refs.length === 0) return [];
+  const itemIds = refs.map(r => r.kbItemId);
+
+  const items = await db
+    .select({ id: kbItems.id, title: kbItems.title, currentRevisionId: kbItems.currentRevisionId })
+    .from(kbItems)
+    .where(and(inArray(kbItems.id, itemIds), eq(kbItems.status, 'published')));
+
+  const revIds = items.map(i => i.currentRevisionId).filter((id): id is string => id !== null);
+  const revRows = revIds.length > 0
+    ? await db.select({ id: kbRevisions.id, content: kbRevisions.content }).from(kbRevisions).where(inArray(kbRevisions.id, revIds))
+    : [];
+  const revMap = new Map(revRows.map(r => [r.id, r.content]));
+
+  const topicRels = await db
+    .select()
+    .from(topicRelationships)
+    .where(inArray(topicRelationships.itemId, itemIds));
+  const topicIds = [...new Set(topicRels.map(r => r.topicId))];
+  const topicRows = topicIds.length > 0
+    ? await db.select().from(topics).where(inArray(topics.id, topicIds))
+    : [];
+  const topicMap = new Map(topicRows.map(t => [t.id, { slug: t.slug, name: t.name }]));
+
+  const itemMap = new Map(items.map(i => [i.id, i]));
+
+  return refs.map(ref => {
+    const item = itemMap.get(ref.kbItemId);
+    if (!item) return null;
+    const content = item.currentRevisionId ? (revMap.get(item.currentRevisionId) ?? '') : '';
+    const itemTopics = topicRels
+      .filter(r => r.itemId === ref.kbItemId)
+      .map(r => topicMap.get(r.topicId))
+      .filter((t): t is { slug: string; name: string } => t !== undefined);
+    return {
+      id: ref.id,
+      kbItemId: ref.kbItemId,
+      stepId: ref.stepId ?? null,
+      injectId: ref.injectId ?? null,
+      title: item.title,
+      excerpt: content.slice(0, 300) + (content.length > 300 ? '…' : ''),
+      topics: itemTopics,
+      addedBy: ref.addedBy,
+      addedAt: ref.addedAt.toISOString(),
+    };
+  }).filter(Boolean);
+}
+
+// GET /ttx/scenarios/:id/kb-refs — all KB refs for this scenario (with enrichment)
+router.get('/:id/kb-refs', async (req, res) => {
+  try {
+    const refs = await db
+      .select()
+      .from(ttxScenarioKbRefs)
+      .where(eq(ttxScenarioKbRefs.scenarioId, req.params.id));
+    res.json(await enrichKbRefs(refs));
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// POST /ttx/scenarios/:id/kb-refs — add a KB ref to this scenario
+router.post('/:id/kb-refs', async (req, res) => {
+  const { kbItemId, stepId, injectId, addedBy } = req.body ?? {};
+  if (!kbItemId) { res.status(400).json({ error: 'kbItemId is required' }); return; }
+  if (!addedBy) { res.status(400).json({ error: 'addedBy is required' }); return; }
+
+  // Verify the KB item exists and is published
+  const [item] = await db
+    .select({ id: kbItems.id })
+    .from(kbItems)
+    .where(and(eq(kbItems.id, kbItemId), eq(kbItems.status, 'published')))
+    .limit(1);
+  if (!item) { res.status(404).json({ error: 'KB item not found or not published' }); return; }
+
+  try {
+    const [row] = await db
+      .insert(ttxScenarioKbRefs)
+      .values({ id: uuid(), scenarioId: req.params.id, kbItemId, stepId: stepId ?? null, injectId: injectId ?? null, addedBy })
+      .returning();
+    const enriched = await enrichKbRefs([row]);
+    res.status(201).json(enriched[0]);
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// DELETE /ttx/scenarios/:id/kb-refs/:refId — remove a KB ref
+router.delete('/:id/kb-refs/:refId', async (req, res) => {
+  await db
+    .delete(ttxScenarioKbRefs)
+    .where(and(eq(ttxScenarioKbRefs.id, req.params.refId), eq(ttxScenarioKbRefs.scenarioId, req.params.id)));
   res.status(204).end();
 });
 

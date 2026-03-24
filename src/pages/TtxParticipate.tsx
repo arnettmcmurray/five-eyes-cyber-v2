@@ -6,7 +6,8 @@ import {
   TtxEvent,
   TtxParticipant as TtxParticipantType,
   TtxStep,
-  TtxInject
+  TtxInject,
+  TtxKbRef,
 } from '../api/client';
 import {
   getSessionToken,
@@ -14,8 +15,9 @@ import {
   setSession as setLearnerSession,
   clearSession
 } from '../lib/session';
+import { hasTtxAccess } from '../hooks/useLearnerTier';
 
-type Screen = 'otp-request' | 'otp-verify' | 'join' | 'active';
+type Screen = 'otp-request' | 'otp-verify' | 'join' | 'active' | 'ttx-blocked';
 
 export default function TtxParticipate() {
   const { id } = useParams<{ id: string }>();
@@ -70,7 +72,17 @@ export default function TtxParticipate() {
         clearSession();
         setScreen('otp-request');
       } else {
-        setScreen('join');
+        // Not yet a participant — check tier before showing join form
+        try {
+          const tierRes = await api.access.getTier();
+          if (!hasTtxAccess(tierRes.tier as import('../hooks/useLearnerTier').LearnerTier)) {
+            setScreen('ttx-blocked');
+          } else {
+            setScreen('join');
+          }
+        } catch {
+          setScreen('join');
+        }
       }
     }
   }
@@ -191,6 +203,33 @@ export default function TtxParticipate() {
     }
   }
 
+  // --- TTX Blocked Screen ---
+  if (screen === 'ttx-blocked') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-950 font-sans text-gray-100 p-6">
+        <div className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-2xl text-center">
+          <div className="flex justify-center mb-6">
+            <div className="bg-amber-600/20 border border-amber-600/40 p-3 rounded-lg">
+              <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+          </div>
+          <h1 className="text-xl font-bold mb-2">TTX Access Required</h1>
+          <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+            Tabletop exercises are available on the <span className="text-white font-semibold">Professional</span> package and above,
+            or through group-based TTX entitlement.
+            <br /><br />
+            Your current package <span className="text-amber-400">(Individual)</span> does not include TTX access.
+          </p>
+          <a href="/packages" className="inline-block px-6 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-sm transition-colors">
+            View Packages
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   // --- Auth Screens ---
   if (screen !== 'active') {
     return (
@@ -286,7 +325,7 @@ export default function TtxParticipate() {
   // --- Active Session View ---
   if (!view) return <div className="h-screen bg-gray-950 flex items-center justify-center text-gray-500 font-mono text-xs uppercase tracking-widest">Initializing Feed...</div>;
 
-  const { session: sess, scenarioTitle, participants, events, currentStep, myHandle } = view;
+  const { session: sess, scenarioTitle, participants, events, currentStep, myHandle, kbRefs = [] } = view;
   const isActive = sess.status === 'active';
   const isEnded = sess.status === 'complete';
   const myParticipant = participants.find(p => p.handle === myHandle);
@@ -447,6 +486,30 @@ export default function TtxParticipate() {
                  ))}
               </div>
            </div>
+
+           {/* KB Reference Material */}
+           {kbRefs.length > 0 && (
+             <div className="border-t border-gray-800 p-4 shrink-0 max-h-56 overflow-y-auto">
+               <h2 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">KB Reference Material</h2>
+               <div className="space-y-3">
+                 {kbRefs.map((ref: TtxKbRef) => (
+                   <div key={ref.id} className="p-3 bg-gray-900/50 border border-gray-800 rounded-lg">
+                     <div className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1 truncate">{ref.title}</div>
+                     {ref.excerpt && (
+                       <p className="text-[10px] text-gray-500 leading-snug mb-1.5 line-clamp-3">{ref.excerpt}</p>
+                     )}
+                     {ref.topics.length > 0 && (
+                       <div className="flex flex-wrap gap-1">
+                         {ref.topics.map(t => (
+                           <span key={t.slug} className="text-[8px] px-1 py-0.5 bg-gray-800 text-gray-600 rounded">{t.name}</span>
+                         ))}
+                       </div>
+                     )}
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
 
            {/* Intelligence Network */}
            <div className="h-40 border-t border-gray-800 bg-gray-950 p-4 shrink-0">
