@@ -1,5 +1,5 @@
 # Five Eyes — Full Build Status Checklist
-_Last updated: 2026-03-23 | Canonical source of truth_
+_Last updated: 2026-03-24 | Canonical source of truth | Smoke pass complete_
 
 ---
 
@@ -120,7 +120,7 @@ Related truth docs (must stay aligned with this file):
 | Remediation items: wrong answers surface KB cards | DONE | remediationItems[] in quiz results |
 | Reference materials: overview shows policy/faq/glossary items | DONE | lesson_content_links with supplementary type |
 | TTX KB refs: schema + admin UI + participant view | DONE | ttx_scenario_kb_refs table wired |
-| TTX KB refs: local-proof data seeded | PARTIAL | 0 refs seeded. BEC scenario KB refs added 2026-03-23 — run bootstrap to populate. |
+| TTX KB refs: local-proof data seeded | ✅ DONE | 3 KB refs seeded (bootstrap). Verified in participant KB Reference panel 2026-03-24. |
 | Hybrid retrieval (FTS + embeddings) | NOT BUILT | Future. FTS baseline is sufficient for now. Plan upgrade path when KB is larger. |
 | Learner visibility filter (learner_visible field on KB items) | NOT BUILT | All published items currently treated as learner-visible. Future: explicit field + filter. |
 | KB metadata: audience/role, workflow stage, freshness tier | NOT BUILT | Future. Required for phishing campaigns and advanced filtering. |
@@ -139,11 +139,11 @@ Related truth docs (must stay aligned with this file):
 | Session: planned / active / hotwash / complete states | DONE | ttx_exercise_runs |
 | Facilitator conduct view (full-screen) | DONE | TtxConduct |
 | Participant view: decision timeline + KB refs panel | DONE | TtxParticipate |
-| Participant view: SSE for real-time updates | DONE | /ttx/participate/:id/stream |
+| Participant view: SSE for real-time updates | ✅ DONE | /ttx/participate/:id/stream — SSE shape bug (participants/events nested in session) found and fixed 2026-03-24 smoke pass |
 | AAR: session replay + action items | DONE | TtxAAR |
 | TTX access: Professional+ only, free + individual blocked | DONE | requireTtxAccess middleware fixed 2026-03-23 |
-| Local-proof BEC scenario seeded (with KB refs) | PARTIAL | Scenario + section + step + 3 KB refs added 2026-03-23 — run bootstrap to populate. |
-| Local-proof TTX run seeded (for end-to-end participate test) | NOT BUILT | Runs are created via admin UI. No bootstrap run seeded. |
+| Local-proof BEC scenario seeded (with KB refs) | ✅ DONE | Bootstrapped + smoke verified 2026-03-24. Handle typo in all 3 bootstrap accounts fixed (fiveyesdev → fiveeyesdev). |
+| Local-proof TTX run seeded (for end-to-end participate test) | ✅ DONE (admin UI) | Run created via admin UI during smoke pass 2026-03-24. No bootstrap seed needed — this is correct behaviour. |
 | Zero-KB-refs admin warning in TtxScenarioEdit | NOT BUILT | Optional. Low priority. |
 | Group-based TTX entitlement | NOT BUILT | Deferred explicitly. |
 | Multiplayer / concurrent participant scaling | DEFERRED ON PURPOSE | Keep single-session, facilitator-led model. Not overbuilt. |

@@ -1368,7 +1368,7 @@ async function main() {
   await db.insert(learners).values([
     {
       id: IDS.evaLearner,
-      handle: 'evarestrictedfiveyesdev',
+      handle: 'evarestrictedfiveeyesdev',
       rawEmail: 'eva.restricted@fiveeyes.dev',
       fullName: 'Eva Restricted',
       company: 'Transport Co Ltd',
@@ -1376,7 +1376,7 @@ async function main() {
     },
     {
       id: IDS.alexLearner,
-      handle: 'alexindividualfiveyesdev',
+      handle: 'alexindividualfiveeyesdev',
       rawEmail: 'alex.individual@fiveeyes.dev',
       fullName: 'Alex Morgan',
       company: 'Transport Co Ltd',
@@ -1384,7 +1384,7 @@ async function main() {
     },
     {
       id: IDS.samLearner,
-      handle: 'samprofessionalfiveyesdev',
+      handle: 'samprofessionalfiveeyesdev',
       rawEmail: 'sam.professional@fiveeyes.dev',
       fullName: 'Sam Reeves',
       company: 'Freight Solutions UK',

@@ -261,7 +261,7 @@ router.get('/:sessionId/stream', async (req, res) => {
   const participants = await db.select().from(ttxRunParticipants).where(eq(ttxRunParticipants.runId, runId)).orderBy(asc(ttxRunParticipants.joinedAt));
   const events = await db.select().from(ttxRunEvents).where(eq(ttxRunEvents.runId, runId)).orderBy(asc(ttxRunEvents.occurredAt));
   
-  res.write(`data: ${JSON.stringify({ type: 'state', session: { ...detail[0], participants, events } })}\n\n`);
+  res.write(`data: ${JSON.stringify({ type: 'state', session: detail[0], participants, events })}\n\n`);
 });
 
 export default router;
