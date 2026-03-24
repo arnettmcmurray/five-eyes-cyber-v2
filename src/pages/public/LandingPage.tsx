@@ -191,7 +191,7 @@ export default function LandingPage() {
               className="font-display font-black uppercase tracking-tight"
               style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', color: 'var(--text-primary)' }}
             >
-              AI-Powered <span style={{ color: 'var(--gold-accent)' }}>Defense.</span>
+              Intelligence-Grounded <span style={{ color: 'var(--gold-accent)' }}>Defense.</span>
             </h2>
             <p className="mt-3 max-w-xl text-base" style={{ color: 'var(--text-secondary)' }}>
               Explore the modules powering the modern defense-in-depth strategy.

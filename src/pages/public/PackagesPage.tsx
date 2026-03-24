@@ -52,7 +52,7 @@ const PACKAGES = [
     ctaPath: '/enterprise',
     features: [
       'Everything in Professional',
-      'AI-assisted training & simulation',
+      'Advanced KB access & custom content development',
       'Custom scenario development',
       'Executive TTX facilitation',
       'Threat intelligence briefings',
