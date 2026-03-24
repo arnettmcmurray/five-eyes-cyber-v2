@@ -182,7 +182,7 @@ router.get('/:id/help', async (req, res) => {
   const q = (req.query.q as string | undefined)?.trim();
   if (!q) { res.status(400).json({ error: 'q is required' }); return; }
   try {
-    const result = await retrievalSvc.retrieve({ text: q, userId: learnerId, topK: 5 });
+    const result = await retrievalSvc.retrieve({ text: q, userId: learnerId, topK: 5, moduleId: req.params.id });
     // Return learner-safe shape: title, excerpt, topics — no admin fields
     res.json({
       query: result.query,

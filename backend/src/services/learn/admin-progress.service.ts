@@ -8,6 +8,11 @@ import { groups, groupMembers } from '../../db/schema/groups.js';
 export interface LearnerSummary {
   learnerId: string;
   handle: string;
+  /** Profile fields — null for learners who registered before profile fields were added. */
+  rawEmail: string | null;
+  fullName: string | null;
+  company: string | null;
+  role: string | null;
   totalStarted: number;
   totalCompleted: number;
   lastActivityAt: string | null;
@@ -16,6 +21,10 @@ export interface LearnerSummary {
 export interface LearnerProgressDetail {
   learnerId: string;
   handle: string;
+  rawEmail: string | null;
+  fullName: string | null;
+  company: string | null;
+  role: string | null;
   modules: Array<{
     moduleId: string;
     moduleTitle: string;
@@ -95,6 +104,10 @@ export class AdminProgressService {
       return {
         learnerId: l.id,
         handle: l.handle,
+        rawEmail: l.rawEmail ?? null,
+        fullName: l.fullName ?? null,
+        company: l.company ?? null,
+        role: l.role ?? null,
         totalStarted: rows.length,
         totalCompleted: rows.filter(r => r.status === 'completed').length,
         lastActivityAt: lastRow ? lastRow.lastAttemptAt.toISOString() : null,
@@ -118,6 +131,10 @@ export class AdminProgressService {
       return {
         learnerId: l.id,
         handle: l.handle,
+        rawEmail: l.rawEmail ?? null,
+        fullName: l.fullName ?? null,
+        company: l.company ?? null,
+        role: l.role ?? null,
         totalStarted: rows.length,
         totalCompleted: rows.filter(r => r.status === 'completed').length,
         lastActivityAt: lastRow ? lastRow.lastAttemptAt.toISOString() : null,
@@ -145,6 +162,10 @@ export class AdminProgressService {
     return {
       learnerId: learner.id,
       handle: learner.handle,
+      rawEmail: learner.rawEmail ?? null,
+      fullName: learner.fullName ?? null,
+      company: learner.company ?? null,
+      role: learner.role ?? null,
       modules: rows.map(r => ({
         moduleId: r.moduleId,
         moduleTitle: modMap.get(r.moduleId) ?? r.moduleId,

@@ -55,12 +55,23 @@ async function adminReq<T>(method: string, path: string, body?: unknown): Promis
 
 export const api = {
   auth: {
+    register: (email: string, fullName?: string, company?: string, role?: string) =>
+      req<void>('POST', '/auth/register', { email, fullName, company, role }),
     requestOtp: (handle: string) =>
       req<void>('POST', '/auth/otp/request', { handle }),
     verifyOtp: (handle: string, code: string) =>
       req<{ token: string; learnerId: string; handle: string }>('POST', '/auth/otp/verify', { handle, code }),
     adminLogin: (username: string, password: string) =>
       req<{ token: string; username: string }>('POST', '/auth/admin/login', { username, password }),
+  },
+  access: {
+    getTier: () => req<{ tier: 'free' | 'paid'; learnerId: string }>('GET', '/access/tier'),
+  },
+  public: {
+    contact: (body: {
+      firstName: string; lastName: string; email: string;
+      phone?: string; company?: string; message?: string; newsletter?: boolean;
+    }) => req<void>('POST', '/public/contact', body),
   },
   items: {
     list: (params?: Record<string, string>) => {
@@ -155,6 +166,19 @@ export const api = {
     learners: () => adminReq<LearnerSummary[]>('GET', '/admin/progress/learners'),
     learner: (learnerId: string) => adminReq<LearnerProgressDetail>('GET', `/admin/progress/learners/${learnerId}`),
     module: (moduleId: string) => adminReq<ModuleProgressDetail>('GET', `/admin/progress/modules/${moduleId}`),
+    groups: () => adminReq<GroupSummary[]>('GET', '/admin/progress/groups'),
+  },
+  admin: {
+    access: {
+      list: () => adminReq<AccessOverride[]>('GET', '/admin/access'),
+      grant: (learnerId: string, tier: 'free' | 'individual' | 'professional' | 'paid') =>
+        adminReq<AccessOverride>('POST', '/admin/access', { learnerId, tier }),
+      revoke: (learnerId: string) => adminReq<void>('DELETE', `/admin/access/${learnerId}`),
+    },
+  },
+  health: {
+    get: () => fetch(`${BASE}/health`, { headers: { 'x-api-key': API_KEY } })
+      .then(r => r.json() as Promise<{ status: string; db: string }>),
   },
   assignments: {
     forModule: (moduleId: string) => adminReq<Assignment[]>('GET', `/admin/assignments/module/${moduleId}`),
@@ -217,6 +241,14 @@ export const api = {
           adminReq<TtxInject>('PATCH', `/ttx/scenarios/${scenarioId}/sections/${sectionId}/steps/${stepId}/injects/${injectId}`, body),
         delete: (scenarioId: string, sectionId: string, stepId: string, injectId: string) =>
           adminReq<void>('DELETE', `/ttx/scenarios/${scenarioId}/sections/${sectionId}/steps/${stepId}/injects/${injectId}`),
+      },
+      kbRefs: {
+        list: (scenarioId: string) =>
+          adminReq<TtxKbRef[]>('GET', `/ttx/scenarios/${scenarioId}/kb-refs`),
+        add: (scenarioId: string, body: { kbItemId: string; stepId?: string | null; injectId?: string | null }) =>
+          adminReq<TtxKbRef>('POST', `/ttx/scenarios/${scenarioId}/kb-refs`, body),
+        remove: (scenarioId: string, refId: string) =>
+          adminReq<void>('DELETE', `/ttx/scenarios/${scenarioId}/kb-refs/${refId}`),
       },
     },
     participate: {
@@ -545,9 +577,32 @@ export interface Assignment {
 export interface LearnerSummary {
   learnerId: string;
   handle: string;
+  rawEmail: string | null;
+  fullName: string | null;
+  company: string | null;
+  role: string | null;
   totalStarted: number;
   totalCompleted: number;
   lastActivityAt: string | null;
+}
+
+export interface GroupSummary {
+  groupId: string;
+  slug: string;
+  name: string;
+  memberCount: number;
+  totalCompleted: number;
+  avgPercentage: number | null;
+}
+
+export interface AccessOverride {
+  id: string;
+  learnerId: string;
+  tier: 'free' | 'individual' | 'professional' | 'paid';
+  reason: string;
+  grantedBy: string;
+  expiresAt: string | null;
+  createdAt: string;
 }
 
 export interface LearnerProgressDetail {
@@ -699,6 +754,16 @@ export interface TtxExport {
   actionItems: TtxActionItem[];
 }
 
+export interface TtxKbRef {
+  id: string;
+  kbItemId: string;
+  stepId: string | null;
+  injectId: string | null;
+  title: string;
+  excerpt: string;
+  topics: Array<{ slug: string; name: string }>;
+}
+
 export interface TtxParticipateView {
   session: TtxExerciseRun;
   scenarioTitle: string;
@@ -706,6 +771,7 @@ export interface TtxParticipateView {
   events: TtxEvent[];
   currentStep: TtxStep | null;
   myHandle: string;
+  kbRefs: TtxKbRef[];
 }
 
 export interface TtxDraftInject {

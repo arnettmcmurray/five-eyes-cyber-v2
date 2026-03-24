@@ -287,11 +287,11 @@ export default function TtxConduct() {
                   </div>
 
                   {/* Discussion Prompts */}
-                  {selectedStep.titles.length > 0 && (
+                  {selectedStep.prompts.length > 0 && (
                     <div className="mb-12">
                       <div className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-4">Discussion Facilitation</div>
                       <ul className="space-y-3">
-                        {selectedStep.titles.map((p, idx) => (
+                        {selectedStep.prompts.map((p: string, idx: number) => (
                           <li key={idx} className="flex gap-4 p-4 bg-gray-900/30 border border-gray-800 rounded text-sm text-gray-400">
                             <span className="text-blue-500 font-mono font-bold">0{idx+1}</span>
                             {p}

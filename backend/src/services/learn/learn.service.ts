@@ -113,11 +113,15 @@ export class LearnService {
 
     const allItemIds = links.map(l => l.kbItemId);
 
-    // Only published items reach learners
+    // Only published + learner-visible items reach learners
     const publishedItems = await db
       .select()
       .from(kbItems)
-      .where(and(inArray(kbItems.id, allItemIds), eq(kbItems.status, 'published')));
+      .where(and(
+        inArray(kbItems.id, allItemIds),
+        eq(kbItems.status, 'published'),
+        eq(kbItems.learnerVisible, true),
+      ));
 
     const publishedIds = new Set(publishedItems.map(i => i.id));
     const publishedLinks = links.filter(l => publishedIds.has(l.kbItemId));

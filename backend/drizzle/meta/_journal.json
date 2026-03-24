@@ -8,6 +8,13 @@
       "when": 1773952167632,
       "tag": "0000_heavy_redwing",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1774000000000,
+      "tag": "0001_learner_profile_fields",
+      "breakpoints": true
     }
   ]
 }

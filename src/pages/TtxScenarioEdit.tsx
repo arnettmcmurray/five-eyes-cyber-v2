@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { api, TtxScenarioDetail, TtxSection, TtxStep, TtxInject, TtxDraftScenario, TtxDraftInject } from '../api/client';
+import { api, TtxScenarioDetail, TtxSection, TtxStep, TtxInject, TtxDraftScenario, TtxDraftInject, TtxKbRef, SearchHit } from '../api/client';
 import { getAdminToken, getAdminUsername } from '../lib/adminSession';
 
 const INJECT_TYPES = ['legal', 'media', 'technical', 'customer', 'other'];
@@ -43,6 +43,16 @@ export default function TtxScenarioEdit() {
   const [aiCreated, setAiCreated] = useState<Set<string>>(new Set());
   const injectFromAI = useRef(false); // flag: current inject form was pre-filled by AI suggest
 
+  // KB refs
+  const [kbRefs, setKbRefs] = useState<TtxKbRef[]>([]);
+  const [addingKbRef, setAddingKbRef] = useState(false);
+  const [kbRefSearch, setKbRefSearch] = useState('');
+  const [kbRefHits, setKbRefHits] = useState<SearchHit[]>([]);
+  const [kbRefSearching, setKbRefSearching] = useState(false);
+  const [kbRefSelectedItem, setKbRefSelectedItem] = useState<SearchHit | null>(null);
+  const [kbRefScopeStepId, setKbRefScopeStepId] = useState<string>('');
+  const [kbRefAdding, setKbRefAdding] = useState(false);
+
   useEffect(() => {
     if (!getAdminToken()) { navigate('/admin/login', { replace: true }); return; }
     load();
@@ -50,11 +60,15 @@ export default function TtxScenarioEdit() {
 
   async function load() {
     try {
-      const s = await api.ttx.scenarios.get(id!);
+      const [s, refs] = await Promise.all([
+        api.ttx.scenarios.get(id!),
+        api.ttx.scenarios.kbRefs.list(id!),
+      ]);
       setScenario(s);
       setTitle(s.title);
       setDescription(s.description);
       setObjective(s.objective);
+      setKbRefs(refs);
       // Auto-trigger AI draft if navigated here with ?draft=ai and objective exists
       if (searchParams.get('draft') === 'ai' && s.objective && !autoDraftTriggered.current) {
         autoDraftTriggered.current = true;
@@ -269,6 +283,50 @@ export default function TtxScenarioEdit() {
     setInjectSuggestions(null);
   }
 
+  async function searchKbItems(q: string) {
+    if (!q.trim()) { setKbRefHits([]); return; }
+    setKbRefSearching(true);
+    try {
+      const result = await api.kb.search(q, 'fts', 8);
+      setKbRefHits(result.mode === 'fts' ? result.hits : []);
+    } catch {
+      setKbRefHits([]);
+    } finally {
+      setKbRefSearching(false);
+    }
+  }
+
+  async function addKbRef() {
+    if (!kbRefSelectedItem) return;
+    setKbRefAdding(true);
+    try {
+      const ref = await api.ttx.scenarios.kbRefs.add(id!, {
+        kbItemId: kbRefSelectedItem.itemId,
+        stepId: kbRefScopeStepId || null,
+        injectId: null,
+      });
+      setKbRefs(prev => [...prev, ref]);
+      setKbRefSelectedItem(null);
+      setKbRefSearch('');
+      setKbRefHits([]);
+      setKbRefScopeStepId('');
+      setAddingKbRef(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setKbRefAdding(false);
+    }
+  }
+
+  async function removeKbRef(refId: string) {
+    try {
+      await api.ttx.scenarios.kbRefs.remove(id!, refId);
+      setKbRefs(prev => prev.filter(r => r.id !== refId));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
   if (loading) return <div className="p-6">Loading…</div>;
   if (!scenario) return <div className="p-6 text-red-600">{error ?? 'Not found'}</div>;
 
@@ -421,6 +479,7 @@ export default function TtxScenarioEdit() {
 
       {scenario.sections.length === 0 && <p className="text-gray-400 text-sm mb-4">No sections yet.</p>}
 
+
       {scenario.sections.map((section, si) => (
         <div key={section.id} className="border rounded mb-4">
           <div className="flex justify-between items-center px-4 py-2 bg-gray-100 border-b">
@@ -520,6 +579,107 @@ export default function TtxScenarioEdit() {
           </div>
         </div>
       ))}
+      {/* KB References */}
+      <div className="mt-8">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="font-semibold text-lg">KB References</h2>
+          <button onClick={() => setAddingKbRef(a => !a)} className="px-2 py-1 bg-blue-600 text-white rounded text-sm">
+            + Add Reference
+          </button>
+        </div>
+
+        {kbRefs.length === 0 && !addingKbRef && (
+          <p className="text-gray-400 text-sm mb-4">No KB items linked. Add references to surface relevant content to TTX participants.</p>
+        )}
+
+        {kbRefs.length > 0 && (
+          <div className="space-y-2 mb-4">
+            {kbRefs.map(ref => (
+              <div key={ref.id} className="border rounded px-3 py-2 flex justify-between items-start text-sm">
+                <div>
+                  <p className="font-medium">{ref.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {ref.stepId ? `Scoped to step ${ref.stepId.slice(0, 8)}…` : 'Scenario-wide'}
+                    {ref.topics.length > 0 && ` · ${ref.topics.map(t => t.name).join(', ')}`}
+                  </p>
+                  {ref.excerpt && <p className="text-xs text-gray-400 mt-1 line-clamp-2">{ref.excerpt}</p>}
+                </div>
+                <button onClick={() => removeKbRef(ref.id)} className="text-xs text-red-400 hover:underline ml-3 shrink-0">Remove</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {addingKbRef && (
+          <div className="border rounded p-4 bg-gray-50 space-y-3">
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">Search KB items</label>
+              <div className="flex gap-2">
+                <input
+                  className="border flex-1 px-2 py-1 rounded text-sm"
+                  placeholder="Type to search published KB items…"
+                  value={kbRefSearch}
+                  onChange={e => {
+                    setKbRefSearch(e.target.value);
+                    setKbRefSelectedItem(null);
+                    searchKbItems(e.target.value);
+                  }}
+                />
+                {kbRefSearching && <span className="text-xs text-gray-400 self-center">Searching…</span>}
+              </div>
+              {kbRefHits.length > 0 && !kbRefSelectedItem && (
+                <div className="border rounded mt-1 bg-white divide-y max-h-48 overflow-y-auto">
+                  {kbRefHits.map(hit => (
+                    <button
+                      key={hit.itemId}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                      onClick={() => { setKbRefSelectedItem(hit); setKbRefHits([]); setKbRefSearch(hit.title); }}
+                    >
+                      <p className="font-medium">{hit.title}</p>
+                      {hit.excerpt && <p className="text-xs text-gray-400 line-clamp-1">{hit.excerpt}</p>}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {kbRefSelectedItem && (
+                <p className="text-xs text-green-600 mt-1">✓ Selected: {kbRefSelectedItem.title}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">Scope (optional)</label>
+              <select
+                className="border px-2 py-1 rounded text-sm w-full"
+                value={kbRefScopeStepId}
+                onChange={e => setKbRefScopeStepId(e.target.value)}
+              >
+                <option value="">Scenario-wide (shown at all steps)</option>
+                {scenario.sections.flatMap((sec, si) =>
+                  sec.steps.map((step, sti) => (
+                    <option key={step.id} value={step.id}>{si + 1}.{sti + 1} {step.title}</option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={addKbRef}
+                disabled={!kbRefSelectedItem || kbRefAdding}
+                className="px-3 py-1 bg-green-600 text-white rounded text-sm disabled:opacity-50"
+              >
+                {kbRefAdding ? 'Adding…' : 'Add'}
+              </button>
+              <button
+                onClick={() => { setAddingKbRef(false); setKbRefSearch(''); setKbRefHits([]); setKbRefSelectedItem(null); setKbRefScopeStepId(''); }}
+                className="px-3 py-1 border rounded text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

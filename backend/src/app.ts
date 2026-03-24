@@ -26,6 +26,7 @@ import ttxSessionsRouter from './routes/ttx/sessions.js';
 import ttxParticipateRouter from './routes/ttx/participate.js';
 import ttxAssistRouter from './routes/ttx/assist.js';
 import adminGovernanceRouter from './routes/admin/governance.js';
+import publicContactRouter from './routes/public/contact.js';
 import { requireAdmin } from './middleware/requireAdmin.js';
 import {
   authRateLimit,
@@ -124,6 +125,7 @@ app.use('/ttx/participate', participateRateLimit, ttxParticipateRouter);
 app.use('/ttx/assist', requireAdmin, assistRateLimit, ttxAssistRouter);
 
 app.use('/access', accessRouter);
+app.use('/public', publicContactRouter);
 app.use('/auth', authRateLimit, authRouter);
 app.use('/learn/modules', learnModulesRouter);
 app.use('/kb', requireAdmin, lessonsRouter);

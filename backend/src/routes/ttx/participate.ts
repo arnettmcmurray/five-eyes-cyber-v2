@@ -9,10 +9,11 @@
  */
 import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
-import { eq, asc, gt, and } from 'drizzle-orm';
+import { eq, asc, gt, and, inArray } from 'drizzle-orm';
 import { db } from '../../db/client.js';
 import { learnerSessions } from '../../db/schema/auth.js';
 import { learners } from '../../db/schema/learners.js';
+import { AccessService } from '../../services/access/access.service.js';
 import {
   ttxExerciseRuns,
   ttxRunParticipants,
@@ -21,11 +22,16 @@ import {
   ttxScenarioSteps,
   ttxScenarioSections,
   ttxScenarios,
+  ttxScenarioKbRefs,
 } from '../../db/schema/ttx.js';
+import { kbItems } from '../../db/schema/kb-items.js';
+import { kbRevisions } from '../../db/schema/kb-revisions.js';
+import { topicRelationships, topics } from '../../db/schema/topics.js';
 import { addClient, broadcast } from '../../lib/ttx-sse.js';
 import type { Request, Response, NextFunction } from 'express';
 
 const router = Router({ mergeParams: true });
+const accessSvc = new AccessService();
 
 // ---------------------------------------------------------------------------
 // Auth middleware — validates learner Bearer token, attaches learnerId + handle
@@ -74,11 +80,28 @@ async function requireParticipant(req: Request, res: Response, next: NextFunctio
 }
 
 // ---------------------------------------------------------------------------
+// TTX access gate — Individual tier does not include TTX
+// ---------------------------------------------------------------------------
+
+async function requireTtxAccess(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const learnerId = (req as unknown as ParticipantReq).learnerId;
+  const tier = await accessSvc.getLearnerTier(learnerId);
+  if (tier === 'individual') {
+    res.status(403).json({
+      error: 'TTX access requires Professional package or group-based TTX entitlement. Your current package (Individual) does not include TTX.',
+      tier: 'individual',
+    });
+    return;
+  }
+  next();
+}
+
+// ---------------------------------------------------------------------------
 // Routes
 // ---------------------------------------------------------------------------
 
 // POST /ttx/participate/:sessionId/join { role }
-router.post('/:sessionId/join', requireLearner, async (req, res) => {
+router.post('/:sessionId/join', requireLearner, requireTtxAccess, async (req, res) => {
   const handle = (req as unknown as ParticipantReq).learnerHandle;
   const { role } = req.body ?? {};
   const runId = req.params['sessionId'] as string;
@@ -114,9 +137,10 @@ router.get('/:sessionId/view', requireLearner, requireParticipant, async (req, r
   const [session] = await db.select().from(ttxExerciseRuns).where(eq(ttxExerciseRuns.id, runId)).limit(1);
   if (!session) { res.status(404).json({ error: 'Not found' }); return; }
 
-  const [participants, events] = await Promise.all([
+  const [participants, events, allKbRefs] = await Promise.all([
     db.select().from(ttxRunParticipants).where(eq(ttxRunParticipants.runId, runId)).orderBy(asc(ttxRunParticipants.joinedAt)),
     db.select().from(ttxRunEvents).where(eq(ttxRunEvents.runId, runId)).orderBy(asc(ttxRunEvents.occurredAt)),
+    db.select().from(ttxScenarioKbRefs).where(eq(ttxScenarioKbRefs.scenarioId, session.scenarioId)),
   ]);
 
   // Derive scenarioTitle and currentStep from the snapshot
@@ -128,7 +152,58 @@ router.get('/:sessionId/view', requireLearner, requireParticipant, async (req, r
     currentStep = allSteps.find((st: any) => st.id === session.currentStepId) ?? null;
   }
 
-  res.json({ session, scenarioTitle, participants, events, currentStep, myHandle: handle });
+  // Enrich KB refs: scenario-level refs + refs scoped to the current step
+  const relevantRefs = allKbRefs.filter(r =>
+    r.stepId === null && r.injectId === null ||
+    (session.currentStepId !== null && r.stepId === session.currentStepId)
+  );
+
+  let kbRefs: Array<{
+    id: string; kbItemId: string; stepId: string | null; injectId: string | null;
+    title: string; excerpt: string; topics: Array<{ slug: string; name: string }>;
+  }> = [];
+  if (relevantRefs.length > 0) {
+    const itemIds = relevantRefs.map(r => r.kbItemId);
+    const items = await db
+      .select({ id: kbItems.id, title: kbItems.title, currentRevisionId: kbItems.currentRevisionId })
+      .from(kbItems)
+      .where(and(inArray(kbItems.id, itemIds), eq(kbItems.status, 'published')));
+
+    const revIds = items.map(i => i.currentRevisionId).filter((id): id is string => id !== null);
+    const revRows = revIds.length > 0
+      ? await db.select({ id: kbRevisions.id, content: kbRevisions.content }).from(kbRevisions).where(inArray(kbRevisions.id, revIds))
+      : [];
+    const revMap = new Map(revRows.map(r => [r.id, r.content]));
+
+    const topicRels = await db.select().from(topicRelationships).where(inArray(topicRelationships.itemId, itemIds));
+    const topicIds = [...new Set(topicRels.map(r => r.topicId))];
+    const topicRows = topicIds.length > 0
+      ? await db.select().from(topics).where(inArray(topics.id, topicIds))
+      : [];
+    const topicMap = new Map(topicRows.map(t => [t.id, { slug: t.slug, name: t.name }]));
+    const itemMap = new Map(items.map(i => [i.id, i]));
+
+    kbRefs = relevantRefs.map(ref => {
+      const item = itemMap.get(ref.kbItemId);
+      if (!item) return null;
+      const content = item.currentRevisionId ? (revMap.get(item.currentRevisionId) ?? '') : '';
+      const refTopics = topicRels
+        .filter(r => r.itemId === ref.kbItemId)
+        .map(r => topicMap.get(r.topicId))
+        .filter((t): t is { slug: string; name: string } => t !== undefined);
+      return {
+        id: ref.id,
+        kbItemId: ref.kbItemId,
+        stepId: ref.stepId ?? null,
+        injectId: ref.injectId ?? null,
+        title: item.title,
+        excerpt: content.slice(0, 300) + (content.length > 300 ? '…' : ''),
+        topics: refTopics,
+      };
+    }).filter((r): r is NonNullable<typeof r> => r !== null);
+  }
+
+  res.json({ session, scenarioTitle, participants, events, currentStep, myHandle: handle, kbRefs });
 });
 
 // POST /ttx/participate/:sessionId/respond { eventType, body }
