@@ -677,7 +677,7 @@ export default function LandingPage() {
               className="font-display font-light leading-tight mb-8"
               style={{
                 fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)',
-                color: 'rgba(255,255,255,0.80)',
+                color: 'var(--text-secondary)',
               }}
             >
               "Security is not a product. It's a continuous operational state.

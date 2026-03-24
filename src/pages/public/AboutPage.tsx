@@ -62,7 +62,7 @@ export default function AboutPage() {
           <motion.p
             {...fadeUp(0.3)}
             className="text-sm leading-relaxed mb-10 mx-auto"
-            style={{ color: 'rgba(255,255,255,0.82)', maxWidth: '520px' }}
+            style={{ color: 'var(--text-secondary)', maxWidth: '520px' }}
           >
             For decades, our team protected some of the world's most sensitive assets. Now, we bring that same intelligence-grade protection to the firms that keep global trade moving.
           </motion.p>
@@ -83,11 +83,11 @@ export default function AboutPage() {
       <GlassSection delay={0}>
         <SectionHeader title="The Problem We See" />
         <div className="max-w-2xl mx-auto text-center space-y-5">
-          <p className="text-base leading-relaxed font-medium" style={{ color: 'rgba(255,255,255,0.88)' }}>
+          <p className="text-base leading-relaxed font-medium" style={{ color: 'var(--text-primary)' }}>
             Your clients rely on you to move high-value cargo and sensitive data across borders every day.
             That makes you a prime target for ransomware, espionage, and compliance failures.
           </p>
-          <p className="text-base leading-relaxed font-medium" style={{ color: 'rgba(255,255,255,0.88)' }}>
+          <p className="text-base leading-relaxed font-medium" style={{ color: 'var(--text-primary)' }}>
             The truth? Until now, logistics firms like yours have been operating without access to the same
             level of protection that governments and Fortune 500 companies rely on.
           </p>
@@ -117,7 +117,7 @@ export default function AboutPage() {
                 'Former FBI cybersecurity specialists',
                 'Veterans of national-level cyber defence and threat operations',
               ].map(item => (
-                <li key={item} className="flex items-start gap-3 text-sm font-bold" style={{ color: 'rgba(255,255,255,0.88)' }}>
+                <li key={item} className="flex items-start gap-3 text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
                   <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'var(--gold-accent)' }} />
                   {item}
                 </li>

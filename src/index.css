@@ -183,34 +183,42 @@ body {
   --surface-card:  rgba(255,255,255,0.60);
 }
 
+/* ── Nav is always dark bg — force light text regardless of theme ── */
+nav {
+  --text-primary: #ffffff;
+  --text-muted: rgba(255,255,255,0.55);
+  --text-secondary: rgba(255,255,255,0.70);
+  --gold-accent: #f59e0b;
+  --border-subtle: rgba(255,255,255,0.09);
+  --border-gold: rgba(245,158,11,0.30);
+  --bg-elevated: #0a1830;
+  --gold-muted: rgba(245,158,11,0.12);
+}
+
 /* ── Light mode structural visibility ───────────────────── */
 [data-theme="light"] body,
 [data-theme="light"] html {
-  background-color: #e8edf4;
+  background-color: #dce3ee;
 }
 
-/* Card/panel lift in light mode */
+/* Card/panel lift + visible border in light mode */
 [data-theme="light"] .rounded-2xl,
 [data-theme="light"] .rounded-\[1\.75rem\],
 [data-theme="light"] .rounded-\[2rem\] {
-  box-shadow: 0 2px 16px rgba(15,23,42,0.10), 0 1px 4px rgba(15,23,42,0.07);
+  box-shadow: 0 2px 20px rgba(15,23,42,0.11), 0 1px 4px rgba(15,23,42,0.07);
+  border-color: rgba(15,23,42,0.13) !important;
 }
 
-/* Glass sections used in AboutPage / CapabilitiesPage */
+/* Glass sections used in AboutPage / CapabilitiesPage — override hardcoded dark rgba */
 [data-theme="light"] [style*="rgba(7,16,32"],
 [data-theme="light"] [style*="rgba(7, 16, 32"] {
-  background: rgba(255,255,255,0.78) !important;
+  background: rgba(255,255,255,0.82) !important;
   border-color: rgba(15,23,42,0.12) !important;
 }
 [data-theme="light"] [style*="rgba(10,24,48"],
 [data-theme="light"] [style*="rgba(10, 24, 48"] {
-  background: rgba(255,255,255,0.65) !important;
+  background: rgba(255,255,255,0.68) !important;
   border-color: rgba(15,23,42,0.10) !important;
-}
-
-/* Capability / package card border visibility */
-[data-theme="light"] [style*="bg-surface"] {
-  background: #ffffff !important;
 }
 
 /* Section dividers */
