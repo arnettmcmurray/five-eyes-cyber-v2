@@ -4,3 +4,5 @@ dist/
 *.bak
 reference/
 .DS_Store
+docs/
+out/

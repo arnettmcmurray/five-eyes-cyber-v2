@@ -44,17 +44,26 @@ export function NeuralBackground() {
       for (let i = 0; i < count; i++) particles.push(new Particle());
     };
 
+    const getTokens = () => {
+      const s = getComputedStyle(document.documentElement);
+      return {
+        rgb: s.getPropertyValue('--neural-rgb').trim() || '245,158,11',
+        nodeAlpha: parseFloat(s.getPropertyValue('--neural-node-alpha').trim() || '0.75'),
+        connAlpha: parseFloat(s.getPropertyValue('--neural-conn-alpha').trim() || '0.45'),
+        mouseAlpha: parseFloat(s.getPropertyValue('--neural-mouse-alpha').trim() || '0.75'),
+      };
+    };
+
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const nodeColor = 'rgba(245,158,11,0.75)';
-      const rgb = '245,158,11';
+      const { rgb, nodeAlpha, connAlpha, mouseAlpha } = getTokens();
 
       for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         // node
         ctx.beginPath();
         ctx.arc(particles[i].x, particles[i].y, particles[i].r, 0, Math.PI * 2);
-        ctx.fillStyle = nodeColor;
+        ctx.fillStyle = `rgba(${rgb},${nodeAlpha})`;
         ctx.fill();
 
         // peer connections
@@ -66,7 +75,7 @@ export function NeuralBackground() {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(${rgb},${((1 - dist / 150) * 0.45).toFixed(3)})`;
+            ctx.strokeStyle = `rgba(${rgb},${((1 - dist / 150) * connAlpha).toFixed(3)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -80,7 +89,7 @@ export function NeuralBackground() {
           ctx.beginPath();
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(mouse.x, mouse.y);
-          ctx.strokeStyle = `rgba(${rgb},${((1 - md / 200) * 0.75).toFixed(3)})`;
+          ctx.strokeStyle = `rgba(${rgb},${((1 - md / 200) * mouseAlpha).toFixed(3)})`;
           ctx.lineWidth = 0.8;
           ctx.stroke();
         }
@@ -105,18 +114,23 @@ export function NeuralBackground() {
 
   return (
     <>
-      {/* ambient radial gold glow at top center */}
+      {/* deepest layer: bg-canvas fill so there's never bare HTML bg */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{ background: 'var(--bg-canvas)', zIndex: 0 }}
+      />
+      {/* ambient radial gold glow */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
           background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(245,158,11,0.08) 0%, transparent 70%)',
-          zIndex: -2,
+          zIndex: 1,
         }}
       />
       <canvas
         ref={canvasRef}
         className="fixed inset-0 pointer-events-none"
-        style={{ zIndex: -1, opacity: 0.85 }}
+        style={{ zIndex: 2, opacity: 0.85 }}
       />
     </>
   );
