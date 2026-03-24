@@ -56,24 +56,26 @@ export default function EnterprisePage() {
       {/* ── Hero ── */}
       <section
         className="relative flex items-center overflow-hidden"
-        style={{ minHeight: '50vh' }}
+        style={{ minHeight: '52vh' }}
       >
+        {/* Full-bleed photo */}
+        <img
+          src="/assets/ttx/cargo-ship-night.png"
+          alt="Cargo ship at night"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: 'brightness(0.40) saturate(0.6)' }}
+        />
+        {/* Gradient scrim */}
         <div
           className="absolute inset-0"
           style={{
-            background: `
-              radial-gradient(ellipse 90% 70% at 0% 50%, rgba(245,158,11,0.05) 0%, transparent 60%),
-              radial-gradient(ellipse 60% 50% at 100% 0%, rgba(30,58,95,0.12) 0%, transparent 50%),
-              linear-gradient(180deg, rgba(5,11,20,0.2) 0%, var(--bg-canvas) 100%)
-            `,
+            background: 'linear-gradient(105deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.28) 55%, transparent 100%)',
           }}
         />
         <div
-          className="absolute inset-0 opacity-[0.025]"
+          className="absolute inset-0"
           style={{
-            backgroundImage:
-              'linear-gradient(var(--border-strong) 1px, transparent 1px), linear-gradient(90deg, var(--border-strong) 1px, transparent 1px)',
-            backgroundSize: '60px 60px',
+            background: 'linear-gradient(to bottom, transparent 50%, var(--bg-canvas) 100%)',
           }}
         />
 
@@ -86,13 +88,13 @@ export default function EnterprisePage() {
             <span className="label-tag block mb-5">Contact</span>
             <h1
               className="font-display font-black mb-7 leading-none"
-              style={{ fontSize: 'clamp(3rem, 7vw, 5rem)', color: 'var(--text-primary)' }}
+              style={{ fontSize: 'clamp(3rem, 7vw, 5rem)', color: '#ffffff' }}
             >
               Contact Us
             </h1>
             <p
               className="text-xl font-bold leading-relaxed max-w-md"
-              style={{ color: 'var(--text-primary)' }}
+              style={{ color: 'rgba(255,255,255,0.82)' }}
             >
               Your competitors are upgrading their security.<br />
               Cybercriminals are probing your systems.<br />

@@ -1,5 +1,7 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { getSessionToken } from '../lib/session';
+import { getAdminToken } from '../lib/adminSession';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { NeuralBackground } from './NeuralBackground';
@@ -56,6 +58,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const logoTo = getAdminToken() ? '/admin/dashboard' : getSessionToken() ? '/learn' : '/';
 
   return (
     <div
@@ -85,7 +88,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
 
           {/* Center logo */}
           <Link
-            to="/"
+            to={logoTo}
             className="flex flex-col items-center gap-1 shrink-0 mx-6 group"
             aria-label="Five Eyes home"
           >

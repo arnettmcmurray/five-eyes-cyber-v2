@@ -17,24 +17,25 @@ export default function AboutPage() {
         className="relative flex items-center justify-center overflow-hidden"
         style={{ minHeight: '62vh' }}
       >
-        {/* Atmospheric dark overlay — no Unsplash */}
+        {/* Full-bleed photo */}
+        <img
+          src="/assets/ttx/port-operations-center.png"
+          alt="Port operations centre"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: 'brightness(0.45) saturate(0.7)' }}
+        />
+        {/* Gradient scrim — bottom fade into page */}
         <div
           className="absolute inset-0"
           style={{
-            background: `
-              radial-gradient(ellipse 100% 80% at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 60%),
-              radial-gradient(ellipse 80% 60% at 80% 100%, rgba(30,58,95,0.15) 0%, transparent 50%),
-              linear-gradient(180deg, rgba(5,11,20,0.4) 0%, var(--bg-canvas) 100%)
-            `,
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.55) 60%, var(--bg-canvas) 100%)',
           }}
         />
-        {/* Structured grid overlay */}
+        {/* Gold ambient top */}
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0"
           style={{
-            backgroundImage:
-              'linear-gradient(var(--border-strong) 1px, transparent 1px), linear-gradient(90deg, var(--border-strong) 1px, transparent 1px)',
-            backgroundSize: '60px 60px',
+            background: 'radial-gradient(ellipse 80% 40% at 50% 0%, rgba(245,158,11,0.07) 0%, transparent 70%)',
           }}
         />
 
@@ -46,7 +47,7 @@ export default function AboutPage() {
           <motion.h1
             {...fadeUp(0.1)}
             className="font-display font-black leading-tight mb-8 mx-auto"
-            style={{ fontSize: 'clamp(2rem, 5vw, 3.8rem)', color: 'var(--text-primary)', maxWidth: '900px' }}
+            style={{ fontSize: 'clamp(2rem, 5vw, 3.8rem)', color: '#ffffff', maxWidth: '900px' }}
           >
             Former <span style={{ textDecoration: 'underline', textDecorationThickness: '2px', textUnderlineOffset: '8px' }}>FBI</span> &amp; Military Intelligence Experts Bringing Elite Security to the Logistics and Supply Chain Sector
           </motion.h1>
@@ -54,7 +55,7 @@ export default function AboutPage() {
           <motion.p
             {...fadeUp(0.2)}
             className="text-lg font-bold tracking-wide mb-4"
-            style={{ color: 'var(--text-primary)' }}
+            style={{ color: 'rgba(255,255,255,0.92)' }}
           >
             Trusted by Governments. Built for Logistics.<br />Dedicated to You.
           </motion.p>
@@ -62,7 +63,7 @@ export default function AboutPage() {
           <motion.p
             {...fadeUp(0.3)}
             className="text-sm leading-relaxed mb-10 mx-auto"
-            style={{ color: 'var(--text-secondary)', maxWidth: '520px' }}
+            style={{ color: 'rgba(255,255,255,0.72)', maxWidth: '520px' }}
           >
             For decades, our team protected some of the world's most sensitive assets. Now, we bring that same intelligence-grade protection to the firms that keep global trade moving.
           </motion.p>
