@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Map, Zap, CheckCircle2 } from 'lucide-react';
@@ -43,8 +42,6 @@ const CAPABILITIES = [
 ];
 
 export default function CapabilitiesPage() {
-  useEffect(() => { window.scrollTo(0, 0); }, []);
-
   return (
     <div className="relative z-10 min-h-screen">
 
@@ -53,18 +50,18 @@ export default function CapabilitiesPage() {
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.7 }}
           className="max-w-3xl mx-auto"
         >
-          <span className="label-tag block mb-5">Our Capabilities</span>
+          <span className="label-tag block mb-5">Capabilities</span>
           <h1
             className="font-display font-black uppercase tracking-tight mb-5"
             style={{ fontSize: 'clamp(2.2rem, 6vw, 4rem)', color: 'var(--text-primary)' }}
           >
-            Our <span style={{ color: 'var(--gold-accent)' }}>Capabilities</span>
+            What We <span style={{ color: 'var(--gold-accent)' }}>Deliver.</span>
           </h1>
-          <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)', maxWidth: '520px', margin: '0 auto' }}>
-            Elite security solutions built specifically for the complexities of the modern logistics and supply chain sector.
+          <p className="text-base leading-relaxed mx-auto" style={{ color: 'var(--text-secondary)', maxWidth: '520px' }}>
+            Intelligence-grade security solutions built specifically for the complexities of modern logistics and supply chain operations.
           </p>
         </motion.div>
       </section>

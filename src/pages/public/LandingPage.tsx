@@ -1,7 +1,11 @@
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Shield, BookOpen, Mail, Lock, Map, Zap } from 'lucide-react';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { Shield, BookOpen, Mail, Lock, Map, Zap, ArrowRight } from 'lucide-react';
+import { SignalMapCanvas } from '../../components/SignalMapCanvas';
 import EmailAssessment from '../../components/EmailAssessment';
+
+// ── Tactical section cards ────────────────────────────────────────────────────
 
 const TACTICAL_CARDS = [
   {
@@ -30,23 +34,25 @@ const TACTICAL_CARDS = [
   },
 ];
 
+// ── Capabilities grid ─────────────────────────────────────────────────────────
+
 const CAPABILITIES = [
   {
     icon: Lock,
     title: 'Freight Security Analysis',
-    desc: 'Intelligence-grade assessment of physical and digital supply chain vulnerabilities, modeled after defense sector threat analysis.',
+    desc: 'Intelligence-grade assessment of physical and digital supply chain vulnerabilities, modeled after defence sector threat analysis.',
     image: '/assets/dashboard/freight_fraud.png',
   },
   {
     icon: Shield,
     title: 'Cyber Resilience Training',
-    desc: 'Specialized training modules focusing on the specific tactics used by ransomware gangs and nation-state actors targeting logistics.',
+    desc: 'Specialised training modules targeting the specific tactics used by ransomware gangs and nation-state actors against logistics.',
     image: '/assets/dashboard/ransomware.png',
   },
   {
     icon: Map,
     title: 'Strategic Threat Intelligence',
-    desc: 'Actionable intelligence feeds curated by former military and intelligence analysts, translating global events to supply chain impacts.',
+    desc: 'Actionable intelligence curated by former military and intelligence analysts, translating global events to supply chain impact.',
     image: '/assets/dashboard/supply_chain.png',
   },
   {
@@ -57,122 +63,285 @@ const CAPABILITIES = [
   },
 ];
 
+// ── Hero proof cluster ────────────────────────────────────────────────────────
+
+const STATS = [
+  { value: '3', label: 'Training Modules', sub: 'Phishing · BEC · MFA' },
+  { value: 'KB', label: 'Knowledge-Grounded', sub: 'No hallucinated guidance' },
+  { value: 'TTX', label: 'Tabletop Exercises', sub: 'Professional tier included' },
+];
+
+// ── Magnetic CTA button ───────────────────────────────────────────────────────
+
+function MagneticLink({
+  to,
+  children,
+  className,
+  style,
+}: {
+  to: string;
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const x = useSpring(rawX, { stiffness: 420, damping: 28 });
+  const y = useSpring(rawY, { stiffness: 420, damping: 28 });
+
+  const onMove = (e: React.MouseEvent) => {
+    if (!wrapRef.current) return;
+    const r = wrapRef.current.getBoundingClientRect();
+    rawX.set((e.clientX - r.left - r.width / 2) * 0.30);
+    rawY.set((e.clientY - r.top - r.height / 2) * 0.30);
+  };
+  const onLeave = () => { rawX.set(0); rawY.set(0); };
+
+  return (
+    <motion.div
+      ref={wrapRef}
+      style={{ x, y, display: 'inline-block' }}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+    >
+      <Link to={to} className={className} style={style}>{children}</Link>
+    </motion.div>
+  );
+}
+
+// ── Fade-in variants ──────────────────────────────────────────────────────────
+
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.55, delay, ease: [0.4, 0, 0.2, 1] },
+});
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function LandingPage() {
   return (
     <div className="relative w-full overflow-hidden">
 
       {/* ── Hero ── */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-6 py-12 md:py-24 text-center"
-        style={{ perspective: '2000px' }}>
+      <section className="relative min-h-screen flex overflow-hidden">
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: 'easeOut' }}
-          className="mb-10 md:mb-20 max-w-2xl"
-        >
+        {/* Left — editorial command column */}
+        <div className="relative z-10 w-full lg:w-[58%] flex flex-col justify-center px-6 sm:px-12 lg:px-16 xl:px-24 py-28 lg:py-0">
+
           {/* Eyebrow */}
-          <div className="flex items-center justify-center gap-4 mb-7">
-            <div className="h-px w-10" style={{ background: 'var(--border-gold)' }} />
-            <span className="label-tag">Unified AI Influenced Training Interface</span>
-            <div className="h-px w-10" style={{ background: 'var(--border-gold)' }} />
-          </div>
+          <motion.div {...fadeUp(0)} className="flex items-center gap-3 mb-8">
+            <div className="h-px w-8 shrink-0" style={{ background: 'var(--border-gold)' }} />
+            <span className="label-tag tracking-ultra">
+              Freight · Logistics · Cyber Security
+            </span>
+          </motion.div>
 
           {/* Headline */}
-          <h1 className="font-display font-black leading-none mb-2 tracking-tight"
-            style={{ fontSize: 'clamp(3rem, 8vw, 5.5rem)', color: 'var(--text-primary)' }}>
-            Five Eyes
-          </h1>
-          <h2 className="font-display font-light tracking-tight mb-10"
-            style={{
-              fontSize: 'clamp(1.8rem, 5vw, 3.5rem)',
-              color: 'var(--gold-accent)',
-            }}>
-            Cyber Training
-          </h2>
+          <div className="mb-7 overflow-hidden">
+            <motion.h1
+              className="font-display font-black leading-[0.92] tracking-tight"
+              style={{ fontSize: 'clamp(3.6rem, 7.5vw, 6.5rem)', color: 'var(--text-primary)' }}
+            >
+              <motion.span {...fadeUp(0.08)} style={{ display: 'block' }}>
+                PROTECT YOUR
+              </motion.span>
+              <motion.span
+                {...fadeUp(0.18)}
+                style={{ display: 'block', color: 'var(--gold-accent)' }}
+              >
+                SUPPLY CHAIN.
+              </motion.span>
+            </motion.h1>
+          </div>
 
-          {/* CTA */}
-          <Link
-            to="/packages"
-            className="inline-block px-10 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:scale-[1.03] hover:brightness-110"
-            style={{
-              background: 'var(--gold-accent)',
-              color: '#000',
-              boxShadow: 'var(--glow-gold-strong)',
-            }}
+          {/* Subhead */}
+          <motion.p
+            {...fadeUp(0.32)}
+            className="max-w-sm text-[15px] leading-relaxed mb-10"
+            style={{ color: 'var(--text-secondary)' }}
           >
-            View Packages
-          </Link>
+            Intelligence-grounded training and tabletop exercises for transport and
+            logistics operations. Built for the threats targeting your sector.
+          </motion.p>
+
+          {/* CTA row */}
+          <motion.div {...fadeUp(0.44)} className="flex flex-wrap items-center gap-4 mb-12">
+            <MagneticLink
+              to="/packages"
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all duration-base hover:brightness-110"
+              style={{
+                background: 'var(--gold-accent)',
+                color: '#000',
+                boxShadow: 'var(--glow-gold-strong)',
+              }}
+            >
+              View Packages
+            </MagneticLink>
+
+            <Link
+              to="/capabilities"
+              className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all duration-base hover:brightness-125 group"
+              style={{
+                border: '1px solid var(--border-strong)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              See Capabilities
+              <ArrowRight
+                size={12}
+                className="transition-transform duration-base group-hover:translate-x-0.5"
+              />
+            </Link>
+          </motion.div>
+
+          {/* Stat cluster */}
+          <motion.div
+            {...fadeUp(0.56)}
+            className="flex flex-wrap gap-0 border-t"
+            style={{ borderColor: 'var(--border-subtle)' }}
+          >
+            {STATS.map((s, i) => (
+              <div
+                key={s.value}
+                className="flex flex-col pt-5 pr-8 mr-8"
+                style={{
+                  borderRight: i < STATS.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                }}
+              >
+                <span
+                  className="font-display font-black leading-none mb-1"
+                  style={{ fontSize: '1.6rem', color: 'var(--gold-accent)' }}
+                >
+                  {s.value}
+                </span>
+                <span className="text-[11px] font-bold uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-primary)' }}>
+                  {s.label}
+                </span>
+                <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>
+                  {s.sub}
+                </span>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Right — signal map canvas */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.4, delay: 0.15, ease: 'easeOut' }}
+          className="hidden lg:block lg:flex-1 relative"
+        >
+          <SignalMapCanvas />
+          {/* Fade: canvas blends into bg on the left edge */}
+          <div
+            className="absolute inset-y-0 left-0 w-40 pointer-events-none"
+            style={{ background: 'linear-gradient(to right, var(--bg-canvas), transparent)' }}
+          />
+          {/* Fade: top */}
+          <div
+            className="absolute top-0 left-0 right-0 h-24 pointer-events-none"
+            style={{ background: 'linear-gradient(to bottom, var(--bg-canvas), transparent)' }}
+          />
+          {/* Fade: bottom */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none"
+            style={{ background: 'linear-gradient(to top, var(--bg-canvas), transparent)' }}
+          />
         </motion.div>
 
-        {/* Tactical Cards */}
+        {/* Full-width bottom scroll-signal fade */}
         <div
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full"
-          style={{ transformStyle: 'preserve-3d' }}
-        >
-          {TACTICAL_CARDS.map((card, i) => (
-            <motion.div
-              key={card.title}
-              initial={{ opacity: 0, y: 32, rotateX: -8 }}
-              animate={{ opacity: 1, y: 0, rotateX: 0 }}
-              transition={{ duration: 0.8, delay: 0.15 + i * 0.12 }}
-              whileHover={{ y: -10, rotateX: 4 }}
-              className="relative h-[280px] sm:h-[340px] md:h-[420px] rounded-[2rem] overflow-hidden group"
-              style={{ border: '1px solid var(--border-subtle)', boxShadow: 'var(--surface)' }}
-            >
-              {/* Image BG */}
-              <div
-                className="absolute inset-0 transition-all duration-700 group-hover:scale-108 saturate-50 group-hover:saturate-100"
-                style={{
-                  backgroundImage: `url('${card.img}')`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  filter: 'grayscale(0.35)',
-                }}
-              />
-              {/* Gradient overlay */}
-              <div
-                className="absolute inset-0 transition-opacity duration-500 group-hover:opacity-80"
-                style={{
-                  background: 'linear-gradient(to top, var(--bg-canvas) 0%, rgba(5,11,20,0.7) 50%, transparent 100%)',
-                  opacity: 0.92,
-                }}
-              />
+          className="absolute bottom-0 left-0 right-0 h-20 z-20 pointer-events-none"
+          style={{ background: 'linear-gradient(to top, var(--bg-canvas), transparent)' }}
+        />
+      </section>
 
-              {/* Content */}
-              <Link to={card.path} className="absolute inset-0 p-5 md:p-8 flex flex-col justify-end z-10">
+      {/* ── Tactical Cards ── */}
+      <section className="py-16 md:py-24 px-6 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mb-12"
+          >
+            <span className="label-tag block mb-3">Platform</span>
+            <h2
+              className="font-display font-black uppercase tracking-tight"
+              style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', color: 'var(--text-primary)' }}
+            >
+              Training. Simulation.{' '}
+              <span style={{ color: 'var(--gold-accent)' }}>Intelligence.</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {TACTICAL_CARDS.map((card, i) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+                whileHover={{ y: -6 }}
+                className="relative h-[280px] sm:h-[320px] md:h-[400px] rounded-2xl overflow-hidden group cursor-pointer"
+                style={{ border: '1px solid var(--border-subtle)' }}
+              >
+                {/* Image */}
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-5 transition-all group-hover:scale-110"
+                  className="absolute inset-0 transition-transform duration-slower group-hover:scale-105"
                   style={{
-                    background: 'var(--gold-muted)',
-                    border: '1px solid var(--border-gold)',
-                    color: 'var(--gold-accent)',
-                    boxShadow: 'var(--glow-gold)',
+                    backgroundImage: `url('${card.img}')`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    filter: 'grayscale(0.25) brightness(0.9)',
                   }}
-                >
-                  <card.icon size={20} />
-                </div>
-                <h3
-                  className="font-display font-black uppercase mb-2 transition-colors group-hover:text-gold-accent"
-                  style={{ fontSize: 'clamp(1.6rem, 3vw, 2rem)', color: 'var(--text-primary)' }}
-                >
-                  {card.title}
-                </h3>
-                <p className="text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-6"
-                  style={{ color: 'var(--text-muted)' }}>
-                  {card.desc}
-                </p>
-                <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-ultra"
-                  style={{ color: 'var(--gold-accent)' }}>
-                  {card.btn}
+                />
+                {/* Gradient overlay */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(to top, var(--bg-canvas) 0%, rgba(5,11,20,0.65) 50%, transparent 100%)',
+                  }}
+                />
+                {/* Content */}
+                <Link to={card.path} className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end z-10">
                   <div
-                    className="h-px transition-all duration-500 group-hover:w-12"
-                    style={{ width: '24px', background: 'var(--border-gold)' }}
-                  />
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-transform duration-base group-hover:scale-105"
+                    style={{
+                      background: 'var(--gold-muted)',
+                      border: '1px solid var(--border-gold)',
+                      color: 'var(--gold-accent)',
+                    }}
+                  >
+                    <card.icon size={18} />
+                  </div>
+                  <h3
+                    className="font-display font-black uppercase mb-2 transition-colors duration-base group-hover:text-gold-accent"
+                    style={{ fontSize: 'clamp(1.5rem, 2.5vw, 1.9rem)', color: 'var(--text-primary)' }}
+                  >
+                    {card.title}
+                  </h3>
+                  <p className="text-[11px] font-semibold leading-relaxed mb-5"
+                    style={{ color: 'var(--text-muted)' }}>
+                    {card.desc}
+                  </p>
+                  <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-ultra"
+                    style={{ color: 'var(--gold-accent)' }}>
+                    {card.btn}
+                    <div
+                      className="h-px transition-all duration-slow group-hover:w-10"
+                      style={{ width: '20px', background: 'var(--border-gold)' }}
+                    />
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -180,37 +349,38 @@ export default function LandingPage() {
       <section className="py-14 md:py-24 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="mb-14"
+            transition={{ duration: 0.6 }}
+            className="mb-12"
           >
-            <span className="label-tag block mb-4">Capabilities</span>
+            <span className="label-tag block mb-3">Capabilities</span>
             <h2
               className="font-display font-black uppercase tracking-tight"
-              style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', color: 'var(--text-primary)' }}
+              style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)', color: 'var(--text-primary)' }}
             >
-              Intelligence-Grounded <span style={{ color: 'var(--gold-accent)' }}>Defense.</span>
+              Intelligence-Grounded{' '}
+              <span style={{ color: 'var(--gold-accent)' }}>Defence.</span>
             </h2>
-            <p className="mt-3 max-w-xl text-base" style={{ color: 'var(--text-secondary)' }}>
-              Explore the modules powering the modern defense-in-depth strategy.
+            <p className="mt-3 max-w-lg text-[15px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              Built around the threats facing UK transport, logistics, and freight operations.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {CAPABILITIES.map((cap, i) => (
               <motion.div
                 key={cap.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
-                className="group relative overflow-hidden rounded-2xl gold-hover transition-all duration-500 flex flex-col"
+                transition={{ duration: 0.55, delay: i * 0.08 }}
+                className="group relative overflow-hidden rounded-2xl gold-hover transition-all duration-slow flex flex-col"
                 style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
               >
                 {/* Image strip */}
-                <div className="h-40 w-full overflow-hidden relative shrink-0">
+                <div className="h-36 w-full overflow-hidden relative shrink-0">
                   <div
                     className="absolute inset-0 z-10"
                     style={{ background: 'linear-gradient(to top, var(--bg-surface) 0%, transparent 60%)' }}
@@ -218,19 +388,20 @@ export default function LandingPage() {
                   <img
                     src={cap.image}
                     alt={cap.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-slower group-hover:scale-105"
                   />
                 </div>
-
-                <div className="p-7 z-20 relative">
-                  <div className="flex items-center gap-4 mb-3">
+                <div className="p-6 z-20 relative">
+                  <div className="flex items-center gap-3 mb-3">
                     <div
-                      className="p-2.5 rounded-xl transition-transform duration-300 group-hover:scale-110"
+                      className="p-2 rounded-lg transition-transform duration-base group-hover:scale-105"
                       style={{ background: 'var(--gold-muted)', color: 'var(--gold-accent)' }}
                     >
-                      <cap.icon size={20} />
+                      <cap.icon size={18} />
                     </div>
-                    <h3 className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>{cap.title}</h3>
+                    <h3 className="font-semibold text-[15px]" style={{ color: 'var(--text-primary)' }}>
+                      {cap.title}
+                    </h3>
                   </div>
                   <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                     {cap.desc}
@@ -245,26 +416,26 @@ export default function LandingPage() {
       {/* ── Email Assessment ── */}
       <EmailAssessment />
 
-      {/* ── Trust Quote ── */}
-      <section className="py-16 md:py-28 px-6 flex justify-center text-center relative z-10">
+      {/* ── Trust quote ── */}
+      <section className="py-20 md:py-32 px-6 flex justify-center text-center relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="max-w-2xl"
+          transition={{ duration: 0.7 }}
+          className="max-w-xl"
         >
-          <h2
-            className="text-xl md:text-2xl font-serif italic leading-relaxed mb-10"
-            style={{ color: 'rgba(255,255,255,0.78)' }}
+          <div className="w-8 h-px mx-auto mb-8" style={{ background: 'var(--border-gold)' }} />
+          <blockquote
+            className="font-display font-light leading-tight mb-8"
+            style={{
+              fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)',
+              color: 'rgba(255,255,255,0.80)',
+            }}
           >
             "Security is not a product. It's a continuous operational state.
             Five Eyes moves your workforce from vulnerability to resilience."
-          </h2>
-          <div
-            className="w-10 h-px mx-auto mb-5"
-            style={{ background: 'var(--gold-accent)', boxShadow: '0 0 10px rgba(245,158,11,0.5)' }}
-          />
+          </blockquote>
           <p className="label-tag-muted">Director of Operations, Enterprise Client</p>
         </motion.div>
       </section>

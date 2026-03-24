@@ -75,15 +75,14 @@ export default function PackagesPage() {
           transition={{ duration: 0.8 }}
           className="max-w-2xl mx-auto"
         >
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="h-px w-10" style={{ background: 'var(--border-gold)' }} />
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="h-px w-8 shrink-0" style={{ background: 'var(--border-gold)' }} />
             <span className="label-tag">Packages</span>
-            <div className="h-px w-10" style={{ background: 'var(--border-gold)' }} />
           </div>
 
           <h1 className="font-display font-black uppercase tracking-tight mb-4"
             style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', color: 'var(--text-primary)' }}>
-            Choose Your <span style={{ color: 'var(--gold-accent)' }}>Level</span>
+            Choose Your <span style={{ color: 'var(--gold-accent)' }}>Level.</span>
           </h1>
           <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             From individual training access to full enterprise resilience programs —

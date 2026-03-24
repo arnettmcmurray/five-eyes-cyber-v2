@@ -50,13 +50,14 @@ export function PublicLayout({ children }: { children: ReactNode }) {
       <NeuralBackground />
 
       {/* ── Nav ── */}
-      <nav className="relative z-50">
+      <nav className="sticky top-0 z-50">
         <div
-          className="mx-auto max-w-7xl px-4 md:px-6 h-16 md:h-20 flex items-center justify-between"
+          className="mx-auto max-w-7xl px-4 md:px-6 h-16 md:h-18 flex items-center justify-between"
           style={{
             borderBottom: '1px solid var(--border-subtle)',
-            background: 'rgba(5,11,20,0.80)',
-            backdropFilter: 'blur(20px)',
+            background: 'rgba(5,11,20,0.85)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
           }}
         >
           {/* Left links */}
@@ -174,7 +175,10 @@ export function PublicLayout({ children }: { children: ReactNode }) {
       {/* ── Footer ── */}
       <footer
         className="relative z-20 pt-10 pb-8 md:pt-16 md:pb-10 px-5 md:px-8"
-        style={{ borderTop: '1px solid var(--border-subtle)' }}
+        style={{
+          borderTop: '1px solid var(--border-subtle)',
+          background: 'var(--bg-surface)',
+        }}
       >
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between gap-12">

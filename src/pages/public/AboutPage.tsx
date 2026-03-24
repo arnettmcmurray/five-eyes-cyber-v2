@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -9,7 +8,6 @@ const fadeUp = (delay = 0) => ({
 });
 
 export default function AboutPage() {
-  useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
     <div className="relative z-10">
@@ -72,7 +70,7 @@ export default function AboutPage() {
           <motion.div {...fadeUp(0.4)}>
             <Link
               to="/enterprise"
-              className="inline-block px-8 py-3.5 text-[11px] font-black uppercase tracking-ultra transition-all hover:scale-[1.03] hover:brightness-110"
+              className="inline-block px-8 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:scale-[1.03] hover:brightness-110"
               style={{ background: 'var(--gold-accent)', color: '#000', boxShadow: 'var(--glow-gold)' }}
             >
               Book your Security Analysis Call

@@ -33,6 +33,23 @@ export default {
         'gold-strong': '0 0 40px rgba(245,158,11,0.40)',
         'surface': '0 4px 32px rgba(0,0,0,0.5)',
       },
+      transitionDuration: {
+        fast: '150ms',
+        base: '250ms',
+        slow: '400ms',
+        slower: '700ms',
+      },
+      transitionTimingFunction: {
+        'ease-spring': 'cubic-bezier(0.34,1.56,0.64,1)',
+        'ease-motion': 'cubic-bezier(0.4,0,0.2,1)',
+      },
+      borderRadius: {
+        sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+        xl: 'var(--radius-xl)',
+        '2xl': 'var(--radius-2xl)',
+      },
       animation: {
         'ticker': 'scrollTicker 60s linear infinite',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4,0,0.6,1) infinite',
