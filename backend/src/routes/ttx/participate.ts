@@ -80,16 +80,16 @@ async function requireParticipant(req: Request, res: Response, next: NextFunctio
 }
 
 // ---------------------------------------------------------------------------
-// TTX access gate — Individual tier does not include TTX
+// TTX access gate — only professional and paid tiers include TTX
 // ---------------------------------------------------------------------------
 
 async function requireTtxAccess(req: Request, res: Response, next: NextFunction): Promise<void> {
   const learnerId = (req as unknown as ParticipantReq).learnerId;
   const tier = await accessSvc.getLearnerTier(learnerId);
-  if (tier === 'individual') {
+  if (tier !== 'professional' && tier !== 'paid') {
     res.status(403).json({
-      error: 'TTX access requires Professional package or group-based TTX entitlement. Your current package (Individual) does not include TTX.',
-      tier: 'individual',
+      error: 'TTX access requires a Professional package. Your current access level does not include TTX.',
+      tier,
     });
     return;
   }

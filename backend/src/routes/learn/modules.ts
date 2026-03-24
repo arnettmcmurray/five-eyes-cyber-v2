@@ -37,12 +37,12 @@ async function requireLearner(req: Request, res: Response, next: NextFunction): 
   next();
 }
 
-/** Middleware: require paid access tier (runs after requireLearner has set req.learnerId). */
+/** Middleware: require Individual+ access tier (runs after requireLearner has set req.learnerId). */
 async function requirePaidAccess(req: Request, res: Response, next: NextFunction): Promise<void> {
   const learnerId = (req as unknown as Request & { learnerId: string }).learnerId;
   const tier = await accessSvc.getLearnerTier(learnerId);
   if (tier === 'free') {
-    res.status(403).json({ error: 'Paid access required. Complete the assessment to request access.', tier: 'free' });
+    res.status(403).json({ error: 'A training package is required to access modules. Contact your administrator to request access.', tier: 'free' });
     return;
   }
   next();

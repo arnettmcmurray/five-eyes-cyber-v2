@@ -1,46 +1,68 @@
 # Implementation Plan — Five Eyes v2
-_Updated: 2026-03-23 | Planning mode active — design strategy pass complete_
+_Updated: 2026-03-23 | Logic pass complete. Planning mode active. Styling not started._
 
 ---
 
-## Mode: Planning Only
+## Current Mode: Planning Only
 
-Implementation is paused. The prior functional pass is complete and committed (`b6363e2`).
-Next work is a design/styling pass executed against the strategy document.
+Implementation and styling are paused. The logic pass is complete. The next session should begin styling execution against the design strategy document.
 
-**Strategy document:** `docs/design/2026-03-23-layout-style-strategy.md`
+**Design strategy document:** `docs/design/2026-03-23-layout-style-strategy.md`
 
 ---
 
 ## Completed Functional Work
 
-| Pass | Commit | What |
-|------|--------|------|
-| Local-proof bootstrap | b6363e2 | Seeded learners, access, groups, modules, progress, KB items/chunks |
-| Tier enforcement | b6363e2 | Individual vs Professional enforced at backend + frontend |
-| KB Grounding A–C | b6363e2 | Stateless KB retrieval, TTX KB refs, Help panel, remediation, reference materials |
-| Module expansion T1–T3 | b6363e2 | t1-phishing (5 tasks, 15q), t2-bec (3+5, 12q), t3-mfa (3+4, 12q) |
-| Admin controls | b6363e2 | Grant/Revoke access, live health ping, groups tab, TTX KB refs admin UI |
-| Public site | b6363e2 | All pages, PublicLayout, NeuralBackground, LoginPage/RegisterPage, OTP flow |
+| Pass | What |
+|------|------|
+| Local-proof bootstrap | Seeded learners, access, groups, modules, progress, KB items/chunks |
+| Tier enforcement | Individual vs Professional enforced at backend + frontend |
+| KB Grounding A–C | Stateless KB retrieval, TTX KB refs, Help panel, remediation, reference materials |
+| Module expansion T1–T3 | t1-phishing (5 tasks, 15q), t2-bec (3+5, 12q), t3-mfa (3+4, 12q) |
+| Admin controls | Grant/Revoke access, live health ping, groups tab, TTX KB refs admin UI |
+| Public site | All pages, PublicLayout, NeuralBackground, LoginPage/RegisterPage, OTP flow |
+
+## Completed Logic Pass (2026-03-23)
+
+| Fix | File |
+|-----|------|
+| TTX backend gate: free tier now blocked (was only blocking individual) | `backend/src/routes/ttx/participate.ts` |
+| Access-overrides POST comment corrected (was listing wrong valid tiers) | `backend/src/routes/admin/access-overrides.ts` |
+| requirePaidAccess error message updated (removed vestigial "assessment" text) | `backend/src/routes/learn/modules.ts` |
 
 ---
 
-## Deferred Implementation (Not Yet Built)
+## Explicitly Deferred (Documented in out/current-state.md)
 
-| Area | Notes |
-|------|-------|
-| Group-based TTX entitlement | `packageGroupAssignments` exists but no TTX-specific field. Individual blocked regardless of group. Schema addition when needed. |
-| AI-assisted chat/guidance layer | Concept defined (session memory, quiz context, wrong-answer guidance, TTX assistance). No route, service, or DB table. Future — Professional+ when built. Do not confuse with KB/question/chat (stateless retrieval, Individual+). |
-| Admin account management | 4 emails hardcoded. Low priority. |
+| Area | Reason |
+|------|--------|
+| Access service Priority 2 latent bug | No active impact. Fires only if override revoked for user with module assignments. Deferred until admin override management is formalized. |
+| Access service Priority 3 latent bug | No active impact. No packageGroupAssignments seeded. Deferred until group-package assignments used in production. |
+| Group-based TTX entitlement | No product decision made. Current behavior (Professional-only TTX) is correct and honest. |
+| AI-assisted guidance layer | Future feature. No route/service/DB. Will be scoped separately. |
+| Admin hardcoded emails | Low priority. Requires code change to add admins. No evaluation impact. |
 
 ---
 
-## Next Pass: Design / Styling
+## Design Planning Status
 
-Execution order from `docs/design/2026-03-23-layout-style-strategy.md`:
+Design strategy is complete. Document at `docs/design/2026-03-23-layout-style-strategy.md` covers:
+- Shared design system (typography, spacing, color hierarchy, surfaces, motion, badges)
+- Public shell layout strategy
+- Learner shell layout strategy
+- Admin shell layout strategy
+- TTX shell layout strategy
+- Styling execution order (Batches 1–6)
+- Stitch usage strategy with constraints and review criteria
 
-### Batch 1 — Token Foundation
-Verify CSS variables in `src/index.css`. Confirm Tailwind config alignment. Confirm Inter + Barlow Condensed loaded. Prerequisite for all other batches.
+---
+
+## Next Pass: Design / Styling Execution
+
+Execute in this order:
+
+### Batch 1 — Token Foundation (prerequisite)
+Verify CSS variables in `src/index.css`. Confirm Tailwind config alignment. Confirm Inter + Barlow Condensed loaded.
 
 ### Batch 2 — Public Shell
 PublicLayout + NeuralBackground → Nav + Footer → LandingPage → About → Capabilities → Packages → Enterprise → Login/Register → Legal.
@@ -61,19 +83,18 @@ TtxConduct → TtxParticipate → TtxAAR → access-blocked screen.
 
 ## Stitch Usage Plan
 
-Use Stitch for visual exploration on:
-1. LandingPage hero (highest visual ambiguity)
+Use Stitch for visual exploration on these screens only, with locked constraints (see strategy doc Section 7):
+1. LandingPage hero
 2. PackagesPage tier cards
 3. LearnDashboard module grid
 4. AdminDashboard KPI cards
 5. TtxParticipate full-screen view
 
-Stitch must be constrained to the token set and tone defined in the strategy doc.
-See Section 7 of the strategy document for full constraints and review criteria.
+Stitch output is spatial reference only — not a final design. Never override the token set.
 
 ---
 
-## Local Environment (Unchanged)
+## Local Environment
 
 | Service | Address |
 |---------|---------|

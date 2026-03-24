@@ -17,7 +17,7 @@ router.get('/', async (_req, res) => {
 });
 
 // POST /admin/access — grant explicit tier to a learner
-// Body: { learnerId, tier: 'free'|'paid', reason?, expiresAt? }
+// Body: { learnerId, tier: 'free'|'individual'|'professional'|'paid', reason?, expiresAt? }
 router.post('/', async (req, res) => {
   const adminUsername = (req as unknown as AdminReq).adminUsername;
   const { learnerId, tier, reason, expiresAt } = req.body ?? {};

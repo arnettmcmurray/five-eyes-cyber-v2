@@ -1,5 +1,5 @@
 # Current State — Five Eyes v2
-_Last updated: 2026-03-23 | Implementation complete through T3 modules + admin controls. Now in PLANNING MODE — design strategy pass._
+_Last updated: 2026-03-23 | Logic pass complete. TTX backend gate fixed, error messages corrected, latent bugs documented and deferred. Design planning doc exists. Styling not started._
 
 ---
 
@@ -84,14 +84,31 @@ Blocked for Individual at the backend (`requireTtxAccess` middleware → 403 wit
 
 ## What Is Broken, Missing, or Fake
 
-| Area | Issue | Severity |
+### Fixed This Pass
+
+| Area | Fix | File |
+|------|-----|------|
+| TTX backend gate incomplete | `requireTtxAccess` only blocked `individual`, not `free`. Free-tier users could join TTX at the API level. Fixed to block everyone except `professional` and `paid`. | `backend/src/routes/ttx/participate.ts` |
+| Access-overrides comment stale | POST route comment listed `'free'\|'paid'` as valid tiers; actual validTiers array was correct. Comment updated to match. | `backend/src/routes/admin/access-overrides.ts` |
+| requirePaidAccess error message vestigial | Message said "Complete the assessment to request access" — referencing a removed flow. Updated to honest message. | `backend/src/routes/learn/modules.ts` |
+
+### Explicitly Deferred
+
+| Area | Issue | Decision |
 |------|-------|----------|
-| Group-based TTX entitlement | Schema has `packageGroupAssignments` but no TTX-specific entitlement field. All Individual blocked from TTX regardless of group. | Low |
-| AI-assisted guidance layer | Concept defined but no route, service, or DB table exists yet. Will be gated at Professional+ when built. `guidance_sessions` / `guidance_messages` schema not yet added (Phase D). | Future |
-| Admin accounts | 4 emails hardcoded in source. Adding new admins requires code change. | Low |
-| Eva's OTP | Eva can request an OTP and log in — she just hits the access gate immediately. This is correct behavior. | — |
-| Bootstrap KB items FTS | Bootstrap seeded 7 content_chunks + 6 topics + 12 topic_relationships for local-proof accounts. Help search works for bootstrap learners. | Fixed |
-| Group-based TTX entitlement (UI) | Admin can link KB refs to TTX steps/injects via `TtxScenarioEdit.tsx` UI panel. Group-based TTX entitlement still not implemented in schema — all Individual tier blocked. | Low |
+| Access service Priority 2 (latent bug) | If an `individual` learner's override is revoked, they fall through to "has module assignment → professional" and are silently upgraded. Override check (Priority 1) prevents this for all current bootstrap users. | **Defer** — no active impact. Fix when admin override management is formalized. |
+| Access service Priority 3 (latent bug) | Group→package tier lookup hardcodes `'professional'` regardless of `packages.tier`. No `packageGroupAssignments` are seeded, so this never fires. | **Defer** — no active impact. Fix when group-package assignments are used in production. |
+| Group-based TTX entitlement | `packageGroupAssignments` has no TTX-specific field. All non-Professional learners blocked from TTX regardless of group. Current behavior is correct and honest. | **Explicitly out of scope** — no schema change needed until a group-based TTX entitlement product decision is made. |
+| AI-assisted guidance layer | No route, service, or DB table. Concept only. Will be gated at Professional+ when built. | **Future** — do not build until scoped separately. |
+| Admin accounts hardcoded | 4 admin emails hardcoded in source. Workaround: code change. | **Defer** — low priority, no evaluation impact. |
+
+### Not Issues (Correct Behavior)
+
+| Area | Notes |
+|------|-------|
+| Eva's OTP | Eva can log in via OTP and hits the access gate immediately. This is the designed free-tier experience. |
+| Alex blocked from TTX | Alex is Individual tier. TTX correctly blocked at backend and frontend. |
+| Sam can access TTX | Sam is Professional tier. Access correctly granted. |
 
 ---
 
