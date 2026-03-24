@@ -78,3 +78,21 @@ Three phases of the KB / Retrieval / Content Flow Audit & Build Plan were execut
 ## TypeScript Status
 
 Both `npx tsc --noEmit` (frontend) and `cd backend && npx tsc --noEmit` (backend) pass clean after all changes.
+
+---
+
+## Addendum — Local-Proof TTX Seed (same date, later pass)
+
+The `ttx_scenario_kb_refs` table still had 0 rows because the bootstrap script seeded no TTX data. Added to `bootstrap-local-proof.ts`:
+
+- **ttx_scenarios**: `bec-freight-payment-hijack` (ID `jj000001`)
+- **ttx_scenario_sections**: Initial Compromise (ID `jj000002`)
+- **ttx_scenario_steps**: Payment Redirection Request (ID `jj000003`)
+- **ttx_scenario_kb_refs** (3 rows, scenario-scoped):
+  - `jj000004` → `aa000001` (freight-bec-map)
+  - `jj000005` → `aa000002` (bec-indicator-library)
+  - `jj000006` → `aa000005` (bec-in-freight threat-brief)
+
+IDs use `jj` prefix — `cc` prefix was already reserved for group members.
+
+Bootstrap verified: clean first run, idempotent second run. DB confirmed 3 rows in `ttx_scenario_kb_refs`, scenario present by slug.

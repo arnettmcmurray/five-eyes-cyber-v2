@@ -1,5 +1,7 @@
 # Implementation Plan — Five Eyes v2
-_Updated: 2026-03-23 | Logic pass complete. Planning mode active. Styling not started._
+_Updated: 2026-03-23 | Logic pass complete. TTX BEC scenario + KB refs seeded. Styling not started._
+
+**Canonical truth:** `docs/design/full-build-status-checklist.md` — read before any implementation, planning, or deploy decision.
 
 ---
 
@@ -18,6 +20,7 @@ Implementation and styling are paused. The logic pass is complete. The next sess
 | Local-proof bootstrap | Seeded learners, access, groups, modules, progress, KB items/chunks |
 | Tier enforcement | Individual vs Professional enforced at backend + frontend |
 | KB Grounding A–C | Stateless KB retrieval, TTX KB refs, Help panel, remediation, reference materials |
+| TTX local-proof seed | BEC scenario + 3 KB refs seeded in bootstrap — KB Reference panel now testable |
 | Module expansion T1–T3 | t1-phishing (5 tasks, 15q), t2-bec (3+5, 12q), t3-mfa (3+4, 12q) |
 | Admin controls | Grant/Revoke access, live health ping, groups tab, TTX KB refs admin UI |
 | Public site | All pages, PublicLayout, NeuralBackground, LoginPage/RegisterPage, OTP flow |

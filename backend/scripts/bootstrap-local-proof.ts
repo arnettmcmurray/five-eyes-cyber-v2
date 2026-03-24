@@ -251,6 +251,14 @@ const IDS = {
   cc20: 'kk000020-0000-4000-0000-000000000020', // t3K5 (mfa-faq)
   cc21: 'kk000021-0000-4000-0000-000000000021', // t3K6 (account-takeover-in-freight)
   cc22: 'kk000022-0000-4000-0000-000000000022', // t3K7 (lost-phone-mfa-recovery)
+
+  // TTX — BEC scenario (local-proof seed)
+  becScenario:   'jj000001-0000-4000-0000-000000000001',
+  becSection1:   'jj000002-0000-4000-0000-000000000002',
+  becStep1:      'jj000003-0000-4000-0000-000000000003',
+  becKbRef1:     'jj000004-0000-4000-0000-000000000004', // → t2BecK1Item (freight-bec-map)
+  becKbRef2:     'jj000005-0000-4000-0000-000000000005', // → t2BecK2Item (bec-indicator-library)
+  becKbRef3:     'jj000006-0000-4000-0000-000000000006', // → t2BecK5Item (bec-in-freight)
 };
 
 // ── KB Content ─────────────────────────────────────────────────────────────
@@ -1162,6 +1170,8 @@ async function main() {
   const { practiceAttempts } = await import('../src/db/schema/practice-attempts.js');
   const { topics, topicRelationships } = await import('../src/db/schema/topics.js');
   const { contentChunks } = await import('../src/db/schema/content-chunks.js');
+  const { ttxScenarios, ttxScenarioSections, ttxScenarioSteps, ttxScenarioKbRefs } =
+    await import('../src/db/schema/ttx.js');
   const { eq, and, inArray, not, sql } = await import('drizzle-orm');
 
   const BOOTSTRAP_BY = 'bootstrap-local-proof';
@@ -2242,6 +2252,53 @@ async function main() {
 
   console.log('[bootstrap] ✓ T3 practice questions (12)');
 
+  // ── TTX — BEC scenario seed ──────────────────────────────────────────────
+
+  await db.insert(ttxScenarios).values({
+    id: IDS.becScenario,
+    slug: 'bec-freight-payment-hijack',
+    title: 'BEC Freight Payment Hijack',
+    executiveSummary: 'A threat actor impersonates a key freight vendor to redirect a large payment. Your team must detect, contain, and recover.',
+    description: 'A sophisticated BEC attack targets your accounts payable process during a high-volume shipping period.',
+    objective: 'Practice detection and escalation procedures for a live BEC payment fraud attempt.',
+    goals: ['Identify indicators of compromise', 'Execute payment freeze protocol', 'Preserve evidence for forensics'],
+    targetAudience: ['Finance', 'Operations', 'IT Security'],
+    signatureTheme: 'payment-fraud',
+    createdBy: BOOTSTRAP_BY,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.becSection1,
+    scenarioId: IDS.becScenario,
+    title: 'Initial Compromise',
+    background: 'The threat actor has already established email access to a vendor contact. Your team receives an urgent payment change request.',
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values({
+    id: IDS.becStep1,
+    sectionId: IDS.becSection1,
+    title: 'Payment Redirection Request',
+    facilitatorNarrative: 'Read aloud: Your AP team receives an urgent email from what appears to be Ocean Freight Partners requesting a bank account change for an outstanding $240,000 invoice. The email domain is oceanfreight-partners.com — the legitimate domain is oceanfreightpartners.com.',
+    participantSituationRoom: 'URGENT: Vendor Ocean Freight Partners has requested a payment destination change on invoice #OFP-2024-8812 ($240,000). The request came via email and references your usual contact, James Hartley.',
+    prompts: [
+      'What are your first three actions when you receive this request?',
+      'Who in your organisation has authority to approve or hold this payment?',
+      'What verification steps are required before changing banking details?',
+    ],
+    whatGoodLooksLike: 'Immediate payment hold. Out-of-band verification call to known vendor number. Escalation to finance director. IT security notified.',
+    consequenceNote: 'If the team does not call for a hold within this inject, advance the scenario to show funds transferred — recovery phase.',
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioKbRefs).values([
+    { id: IDS.becKbRef1, scenarioId: IDS.becScenario, kbItemId: IDS.t2BecK1Item, addedBy: BOOTSTRAP_BY },
+    { id: IDS.becKbRef2, scenarioId: IDS.becScenario, kbItemId: IDS.t2BecK2Item, addedBy: BOOTSTRAP_BY },
+    { id: IDS.becKbRef3, scenarioId: IDS.becScenario, kbItemId: IDS.t2BecK5Item, addedBy: BOOTSTRAP_BY },
+  ]).onConflictDoNothing();
+
+  console.log('[bootstrap] ✓ TTX BEC scenario (1 scenario, 1 section, 1 step, 3 KB refs)');
+
   // ── Summary ───────────────────────────────────────────────────────────────
 
   console.log('');
@@ -2260,6 +2317,8 @@ async function main() {
   console.log('  Groups:');
   console.log('    transport-ops (Eva + Alex)');
   console.log('    freight-security (Sam)');
+  console.log('');
+  console.log('  TTX: 1 BEC scenario (bec-freight-payment-hijack), 1 section, 1 step, 3 KB refs');
   console.log('');
   console.log('  Admin login: arnettmcmurray@gmail.com / $ADMIN_PASSWORD (changeme locally)');
   console.log('  Learner OTP: request OTP at /login, check Mailpit at http://localhost:8025');

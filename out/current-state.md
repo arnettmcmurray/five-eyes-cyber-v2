@@ -1,5 +1,7 @@
 # Current State — Five Eyes v2
-_Last updated: 2026-03-23 | Logic pass complete. TTX backend gate fixed, error messages corrected, latent bugs documented and deferred. Design planning doc exists. Styling not started._
+_Last updated: 2026-03-23 | Logic pass complete. TTX backend gate fixed, error messages corrected, latent bugs documented and deferred. TTX BEC scenario + 3 KB refs seeded in bootstrap. Design planning doc exists. Styling not started._
+
+**Canonical truth:** `docs/design/full-build-status-checklist.md`
 
 ---
 
@@ -124,7 +126,8 @@ Blocked for Individual at the backend (`requireTtxAccess` middleware → 403 wit
 | content_chunks | 22 | one chunk per KB item — FTS works for all 3 modules |
 | topics | 9 | phishing, freight-security, link-verification, incident-response, ransomware, mobile-scams, bec-fraud, password-security, mfa |
 | topic_relationships | 32 | seeded by bootstrap |
-| ttx_scenario_kb_refs | 0 | schema exists, no local-proof data seeded yet |
+| ttx_scenario_kb_refs | 3 | BEC scenario (bec-freight-payment-hijack) → freight-bec-map, bec-indicator-library, bec-in-freight. Run bootstrap to populate. |
+| ttx_scenarios | 1 | bec-freight-payment-hijack — 1 section, 1 step |
 | learners | 3 | eva, alex, sam |
 | access_overrides | 2 | alex=individual, sam=professional; eva=none |
 | groups | 2 | transport-ops, freight-security |
