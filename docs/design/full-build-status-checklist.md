@@ -1,5 +1,5 @@
 # Five Eyes — Full Build Status Checklist
-_Last updated: 2026-03-24 | Canonical source of truth | Smoke pass complete_
+_Last updated: 2026-03-24 (late) | T4+T5 seeded | Public shell design pass complete | Question depth expanded (+29 questions) | Learner routes wired (library, scorecard, TTX)_
 
 ---
 
@@ -75,9 +75,13 @@ Related truth docs (must stay aligned with this file):
 | Module prerequisites enforced | DONE | Locked state, prereq check at API |
 | Module progress: started / completed / score | DONE | learner_progress table |
 | Practice attempt history (scores only, no answers) | DONE | GET `/learn/modules/:id/attempts` |
-| t1-phishing: 5 tasks, 15 questions, full KB | DONE | Fully seeded |
-| t2-bec-payment: 3+5 tasks, 12 questions, KB | DONE | Fully seeded |
-| t3-account-security-mfa: 3+4 tasks, 12 questions, KB | DONE | Fully seeded |
+| t1-phishing: 5 tasks, ~26 questions, full KB | DONE | +5 (round 1) +6 (round 2) expansion questions seeded 2026-03-24 |
+| t2-bec-payment: 3+5 tasks, ~26 questions, KB | DONE | +6 (round 1) +8 (round 2) expansion questions seeded 2026-03-24 |
+| t3-account-security-mfa: 3+4 tasks, ~25 questions, KB | DONE | +6 (round 1) +7 (round 2) expansion questions seeded 2026-03-24 |
+| t4-vendor-invoice-fraud: 3 primary tasks, ~24 questions, KB | DONE | +6 (round 1) +6 (round 2) expansion questions seeded 2026-03-24 |
+| t5-warehouse-ransomware: 3 primary tasks, ~24 questions, KB | DONE | +6 (round 1) +6 (round 2) expansion questions seeded 2026-03-24 |
+| Learner routes: /learn/library, /learn/scorecard, /learn/ttx | DONE | Wired 2026-03-24. Library shows KB access guide + module links. Scorecard from attempts data. TTX shows tier-aware gate. |
+| t6–t10 modules | NOT BUILT | Next in queue after T4/T5 smoke verified. Scripts to be created. |
 | Learner-visible module catalog (open catalog if no assignments) | WORKING BUT THIN | Shows all published if no assignments. Works but not a curated store. |
 | Phishing simulation (campaign, track, assign remediation) | NOT BUILT | Planned future feature. Do not build until KB truth is stable. |
 | Smarter KB-backed game / competition | NOT BUILT | Current SecurityGame.tsx is hardcoded toy mechanics. Redesign deferred. |

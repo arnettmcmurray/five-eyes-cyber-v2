@@ -346,6 +346,12 @@ function BriefingScreen({
   onNext: () => void;
 }) {
   const pct = Math.round((taskIndex / totalTasks) * 100);
+  const [expanded, setExpanded] = useState(false);
+
+  const content = task.studyItem.content ?? '';
+  const firstBreak = content.indexOf('\n\n');
+  const preview = firstBreak > 0 && firstBreak < 600 ? content.slice(0, firstBreak) : content.slice(0, 400);
+  const hasMore = content.length > preview.length;
 
   return (
     <motion.div
@@ -395,8 +401,17 @@ function BriefingScreen({
           className="text-sm leading-relaxed whitespace-pre-wrap"
           style={{ color: 'var(--text-secondary)' }}
         >
-          {task.studyItem.content}
+          {expanded || !hasMore ? content : preview}
         </div>
+        {hasMore && (
+          <button
+            onClick={() => setExpanded(e => !e)}
+            className="mt-3 text-xs font-semibold transition-opacity hover:opacity-70"
+            style={{ color: 'var(--gold-accent)' }}
+          >
+            {expanded ? '← Show less' : 'Read full article →'}
+          </button>
+        )}
       </div>
 
       {/* Help panel — available during study, not during checkpoint */}

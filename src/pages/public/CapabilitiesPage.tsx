@@ -83,7 +83,7 @@ export default function CapabilitiesPage() {
               <div className="relative h-36 md:h-48 overflow-hidden">
                 <div
                   className="absolute inset-0 z-10"
-                  style={{ background: 'linear-gradient(to top, var(--bg-surface) 0%, rgba(7,16,32,0.4) 50%, transparent 100%)' }}
+                  style={{ background: 'linear-gradient(to top, var(--img-overlay-bottom) 0%, var(--img-overlay-mid) 50%, transparent 100%)' }}
                 />
                 <img
                   src={cap.image}
@@ -118,7 +118,7 @@ export default function CapabilitiesPage() {
 
                 <ul className="space-y-3">
                   {cap.benefits.map(b => (
-                    <li key={b} className="flex items-center gap-3 text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.82)' }}>
+                    <li key={b} className="flex items-center gap-3 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
                       <CheckCircle2 size={15} style={{ color: 'var(--gold-accent)', flexShrink: 0 }} />
                       {b}
                     </li>

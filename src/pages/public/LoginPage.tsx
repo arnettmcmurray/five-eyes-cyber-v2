@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Shield } from 'lucide-react';
+import { Mail, Shield, Settings } from 'lucide-react';
 import { api } from '../../api/client';
 import { setSession } from '../../lib/session';
 
-type Step = 'email' | 'otp';
+type Step = 'portal' | 'email' | 'otp';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<Step>('email');
+  const [step, setStep] = useState<Step>('portal');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -69,6 +69,72 @@ export default function LoginPage() {
           style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
         >
           <AnimatePresence mode="wait">
+
+            {/* ── Portal chooser ── */}
+            {step === 'portal' && (
+              <motion.div
+                key="portal"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+                className="p-8"
+              >
+                <span className="label-tag block mb-1" style={{ color: 'var(--gold-accent)' }}>Access Portal</span>
+                <h1 className="font-display font-black text-2xl uppercase tracking-tight mb-1" style={{ color: 'var(--text-primary)' }}>
+                  Sign In
+                </h1>
+                <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
+                  Choose how you're accessing the platform.
+                </p>
+
+                <div className="space-y-3">
+                  {/* User login */}
+                  <button
+                    onClick={() => setStep('email')}
+                    className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all hover:brightness-110 group"
+                    style={{ background: 'var(--gold-accent)', color: '#000', boxShadow: 'var(--glow-gold)' }}
+                  >
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(0,0,0,0.15)' }}>
+                      <Mail size={17} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[11px] font-black uppercase tracking-ultra">Learner Access</p>
+                      <p className="text-xs opacity-70 mt-0.5">Training portal · OTP sign-in</p>
+                    </div>
+                    <span className="text-sm font-black opacity-60">→</span>
+                  </button>
+
+                  {/* Admin login */}
+                  <Link
+                    to="/admin/login"
+                    className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all hover:brightness-110 block"
+                    style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: 'var(--gold-muted)', border: '1px solid var(--border-gold)' }}
+                    >
+                      <Settings size={17} style={{ color: 'var(--gold-accent)' }} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[11px] font-black uppercase tracking-ultra" style={{ color: 'var(--text-primary)' }}>Admin Console</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Platform management · Password</p>
+                    </div>
+                    <span className="text-sm font-black" style={{ color: 'var(--text-dim)' }}>→</span>
+                  </Link>
+                </div>
+
+                <p className="text-center text-xs mt-6" style={{ color: 'var(--text-muted)' }}>
+                  No account?{' '}
+                  <Link to="/register" className="font-bold underline underline-offset-4" style={{ color: 'var(--gold-accent)' }}>
+                    Register here
+                  </Link>
+                </p>
+              </motion.div>
+            )}
+
+            {/* ── Email step ── */}
             {step === 'email' && (
               <motion.div
                 key="email"
@@ -78,7 +144,7 @@ export default function LoginPage() {
                 transition={{ duration: 0.25 }}
                 className="p-8"
               >
-                <span className="label-tag block mb-1" style={{ color: 'var(--gold-accent)' }}>Sign In</span>
+                <span className="label-tag block mb-1" style={{ color: 'var(--gold-accent)' }}>Learner Access</span>
                 <h1 className="font-display font-black text-2xl uppercase tracking-tight mb-1" style={{ color: 'var(--text-primary)' }}>
                   Welcome Back
                 </h1>
@@ -118,6 +184,15 @@ export default function LoginPage() {
                     <Mail size={14} />
                     {loading ? 'Sending…' : 'Send Code'}
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setStep('portal'); setError(null); }}
+                    className="w-full py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-ultra transition-all hover:opacity-80"
+                    style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}
+                  >
+                    ← Back
+                  </button>
                 </form>
 
                 <p className="text-center text-xs mt-5" style={{ color: 'var(--text-muted)' }}>
@@ -129,6 +204,7 @@ export default function LoginPage() {
               </motion.div>
             )}
 
+            {/* ── OTP step ── */}
             {step === 'otp' && (
               <motion.div
                 key="otp"
@@ -186,11 +262,12 @@ export default function LoginPage() {
                     className="w-full py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-ultra transition-all hover:opacity-80"
                     style={{ border: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}
                   >
-                    Back
+                    ← Back
                   </button>
                 </form>
               </motion.div>
             )}
+
           </AnimatePresence>
         </div>
       </motion.div>

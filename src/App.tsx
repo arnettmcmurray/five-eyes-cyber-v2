@@ -30,6 +30,12 @@ import AdminLogin from './pages/AdminLogin';
 import AdminProfile from './pages/AdminProfile';
 import AdminDashboard from './pages/AdminDashboard';
 import LearnDashboard from './pages/LearnDashboard';
+import LearnLibrary from './pages/LearnLibrary';
+import LearnLibraryTopic from './pages/LearnLibraryTopic';
+import LearnScorecard from './pages/LearnScorecard';
+import LearnTTX from './pages/LearnTTX';
+import SecurityGame from './game/SecurityGame';
+import ChatAssistant from './components/ChatAssistant';
 
 // TTX restored for staging validation
 import TtxScenarios from './pages/TtxScenarios';
@@ -38,6 +44,7 @@ import TtxSessions from './pages/TtxSessions';
 import TtxConduct from './pages/TtxConduct';
 import TtxAAR from './pages/TtxAAR';
 import TtxParticipate from './pages/TtxParticipate';
+
 
 export default function App() {
   return (
@@ -79,6 +86,11 @@ export default function App() {
           <Route path="/learn/dashboard" element={<LearnDashboard />} />
           <Route path="/learn" element={<LearnHub />} />
           <Route path="/learn/modules/:id" element={<LearnModule />} />
+          <Route path="/learn/library" element={<LearnLibrary />} />
+          <Route path="/learn/library/:topicId" element={<LearnLibraryTopic />} />
+          <Route path="/learn/scorecard" element={<LearnScorecard />} />
+          <Route path="/learn/ttx" element={<LearnTTX />} />
+          <Route path="/learn/game" element={<SecurityGame />} />
 
           {/* TTX routes */}
           <Route path="/ttx/scenarios" element={<TtxScenarios />} />
@@ -141,9 +153,12 @@ function NavWrapper() {
   }
 
   return (
-    <NavShell>
-      <Outlet />
-    </NavShell>
+    <>
+      <NavShell>
+        <Outlet />
+      </NavShell>
+      <ChatAssistant />
+    </>
   );
 }
 

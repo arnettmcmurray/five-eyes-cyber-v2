@@ -1,5 +1,5 @@
 # Implementation Plan — Five Eyes v2
-_Updated: 2026-03-23 | Logic pass complete. TTX BEC scenario + KB refs seeded. Styling not started._
+_Updated: 2026-03-24 | Logic pass complete. T4+T5 seeded. Question depth expanded (+29q). Learner routes wired. Styling pass in progress (public shell done)._
 
 **Canonical truth:** `docs/design/full-build-status-checklist.md` — read before any implementation, planning, or deploy decision.
 

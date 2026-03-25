@@ -1,9 +1,26 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { getSessionToken } from '../lib/session';
+import { getAdminToken } from '../lib/adminSession';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { NeuralBackground } from './NeuralBackground';
 import { FiveEyesLogo } from './FiveEyesLogo';
+import { ThemeToggle } from './ThemeToggle';
+
+function useTheme() {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try { return (localStorage.getItem('theme') as 'light' | 'dark') ?? 'dark'; } catch { return 'dark'; }
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('theme', theme); } catch { /* ignore */ }
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+  return { theme, toggleTheme };
+}
 
 const NAV_LEFT = [
   { to: '/', label: 'Home' },
@@ -19,6 +36,7 @@ const NAV_RIGHT = [
 const FOOTER_PLATFORM = [
   { to: '/capabilities', label: 'Capabilities' },
   { to: '/packages', label: 'Packages' },
+  { to: '/admin/login', label: 'Admin Login' },
 ];
 
 const FOOTER_COMPANY = [
@@ -40,11 +58,13 @@ const FOOTER_MEDIA = [
 export function PublicLayout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
+  const logoTo = getAdminToken() ? '/admin/dashboard' : getSessionToken() ? '/learn' : '/';
 
   return (
     <div
       className="min-h-screen flex flex-col relative"
-      style={{ background: 'var(--bg-canvas)', color: 'var(--text-primary)' }}
+      style={{ color: 'var(--text-primary)' }}
     >
       {/* Background */}
       <NeuralBackground />
@@ -69,7 +89,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
 
           {/* Center logo */}
           <Link
-            to="/"
+            to={logoTo}
             className="flex flex-col items-center gap-1 shrink-0 mx-6 group"
             aria-label="Five Eyes home"
           >
@@ -86,10 +106,11 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           </Link>
 
           {/* Right links */}
-          <div className="hidden md:flex items-center justify-end gap-8 flex-1">
+          <div className="hidden md:flex items-center justify-end gap-6 flex-1">
             {NAV_RIGHT.map(({ to, label }) => (
               <NavLink key={to} to={to} label={label} active={location.pathname === to} />
             ))}
+            <ThemeToggle theme={theme} toggleTheme={toggleTheme} className="[--width:72px]" />
             <Link
               to="/login"
               className="px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-ultra transition-all hover:scale-[1.02]"
@@ -144,6 +165,12 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                   {label}
                 </Link>
               ))}
+              <div className="flex items-center justify-between px-4 py-2">
+                <span className="text-[10px] font-black uppercase tracking-ultra" style={{ color: 'var(--text-muted)' }}>
+                  Theme
+                </span>
+                <ThemeToggle theme={theme} toggleTheme={toggleTheme} className="[--width:72px]" />
+              </div>
               <Link
                 to="/login"
                 onClick={() => setOpen(false)}

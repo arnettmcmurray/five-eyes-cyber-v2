@@ -29,17 +29,29 @@ const Icon = ({ d, className = 'w-4 h-4' }: { d: string; className?: string }) =
 );
 
 const ICONS = {
-  dashboard: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
-  kb: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-  progress: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-  assignments: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-  profile: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-  training: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
-  search: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
-  logout: 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
+  // Grid of 4 squares — cleaner dashboard feel
+  dashboard: 'M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z',
+  // Open book with centre line
+  kb: 'M12 6v13M6 4h3a3 3 0 013 3v10a3 3 0 01-3-3H6V4zm12 0h-3a3 3 0 00-3 3v10a3 3 0 003-3h3V4z',
+  // Rising bars chart
+  progress: 'M5 20v-6m4 6v-9m4 9V9m4 11V4',
+  // Checklist with tick
+  assignments: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2m-4 0h4M9 12l2 2 4-4',
+  // Single circle person — cleaner than double silhouette
+  profile: 'M12 11a4 4 0 100-8 4 4 0 000 8zm-7 9a7 7 0 1114 0H5z',
+  // Play circle — training / learn
+  training: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+  // Magnifier clean
+  search: 'M10 18a8 8 0 100-16 8 8 0 000 16zm5.293-2.707l4 4a1 1 0 01-1.414 1.414l-4-4a1 1 0 011.414-1.414z',
+  // Game controller / play
+  game: 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z',
+  // Arrow right-out of box
+  logout: 'M10 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2v-3m-5-9l5 5m0 0l-5 5m5-5H9',
+  // Three lines + dot (hamburger variant)
   menu: 'M4 6h16M4 12h16M4 18h7',
   chevronLeft: 'M15 19l-7-7 7-7',
-  ttx: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+  // Shield with inner lightning — TTX / exercises
+  ttx: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
 };
 
 export default function NavShell({ children }: NavShellProps) {
@@ -73,6 +85,10 @@ export default function NavShell({ children }: NavShellProps) {
   const learnerLinks = [
     { to: '/learn/dashboard', label: 'Dashboard', icon: ICONS.dashboard, exact: true },
     { to: '/learn', label: 'Training Hub', icon: ICONS.training, exact: true },
+    { to: '/learn/library', label: 'Study Material', icon: ICONS.kb, exact: false },
+    { to: '/learn/ttx', label: 'Tactical Simulations', icon: ICONS.ttx, exact: false },
+    { to: '/learn/scorecard', label: 'Scorecard', icon: ICONS.progress, exact: false },
+    { to: '/learn/game', label: 'Security Game', icon: ICONS.game, exact: false },
   ];
 
   const links = isAdmin ? adminLinks : learnerLinks;

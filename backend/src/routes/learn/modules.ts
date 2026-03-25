@@ -1,4 +1,5 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
+import Anthropic from '@anthropic-ai/sdk';
 import { LearnService } from '../../services/learn/learn.service.js';
 import { ModuleService } from '../../services/kb/module.service.js';
 import { LearnProgressService } from '../../services/learn/progress.service.js';
@@ -199,6 +200,28 @@ router.get('/:id/help', async (req, res) => {
   }
 });
 
+// GET /learn/modules/kb-search?q=xxx — global learner KB search (no module scope)
+router.get('/kb-search', async (req, res) => {
+  const learnerId = (req as unknown as Request & { learnerId: string }).learnerId;
+  const q = (req.query.q as string | undefined)?.trim();
+  if (!q) { res.status(400).json({ error: 'q is required' }); return; }
+  try {
+    const result = await retrievalSvc.retrieve({ text: q, userId: learnerId, topK: 8 });
+    res.json({
+      query: result.query,
+      confidence: result.confidence,
+      band: result.band,
+      hits: result.hits.map(h => ({
+        title: h.title,
+        excerpt: h.excerpt,
+        topics: h.topics.map(t => ({ slug: t.topicSlug, name: t.topicName })),
+      })),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
 // GET /learn/modules/:id/attempts?learnerId=xxx — learner's own attempt history (scores only, no answers)
 router.get('/:id/attempts', async (req, res) => {
   const learnerId = (req as unknown as Request & { learnerId: string }).learnerId;
@@ -222,6 +245,52 @@ router.get('/:id/attempts', async (req, res) => {
     res.json(rows.map(r => ({ ...r, attemptedAt: r.attemptedAt.toISOString() })));
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// POST /learn/modules/chat — learner AI assistant, KB-grounded
+router.post('/chat', async (req, res) => {
+  const learnerId = (req as unknown as Request & { learnerId: string }).learnerId;
+  const { messages } = req.body;
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    res.status(400).json({ error: 'messages array is required' });
+    return;
+  }
+
+  const key = process.env['ANTHROPIC_API_KEY'];
+  if (!key) { res.status(503).json({ error: 'AI unavailable' }); return; }
+
+  // Get KB context from last user message
+  const lastUserMsg = [...messages].reverse().find((m: { role: string }) => m.role === 'user');
+  let kbSnippet = '';
+  if (lastUserMsg?.content) {
+    try {
+      const ctx = await retrievalSvc.retrieve({ text: String(lastUserMsg.content), userId: learnerId, topK: 4 });
+      kbSnippet = ctx.hits.map(h => `${h.title}: ${h.excerpt}`).join('\n\n');
+    } catch { /* retrieval is best-effort */ }
+  }
+
+  try {
+    const client = new Anthropic({ apiKey: key });
+    const completion = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 500,
+      system: [
+        'You are a learning assistant for the Five Eyes cybersecurity training platform.',
+        'You help freight and logistics professionals understand cybersecurity threats, policies, and best practices.',
+        'Be concise and practical. Use plain language. Explain concepts without giving direct quiz answers.',
+        kbSnippet ? `\nREFERENCE MATERIAL FROM KNOWLEDGE BASE:\n${kbSnippet}` : '',
+      ].filter(Boolean).join('\n'),
+      messages: messages.map((m: { role: string; content: string }) => ({
+        role: m.role === 'assistant' ? 'assistant' as const : 'user' as const,
+        content: String(m.content),
+      })),
+    });
+    const text = completion.content[0]?.type === 'text' ? completion.content[0].text : null;
+    res.json({ content: text ?? 'Unable to respond at this time.' });
+  } catch (err) {
+    res.status(503).json({ error: err instanceof Error ? err.message : 'AI unavailable' });
   }
 });
 
