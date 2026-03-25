@@ -156,6 +156,10 @@ export const api = {
       req<AttemptSummary[]>('GET', `/learn/modules/${id}/attempts`),
     prerequisites: (id: string) =>
       req<Array<{ id: string; slug: string; title: string; completed: boolean }>>('GET', `/learn/modules/${id}/prerequisites`),
+    kbSearch: (q: string) =>
+      req<KBHelpResult>('GET', `/learn/modules/kb-search?q=${encodeURIComponent(q)}`),
+    chat: (messages: Array<{ role: 'user' | 'assistant'; content: string }>) =>
+      req<{ content: string }>('POST', '/learn/modules/chat', { messages }),
   },
   adminProfile: {
     get: () => adminReq<{ username: string }>('GET', '/admin/profile'),

@@ -1,5 +1,5 @@
 # Current State — Five Eyes v2
-_Last updated: 2026-03-24 | T4 + T5 modules seeded (invoice fraud, warehouse ransomware). 68 total promoted questions across 6 modules. Sam.professional assigned T1–T5. Public shell design pass complete (image headers, NeuralBackground, ThemeToggle, cinematic entry, route overlay). T4/T5 DB-verified, app-level smoke test pending (paused to save tokens — resume point saved)._
+_Last updated: 2026-03-24 | T4 + T5 modules seeded. Question depth expanded: +29 (round 1) +33 (round 2) = 62 new questions. T1 ~26q, T2 ~26q, T3 ~25q, T4 ~24q, T5 ~24q. ~130 total promoted questions. Learner routes wired: /learn/library, /learn/scorecard, /learn/ttx. TypeScript clean._
 
 **Canonical truth:** `docs/design/full-build-status-checklist.md`
 
@@ -118,11 +118,11 @@ Blocked for Individual at the backend (`requireTtxAccess` middleware → 403 wit
 
 | Table | Bootstrap rows | Notes |
 |-------|---------------|-------|
-| learning_modules | 3 | t1, t2-bec, t3-mfa — all published |
-| kb_items | 22 | t1: 5 training-content; t2-bec: 3 training + 5 reference; t3-mfa: 3 training + 4 reference; legacy t2: 2 |
-| kb_revisions | 22 | one per KB item |
-| lesson_content_links | 22 | t1: 5 primary; t2-bec: 3 primary + 5 supplementary; t3-mfa: 3 primary + 4 supplementary; legacy t2: 2 |
-| quiz_candidates (promoted) | 41 | 15 for t1, 2 for legacy t2, 12 for t2-bec, 12 for t3-mfa |
+| learning_modules | 5 | t1, t2-bec, t3-mfa, t4-invoice-fraud, t5-ransomware — all published |
+| kb_items | ~28 | t1: 5; t2-bec: 8; t3-mfa: 7; t4: 3; t5: 3; legacy t2: 2 |
+| kb_revisions | ~28 | one per KB item |
+| lesson_content_links | ~32 | see module seed scripts for breakdown |
+| quiz_candidates (promoted) | ~130 | t1: ~26, t2-bec: ~26, t3-mfa: ~25, t4: ~24, t5: ~24, legacy t2: 2 |
 | content_chunks | 22 | one chunk per KB item — FTS works for all 3 modules |
 | topics | 9 | phishing, freight-security, link-verification, incident-response, ransomware, mobile-scams, bec-fraud, password-security, mfa |
 | topic_relationships | 32 | seeded by bootstrap |

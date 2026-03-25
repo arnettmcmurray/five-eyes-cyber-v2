@@ -43,6 +43,8 @@ const ICONS = {
   training: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z',
   // Magnifier clean
   search: 'M10 18a8 8 0 100-16 8 8 0 000 16zm5.293-2.707l4 4a1 1 0 01-1.414 1.414l-4-4a1 1 0 011.414-1.414z',
+  // Game controller / play
+  game: 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z',
   // Arrow right-out of box
   logout: 'M10 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2v-3m-5-9l5 5m0 0l-5 5m5-5H9',
   // Three lines + dot (hamburger variant)
@@ -83,6 +85,10 @@ export default function NavShell({ children }: NavShellProps) {
   const learnerLinks = [
     { to: '/learn/dashboard', label: 'Dashboard', icon: ICONS.dashboard, exact: true },
     { to: '/learn', label: 'Training Hub', icon: ICONS.training, exact: true },
+    { to: '/learn/library', label: 'Study Material', icon: ICONS.kb, exact: false },
+    { to: '/learn/ttx', label: 'Tactical Simulations', icon: ICONS.ttx, exact: false },
+    { to: '/learn/scorecard', label: 'Scorecard', icon: ICONS.progress, exact: false },
+    { to: '/learn/game', label: 'Security Game', icon: ICONS.game, exact: false },
   ];
 
   const links = isAdmin ? adminLinks : learnerLinks;

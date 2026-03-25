@@ -36,6 +36,7 @@ const NAV_RIGHT = [
 const FOOTER_PLATFORM = [
   { to: '/capabilities', label: 'Capabilities' },
   { to: '/packages', label: 'Packages' },
+  { to: '/admin/login', label: 'Admin Login' },
 ];
 
 const FOOTER_COMPANY = [
