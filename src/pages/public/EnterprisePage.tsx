@@ -218,7 +218,7 @@ export default function EnterprisePage() {
                   className="px-10 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:scale-[1.02] hover:brightness-110 disabled:opacity-50"
                   style={{ background: 'var(--gold-accent)', color: '#000', boxShadow: 'var(--glow-gold)' }}
                 >
-                  {submitting ? 'Sending…' : 'Transmit Request'}
+                  {submitting ? 'Sending…' : 'SUBMIT REQUEST'}
                 </button>
               </form>
             )}
