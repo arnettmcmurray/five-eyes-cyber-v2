@@ -1,5 +1,5 @@
 # Current State — Five Eyes v2
-_Last updated: 2026-03-23 | Logic pass complete. TTX backend gate fixed, error messages corrected, latent bugs documented and deferred. TTX BEC scenario + 3 KB refs seeded in bootstrap. Design planning doc exists. Styling not started._
+_Last updated: 2026-03-24 | T4 + T5 modules seeded (invoice fraud, warehouse ransomware). 68 total promoted questions across 6 modules. Sam.professional assigned T1–T5. Public shell design pass complete (image headers, NeuralBackground, ThemeToggle, cinematic entry, route overlay). T4/T5 DB-verified, app-level smoke test pending (paused to save tokens — resume point saved)._
 
 **Canonical truth:** `docs/design/full-build-status-checklist.md`
 
@@ -11,7 +11,7 @@ _Last updated: 2026-03-23 | Logic pass complete. TTX backend gate fixed, error m
 |---------|-------|--------|--------------|
 | Eva Restricted | `eva.restricted@fiveeyes.dev` | No package → Access gate | No training |
 | Alex Morgan | `alex.individual@fiveeyes.dev` | Individual — training + KB/chat, no TTX | t1 in progress |
-| Sam Reeves | `sam.professional@fiveeyes.dev` | Professional — training + KB/chat + TTX | t1 completed 80%, t2 + t3 assigned |
+| Sam Reeves | `sam.professional@fiveeyes.dev` | Professional — training + KB/chat + TTX | t1 completed 80%, t2+t3+t4+t5 assigned |
 | Admin | `arnettmcmurray@gmail.com` | Admin console | — |
 
 See `docs/local-proof-access.md` for login instructions, OTP flow, and pages to inspect.
