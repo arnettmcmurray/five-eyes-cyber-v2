@@ -56,23 +56,26 @@ export default function GovernancePanel() {
   }
 
   return (
-    <div className="border rounded bg-white shadow-sm">
-      <div className="flex items-center gap-1 border-b bg-gray-50 px-4 py-2">
-        <h2 className="font-bold text-gray-700 mr-4">Governance</h2>
+    <div className="border rounded shadow-sm" style={{ background: 'var(--bg-surface)' }}>
+      <div className="flex items-center gap-1 border-b px-4 py-2" style={{ background: 'var(--bg-elevated)' }}>
+        <h2 className="font-bold mr-4" style={{ color: 'var(--text-primary)' }}>Governance</h2>
         {(['summary', 'sources', 'rules', 'queue', 'alerts'] as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-3 py-1 text-sm rounded capitalize ${tab === t ? 'bg-blue-100 text-blue-800 font-medium' : 'text-gray-600 hover:bg-gray-200'}`}
+            className="px-3 py-1 text-sm rounded capitalize"
+            style={tab === t
+              ? { background: 'var(--gold-accent)', color: '#000', fontWeight: 500 }
+              : { color: 'var(--text-muted)' }}
           >
             {t}
           </button>
         ))}
         <div className="flex-1"></div>
-        <button onClick={backfill} disabled={acting !== null} className="text-xs px-2 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50">
+        <button onClick={backfill} disabled={acting !== null} className="text-xs px-2 py-1 border rounded disabled:opacity-50" style={{ background: 'var(--bg-surface)', color: 'var(--text-muted)' }}>
           {acting === 'backfill' ? 'Backfilling...' : 'Seed Defaults'}
         </button>
-        <button onClick={runScan} disabled={acting !== null} className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 ml-2">
+        <button onClick={runScan} disabled={acting !== null} className="text-xs px-2 py-1 rounded disabled:opacity-50 ml-2" style={{ background: 'var(--gold-accent)', color: '#000' }}>
           {acting === 'runScan' ? 'Scanning...' : 'Run Scan'}
         </button>
       </div>
@@ -90,7 +93,7 @@ export default function GovernancePanel() {
 }
 
 function SummaryTab({ summary, loading }: { summary: GovernanceAdminSummary | null, loading: boolean }) {
-  if (loading) return <div className="text-sm text-gray-500">Loading...</div>;
+  if (loading) return <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</div>;
   if (!summary) return null;
 
   return (
@@ -98,10 +101,10 @@ function SummaryTab({ summary, loading }: { summary: GovernanceAdminSummary | nu
       <MetricCard title="Total Items" value={summary.total.toString()} sub={`${summary.published} published / ${summary.learnerVisible} visible`} />
       <MetricCard title="Pending Reviews" value={summary.pendingReviews.toString()} error={summary.blockingReviews > 0} sub={`${summary.blockingReviews} blocking`} />
       <MetricCard title="Open Alerts" value={summary.openAlerts.toString()} error={summary.criticalAlerts > 0} sub={`${summary.criticalAlerts} critical`} />
-      
+
       <div className="col-span-3 grid grid-cols-2 gap-4 mt-2">
         <div className="border rounded p-3">
-          <h3 className="text-sm font-semibold text-gray-700 border-b pb-2 mb-2">By Freshness Status</h3>
+          <h3 className="text-sm font-semibold border-b pb-2 mb-2" style={{ color: 'var(--text-primary)' }}>By Freshness Status</h3>
           {Object.entries(summary.byFreshnessStatus).map(([k, v]) => (
             <div key={k} className="flex justify-between text-sm py-1">
               <span className="capitalize">{k}</span>
@@ -110,7 +113,7 @@ function SummaryTab({ summary, loading }: { summary: GovernanceAdminSummary | nu
           ))}
         </div>
         <div className="border rounded p-3">
-          <h3 className="text-sm font-semibold text-gray-700 border-b pb-2 mb-2">By Review Status</h3>
+          <h3 className="text-sm font-semibold border-b pb-2 mb-2" style={{ color: 'var(--text-primary)' }}>By Review Status</h3>
           {Object.entries(summary.byReviewStatus).map(([k, v]) => (
             <div key={k} className="flex justify-between text-sm py-1">
               <span className="capitalize">{k}</span>
@@ -125,10 +128,10 @@ function SummaryTab({ summary, loading }: { summary: GovernanceAdminSummary | nu
 
 function MetricCard({ title, value, sub, error }: { title: string; value: string; sub?: string; error?: boolean }) {
   return (
-    <div className={`p-4 rounded border ${error ? 'border-red-300 bg-red-50' : 'bg-gray-50'}`}>
-      <div className="text-xs text-gray-500 uppercase tracking-wide">{title}</div>
-      <div className={`text-2xl font-bold mt-1 ${error ? 'text-red-700' : 'text-gray-800'}`}>{value}</div>
-      {sub && <div className="text-xs text-gray-500 mt-1">{sub}</div>}
+    <div className={`p-4 rounded border ${error ? 'border-red-300 bg-red-50' : ''}`} style={error ? {} : { background: 'var(--bg-elevated)' }}>
+      <div className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{title}</div>
+      <div className={`text-2xl font-bold mt-1 ${error ? 'text-red-700' : ''}`} style={error ? {} : { color: 'var(--text-primary)' }}>{value}</div>
+      {sub && <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{sub}</div>}
     </div>
   );
 }
@@ -168,25 +171,25 @@ function SourcesTab() {
     }
   };
 
-  if (loading) return <div className="text-sm text-gray-500">Loading...</div>;
+  if (loading) return <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</div>;
 
   return (
     <div>
       <div className="flex justify-end mb-2">
-        {!editing && <button onClick={() => setEditing({ status: 'active', sourceType: 'organization' })} className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">+ Add Source</button>}
+        {!editing && <button onClick={() => setEditing({ status: 'active', sourceType: 'organization' })} className="text-xs px-2 py-1 rounded hover:opacity-90" style={{ background: 'var(--gold-accent)', color: '#000' }}>+ Add Source</button>}
       </div>
       {editing && (
-        <form onSubmit={save} className="mb-4 p-3 border rounded bg-gray-50 grid grid-cols-2 gap-3 text-sm">
+        <form onSubmit={save} className="mb-4 p-3 border rounded grid grid-cols-2 gap-3 text-sm" style={{ background: 'var(--bg-elevated)' }}>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Name</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Name</label>
             <input required className="w-full border rounded px-2 py-1" value={editing.name || ''} onChange={e => setEditing({...editing, name: e.target.value})} />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Domain</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Domain</label>
             <input required className="w-full border rounded px-2 py-1" value={editing.domain || ''} onChange={e => setEditing({...editing, domain: e.target.value})} />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Source Type</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Source Type</label>
             <select required className="w-full border rounded px-2 py-1" value={editing.sourceType || ''} onChange={e => setEditing({...editing, sourceType: e.target.value})}>
               <option value="">Select...</option>
               <option value="organization">Organization</option>
@@ -195,22 +198,22 @@ function SourcesTab() {
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Trust Level</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Trust Level</label>
             <select required className="w-full border rounded px-2 py-1" value={editing.trustLevelId || ''} onChange={e => setEditing({...editing, trustLevelId: e.target.value})}>
               <option value="">Select...</option>
               {trustLevels.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Status</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Status</label>
             <select required className="w-full border rounded px-2 py-1" value={editing.status || ''} onChange={e => setEditing({...editing, status: e.target.value})}>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
           </div>
           <div className="col-span-2 flex justify-end gap-2 mt-2">
-            <button type="button" onClick={() => setEditing(null)} className="px-3 py-1 border rounded bg-white">Cancel</button>
-            <button type="submit" disabled={acting !== null} className="px-3 py-1 bg-blue-600 text-white rounded disabled:opacity-50">
+            <button type="button" onClick={() => setEditing(null)} className="px-3 py-1 border rounded" style={{ background: 'var(--bg-surface)' }}>Cancel</button>
+            <button type="submit" disabled={acting !== null} className="px-3 py-1 rounded disabled:opacity-50" style={{ background: 'var(--gold-accent)', color: '#000' }}>
               {acting === 'saving' ? 'Saving...' : 'Save'}
             </button>
           </div>
@@ -226,7 +229,7 @@ function SourcesTab() {
               <td>{s.status}</td>
               <td>{s.sourceType}</td>
               <td className="text-right">
-                <button onClick={() => setEditing(s)} className="text-blue-600 hover:underline text-xs">Edit</button>
+                <button onClick={() => setEditing(s)} className="text-xs hover:underline" style={{ color: 'var(--gold-accent)' }}>Edit</button>
               </td>
             </tr>
           ))}
@@ -270,17 +273,17 @@ function RulesTab() {
     }
   };
 
-  if (loading) return <div className="text-sm text-gray-500">Loading...</div>;
+  if (loading) return <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</div>;
 
   return (
     <div>
       <div className="flex justify-end mb-2">
-        {!editing && <button onClick={() => setEditing({ active: true, appliesToType: 'type', reviewAfterDays: 180, expireAfterDays: 365, alertBeforeDays: 30 })} className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">+ Add Rule</button>}
+        {!editing && <button onClick={() => setEditing({ active: true, appliesToType: 'type', reviewAfterDays: 180, expireAfterDays: 365, alertBeforeDays: 30 })} className="text-xs px-2 py-1 rounded hover:opacity-90" style={{ background: 'var(--gold-accent)', color: '#000' }}>+ Add Rule</button>}
       </div>
       {editing && (
-        <form onSubmit={save} className="mb-4 p-3 border rounded bg-gray-50 grid grid-cols-2 gap-3 text-sm">
+        <form onSubmit={save} className="mb-4 p-3 border rounded grid grid-cols-2 gap-3 text-sm" style={{ background: 'var(--bg-elevated)' }}>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Applies To Type</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Applies To Type</label>
             <select required className="w-full border rounded px-2 py-1" value={editing.appliesToType || ''} onChange={e => setEditing({...editing, appliesToType: e.target.value})}>
               <option value="">Select...</option>
               <option value="type">Content Type</option>
@@ -289,19 +292,19 @@ function RulesTab() {
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Applies To Value</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Applies To Value</label>
             <input className="w-full border rounded px-2 py-1" value={editing.appliesToValue || ''} onChange={e => setEditing({...editing, appliesToValue: e.target.value})} />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Review After (Days)</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Review After (Days)</label>
             <input type="number" required className="w-full border rounded px-2 py-1" value={editing.reviewAfterDays || ''} onChange={e => setEditing({...editing, reviewAfterDays: parseInt(e.target.value)})} />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Expire After (Days)</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Expire After (Days)</label>
             <input type="number" required className="w-full border rounded px-2 py-1" value={editing.expireAfterDays || ''} onChange={e => setEditing({...editing, expireAfterDays: parseInt(e.target.value)})} />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Alert Before (Days)</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Alert Before (Days)</label>
             <input type="number" className="w-full border rounded px-2 py-1" value={editing.alertBeforeDays || ''} onChange={e => setEditing({...editing, alertBeforeDays: e.target.value === '' ? null : parseInt(e.target.value) as any})} />
           </div>
           <div className="flex items-center pt-5">
@@ -311,8 +314,8 @@ function RulesTab() {
             </label>
           </div>
           <div className="col-span-2 flex justify-end gap-2 mt-2">
-            <button type="button" onClick={() => setEditing(null)} className="px-3 py-1 border rounded bg-white">Cancel</button>
-            <button type="submit" disabled={acting !== null} className="px-3 py-1 bg-blue-600 text-white rounded disabled:opacity-50">
+            <button type="button" onClick={() => setEditing(null)} className="px-3 py-1 border rounded" style={{ background: 'var(--bg-surface)' }}>Cancel</button>
+            <button type="submit" disabled={acting !== null} className="px-3 py-1 rounded disabled:opacity-50" style={{ background: 'var(--gold-accent)', color: '#000' }}>
               {acting === 'saving' ? 'Saving...' : 'Save'}
             </button>
           </div>
@@ -330,7 +333,7 @@ function RulesTab() {
               <td>{r.alertBeforeDays ? r.alertBeforeDays + 'd' : '-'}</td>
               <td>{r.active ? 'Yes' : 'No'}</td>
               <td className="text-right">
-                <button onClick={() => setEditing(r)} className="text-blue-600 hover:underline text-xs">Edit</button>
+                <button onClick={() => setEditing(r)} className="text-xs hover:underline" style={{ color: 'var(--gold-accent)' }}>Edit</button>
               </td>
             </tr>
           ))}
@@ -344,7 +347,7 @@ function QueueTab() {
   const [queue, setQueue] = useState<ReviewQueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
-  
+
   const load = useCallback(() => {
     setLoading(true);
     api.governance.reviewQueue.list({ status: 'pending' }).then(setQueue).finally(() => setLoading(false));
@@ -364,19 +367,19 @@ function QueueTab() {
     }
   };
 
-  if (loading) return <div className="text-sm text-gray-500">Loading...</div>;
-  if (queue.length === 0) return <div className="text-sm text-gray-500">Queue is empty.</div>;
+  if (loading) return <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</div>;
+  if (queue.length === 0) return <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Queue is empty.</div>;
 
   return (
     <div className="space-y-2">
       {queue.map(q => (
-        <div key={q.id} className="border rounded p-3 flex justify-between items-center bg-gray-50">
+        <div key={q.id} className="border rounded p-3 flex justify-between items-center" style={{ background: 'var(--bg-elevated)' }}>
           <div>
-            <Link to={`/kb/${q.contentItemId}`} className="font-medium text-blue-600 hover:underline">
+            <Link to={`/kb/${q.contentItemId}`} className="font-medium hover:underline" style={{ color: 'var(--gold-accent)' }}>
               Item {q.contentItemId.substring(0,8)}...
             </Link>
-            <div className="text-sm text-gray-500 mt-1">Priority: {q.priority} | Reason: {q.reasonCode}</div>
-            <div className="text-xs text-gray-400">Opened: {new Date(q.openedAt).toLocaleString()}</div>
+            <div className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Priority: {q.priority} | Reason: {q.reasonCode}</div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Opened: {new Date(q.openedAt).toLocaleString()}</div>
           </div>
           <div className="flex gap-2">
             <button onClick={() => act(q.id, 'approved')} disabled={acting !== null} className="px-3 py-1 bg-green-600 text-white rounded text-sm disabled:opacity-50">
@@ -396,14 +399,14 @@ function AlertsTab() {
   const [alerts, setAlerts] = useState<ContentAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
-  
+
   const load = useCallback(() => {
     setLoading(true);
     api.governance.contentAlerts.list({ status: 'open' }).then(setAlerts).finally(() => setLoading(false));
   }, []);
 
   useEffect(() => { load(); }, [load]);
-  
+
   const resolve = async (id: string) => {
     setActing(id);
     try {
@@ -416,8 +419,8 @@ function AlertsTab() {
     }
   };
 
-  if (loading) return <div className="text-sm text-gray-500">Loading...</div>;
-  if (alerts.length === 0) return <div className="text-sm text-gray-500">No open alerts.</div>;
+  if (loading) return <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</div>;
+  if (alerts.length === 0) return <div className="text-sm" style={{ color: 'var(--text-muted)' }}>No open alerts.</div>;
 
   return (
     <div className="space-y-2">
@@ -426,14 +429,14 @@ function AlertsTab() {
           <div>
             <div className="flex items-center gap-2">
               <span className={`text-xs font-bold uppercase rounded px-1.5 py-0.5 ${a.severity === 'critical' ? 'bg-red-200 text-red-800' : 'bg-yellow-200 text-yellow-800'}`}>{a.severity}</span>
-              <Link to={`/kb/${a.contentItemId}`} className="font-medium text-gray-800 hover:underline">
+              <Link to={`/kb/${a.contentItemId}`} className="font-medium hover:underline" style={{ color: 'var(--text-primary)' }}>
                 Item {a.contentItemId.substring(0,8)}...
               </Link>
             </div>
-            <div className="text-sm text-gray-700 mt-1.5">{a.message}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Type: {a.alertType} | Created: {new Date(a.createdAt).toLocaleString()}</div>
+            <div className="text-sm mt-1.5" style={{ color: 'var(--text-primary)' }}>{a.message}</div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Type: {a.alertType} | Created: {new Date(a.createdAt).toLocaleString()}</div>
           </div>
-          <button onClick={() => resolve(a.id)} disabled={acting !== null} className="px-3 py-1 bg-white border rounded text-sm hover:bg-gray-100 disabled:opacity-50">
+          <button onClick={() => resolve(a.id)} disabled={acting !== null} className="px-3 py-1 border rounded text-sm disabled:opacity-50" style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>
             {acting === a.id ? '...' : 'Resolve'}
           </button>
         </div>

@@ -59,14 +59,15 @@ export default function ModuleManager() {
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3 flex-wrap">
-          <Link to="/kb" className="text-sm text-gray-500 hover:text-gray-800">← KB</Link>
-          <Link to="/admin/progress" className="text-sm text-gray-500 hover:text-gray-800">Progress</Link>
-          <Link to="/admin/assignments" className="text-sm text-gray-500 hover:text-gray-800">Assignments</Link>
+          <Link to="/kb" className="text-sm hover:underline" style={{ color: 'var(--text-muted)' }}>← KB</Link>
+          <Link to="/admin/progress" className="text-sm hover:underline" style={{ color: 'var(--text-muted)' }}>Progress</Link>
+          <Link to="/admin/assignments" className="text-sm hover:underline" style={{ color: 'var(--text-muted)' }}>Assignments</Link>
           <h1 className="text-2xl font-bold">Modules</h1>
         </div>
         <button
           onClick={() => { setShowCreate(v => !v); setEditing(null); setManagingPrereqs(null); setManagingContent(null); }}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+          className="px-4 py-2 rounded hover:opacity-90 text-sm"
+          style={{ background: 'var(--gold-accent)', color: '#000' }}
         >
           {showCreate ? 'Cancel' : '+ New module'}
         </button>
@@ -114,13 +115,13 @@ export default function ModuleManager() {
       )}
 
       {loading ? (
-        <p className="text-gray-500">Loading…</p>
+        <p style={{ color: 'var(--text-muted)' }}>Loading…</p>
       ) : modules.length === 0 ? (
-        <p className="text-gray-500">No modules yet.</p>
+        <p style={{ color: 'var(--text-muted)' }}>No modules yet.</p>
       ) : (
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b text-left text-gray-500 text-xs uppercase tracking-wide">
+            <tr className="border-b text-left text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
               <th className="py-2 pr-3 w-8">#</th>
               <th className="py-2 pr-4">Title</th>
               <th className="py-2 pr-4">Status</th>
@@ -132,17 +133,17 @@ export default function ModuleManager() {
             {modules.map(m => {
               const nextTitle = m.nextModuleId ? modules.find(x => x.id === m.nextModuleId)?.title : null;
               return (
-                <tr key={m.id} className="border-b hover:bg-gray-50">
-                  <td className="py-2 pr-3 text-gray-400 text-xs">{m.displayOrder}</td>
+                <tr key={m.id} className="border-b" style={{ ['--hover-bg' as string]: 'var(--bg-elevated)' }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elevated)')} onMouseLeave={e => (e.currentTarget.style.background = '')}>
+                  <td className="py-2 pr-3 text-xs" style={{ color: 'var(--text-muted)' }}>{m.displayOrder}</td>
                   <td className="py-2 pr-4">
                     <div className="font-medium flex items-center gap-2">
                       {m.title}
                       {m.estimatedMinutes != null && (
-                        <span className="text-xs text-gray-400 font-normal">{m.estimatedMinutes} min</span>
+                        <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>{m.estimatedMinutes} min</span>
                       )}
                     </div>
-                    <div className="text-xs text-gray-400 font-mono">{m.slug}</div>
-                    {m.description && <div className="text-xs text-gray-500 mt-0.5 max-w-xs truncate">{m.description}</div>}
+                    <div className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{m.slug}</div>
+                    {m.description && <div className="text-xs mt-0.5 max-w-xs truncate" style={{ color: 'var(--text-muted)' }}>{m.description}</div>}
                   </td>
                   <td className="py-2 pr-4">
                     <button
@@ -157,24 +158,27 @@ export default function ModuleManager() {
                       {acting === m.id + ':pub' ? '…' : m.published ? 'Published' : 'Draft'}
                     </button>
                   </td>
-                  <td className="py-2 pr-4 text-xs text-gray-500">{nextTitle ?? '—'}</td>
+                  <td className="py-2 pr-4 text-xs" style={{ color: 'var(--text-muted)' }}>{nextTitle ?? '—'}</td>
                   <td className="py-2">
                     <div className="flex gap-2">
                       <button
                         onClick={() => { setEditing(m); setShowCreate(false); setManagingPrereqs(null); setManagingContent(null); }}
-                        className="text-xs text-blue-600 hover:underline"
+                        className="text-xs hover:underline"
+                        style={{ color: 'var(--gold-accent)' }}
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => { setManagingContent(m); setEditing(null); setShowCreate(false); setManagingPrereqs(null); }}
-                        className="text-xs text-gray-600 hover:underline"
+                        className="text-xs hover:underline"
+                        style={{ color: 'var(--text-muted)' }}
                       >
                         Content
                       </button>
                       <button
                         onClick={() => { setManagingPrereqs(m); setEditing(null); setShowCreate(false); setManagingContent(null); }}
-                        className="text-xs text-gray-600 hover:underline"
+                        className="text-xs hover:underline"
+                        style={{ color: 'var(--text-muted)' }}
                       >
                         Prerequisites
                       </button>
@@ -241,15 +245,15 @@ function ModuleForm({
   }
 
   return (
-    <form onSubmit={submit} className="mb-6 p-4 border rounded bg-gray-50 space-y-3">
+    <form onSubmit={submit} className="mb-6 p-4 border rounded space-y-3" style={{ background: 'var(--bg-elevated)' }}>
       {err && <div className="p-2 bg-red-100 text-red-800 rounded text-sm">{err}</div>}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Title</label>
+          <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Title</label>
           <input className="w-full border rounded px-3 py-1.5 text-sm" value={title} onChange={e => handleTitleChange(e.target.value)} required />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Slug {initial && <span className="text-gray-400">(locked)</span>}</label>
+          <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Slug {initial && <span style={{ color: 'var(--text-muted)' }}>(locked)</span>}</label>
           <input
             className="w-full border rounded px-3 py-1.5 text-sm font-mono"
             value={slug}
@@ -260,20 +264,20 @@ function ModuleForm({
         </div>
       </div>
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Description</label>
+        <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Description</label>
         <textarea className="w-full border rounded px-3 py-1.5 text-sm" rows={2} value={description} onChange={e => setDescription(e.target.value)} />
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Display order</label>
+          <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Display order</label>
           <input type="number" className="w-full border rounded px-3 py-1.5 text-sm" value={displayOrder} onChange={e => setDisplayOrder(Number(e.target.value))} min={0} />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Est. minutes</label>
+          <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Est. minutes</label>
           <input type="number" className="w-full border rounded px-3 py-1.5 text-sm" value={estimatedMinutes} onChange={e => setEstimatedMinutes(e.target.value)} min={1} placeholder="optional" />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Next module</label>
+          <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Next module</label>
           <select className="w-full border rounded px-3 py-1.5 text-sm" value={nextModuleId} onChange={e => setNextModuleId(e.target.value)}>
             <option value="">— none —</option>
             {allModules.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
@@ -281,11 +285,11 @@ function ModuleForm({
         </div>
       </div>
       <div className="flex gap-2">
-        <button type="submit" disabled={saving} className="px-4 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+        <button type="submit" disabled={saving} className="px-4 py-1.5 rounded text-sm disabled:opacity-50" style={{ background: 'var(--gold-accent)', color: '#000' }}>
           {saving ? 'Saving…' : initial ? 'Save changes' : 'Create module'}
         </button>
         {onCancel && (
-          <button type="button" onClick={onCancel} className="px-3 py-1.5 border rounded text-sm text-gray-600 hover:bg-gray-100">Cancel</button>
+          <button type="button" onClick={onCancel} className="px-3 py-1.5 border rounded text-sm" style={{ color: 'var(--text-muted)' }}>Cancel</button>
         )}
       </div>
     </form>
@@ -370,26 +374,27 @@ function ContentPanel({ module, onClose }: { module: LearningModule; onClose: ()
   }
 
   return (
-    <div className="mb-6 p-4 border rounded bg-gray-50 space-y-3">
+    <div className="mb-6 p-4 border rounded space-y-3" style={{ background: 'var(--bg-elevated)' }}>
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-700">Content: {module.title} <span className="text-gray-400 font-normal text-sm">({links.length} item{links.length !== 1 ? 's' : ''})</span></h3>
+        <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Content: {module.title} <span className="font-normal text-sm" style={{ color: 'var(--text-muted)' }}>({links.length} item{links.length !== 1 ? 's' : ''})</span></h3>
         <div className="flex gap-2">
           <button
             onClick={() => { setShowAdd(v => !v); setFilter(''); setSelectedItemId(''); }}
-            className="text-xs text-blue-600 hover:underline"
+            className="text-xs hover:underline"
+            style={{ color: 'var(--gold-accent)' }}
           >
             {showAdd ? 'cancel add' : '+ Add item'}
           </button>
-          <button onClick={onClose} className="text-xs text-gray-400 hover:text-gray-600">close</button>
+          <button onClick={onClose} className="text-xs hover:underline" style={{ color: 'var(--text-muted)' }}>close</button>
         </div>
       </div>
 
       {err && <div className="p-2 bg-red-100 text-red-800 rounded text-sm">{err}</div>}
 
       {showAdd && (
-        <form onSubmit={addLink} className="p-3 border rounded bg-white space-y-2">
+        <form onSubmit={addLink} className="p-3 border rounded space-y-2" style={{ background: 'var(--bg-surface)' }}>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Search KB items</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Search KB items</label>
             <input
               className="w-full border rounded px-2 py-1 text-sm"
               placeholder="Filter by title or slug…"
@@ -398,7 +403,7 @@ function ContentPanel({ module, onClose }: { module: LearningModule; onClose: ()
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Item</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Item</label>
             <select
               className="w-full border rounded px-2 py-1 text-sm"
               value={selectedItemId}
@@ -414,12 +419,12 @@ function ContentPanel({ module, onClose }: { module: LearningModule; onClose: ()
               ))}
             </select>
             {filteredItems.length === 0 && filter && (
-              <p className="text-xs text-gray-400 mt-1">No unlinked items match "{filter}".</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>No unlinked items match "{filter}".</p>
             )}
           </div>
           <div className="flex gap-3">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Role</label>
+              <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Role</label>
               <select
                 className="border rounded px-2 py-1 text-sm"
                 value={role}
@@ -429,7 +434,7 @@ function ContentPanel({ module, onClose }: { module: LearningModule; onClose: ()
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Order</label>
+              <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Order</label>
               <input
                 type="number"
                 className="border rounded px-2 py-1 text-sm w-16"
@@ -442,7 +447,8 @@ function ContentPanel({ module, onClose }: { module: LearningModule; onClose: ()
               <button
                 type="submit"
                 disabled={adding || !selectedItemId}
-                className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                className="px-3 py-1.5 rounded text-sm disabled:opacity-50"
+                style={{ background: 'var(--gold-accent)', color: '#000' }}
               >
                 {adding ? 'Adding…' : 'Add'}
               </button>
@@ -452,16 +458,16 @@ function ContentPanel({ module, onClose }: { module: LearningModule; onClose: ()
       )}
 
       {loading ? (
-        <p className="text-sm text-gray-400">Loading…</p>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading…</p>
       ) : links.length === 0 ? (
-        <div className="text-sm text-gray-400 bg-white border rounded p-3">
-          <p className="font-medium text-gray-500 mb-1">No items linked yet.</p>
-          <p>Click <span className="font-mono bg-gray-100 px-1 rounded">+ Add item</span> above to link KB items to this module. Published items become study content for learners; approved quiz candidates on those items appear as practice questions.</p>
+        <div className="text-sm border rounded p-3" style={{ background: 'var(--bg-surface)', color: 'var(--text-muted)' }}>
+          <p className="font-medium mb-1" style={{ color: 'var(--text-muted)' }}>No items linked yet.</p>
+          <p>Click <span className="font-mono px-1 rounded" style={{ background: 'var(--bg-elevated)' }}>+ Add item</span> above to link KB items to this module. Published items become study content for learners; approved quiz candidates on those items appear as practice questions.</p>
         </div>
       ) : (
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="border-b text-left text-xs text-gray-500">
+            <tr className="border-b text-left text-xs" style={{ color: 'var(--text-muted)' }}>
               <th className="py-1 pr-3">Order</th>
               <th className="py-1 pr-4">Title</th>
               <th className="py-1 pr-3">Type</th>
@@ -475,18 +481,18 @@ function ContentPanel({ module, onClose }: { module: LearningModule; onClose: ()
               .sort((a, b) => a.link.order - b.link.order)
               .map(({ link, item }) => (
                 <tr key={link.id} className="border-b">
-                  <td className="py-1 pr-3 text-gray-400 text-xs">{link.order}</td>
+                  <td className="py-1 pr-3 text-xs" style={{ color: 'var(--text-muted)' }}>{link.order}</td>
                   <td className="py-1 pr-4">
                     <span className="font-medium">{item.title}</span>
-                    <span className="ml-1 text-xs text-gray-400">{item.slug}</span>
+                    <span className="ml-1 text-xs" style={{ color: 'var(--text-muted)' }}>{item.slug}</span>
                   </td>
-                  <td className="py-1 pr-3 text-xs text-gray-500">{item.type}</td>
+                  <td className="py-1 pr-3 text-xs" style={{ color: 'var(--text-muted)' }}>{item.type}</td>
                   <td className="py-1 pr-3">
                     <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[item.status] ?? 'bg-gray-100'}`}>
                       {item.status}
                     </span>
                   </td>
-                  <td className="py-1 pr-3 text-xs text-gray-600">{link.role}</td>
+                  <td className="py-1 pr-3 text-xs" style={{ color: 'var(--text-muted)' }}>{link.role}</td>
                   <td className="py-1">
                     <button
                       onClick={() => removeLink(link.id)}
@@ -554,18 +560,18 @@ function PrerequisiteManager({ module, allModules, onClose }: {
   }
 
   return (
-    <div className="mb-6 p-4 border rounded bg-gray-50 space-y-3">
+    <div className="mb-6 p-4 border rounded space-y-3" style={{ background: 'var(--bg-elevated)' }}>
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-700">Prerequisites for: {module.title}</h3>
-        <button onClick={onClose} className="text-xs text-gray-400 hover:text-gray-600">close</button>
+        <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Prerequisites for: {module.title}</h3>
+        <button onClick={onClose} className="text-xs hover:underline" style={{ color: 'var(--text-muted)' }}>close</button>
       </div>
 
       {err && <div className="p-2 bg-red-100 text-red-800 rounded text-sm">{err}</div>}
 
       {loading ? (
-        <p className="text-sm text-gray-400">Loading…</p>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading…</p>
       ) : allModules.length === 0 ? (
-        <p className="text-sm text-gray-400">No other modules to set as prerequisites.</p>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No other modules to set as prerequisites.</p>
       ) : (
         <div className="space-y-1">
           {allModules.map(m => (
@@ -576,7 +582,7 @@ function PrerequisiteManager({ module, allModules, onClose }: {
                 onChange={() => toggle(m.id)}
               />
               <span>{m.title}</span>
-              {!m.published && <span className="text-xs text-gray-400">(draft)</span>}
+              {!m.published && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>(draft)</span>}
             </label>
           ))}
         </div>
@@ -586,25 +592,26 @@ function PrerequisiteManager({ module, allModules, onClose }: {
         <button
           onClick={save}
           disabled={saving || loading}
-          className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+          className="px-3 py-1.5 rounded text-sm disabled:opacity-50"
+          style={{ background: 'var(--gold-accent)', color: '#000' }}
         >
           {saving ? 'Saving…' : 'Save prerequisites'}
         </button>
-        <button onClick={onClose} className="px-3 py-1.5 border rounded text-sm text-gray-600 hover:bg-gray-100">Cancel</button>
+        <button onClick={onClose} className="px-3 py-1.5 border rounded text-sm" style={{ color: 'var(--text-muted)' }}>Cancel</button>
       </div>
 
       {prereqs.length > 0 && (
-        <p className="text-xs text-gray-400">
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
           Currently: {prereqs.map(p => p.title).join(', ')}
         </p>
       )}
 
       {dependents.length > 0 && (
         <div className="pt-2 border-t">
-          <p className="text-xs font-medium text-gray-500 mb-1">Required by:</p>
+          <p className="text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Required by:</p>
           <ul className="space-y-0.5">
             {dependents.map(d => (
-              <li key={d.id} className="text-xs text-gray-500">{d.title}</li>
+              <li key={d.id} className="text-xs" style={{ color: 'var(--text-muted)' }}>{d.title}</li>
             ))}
           </ul>
         </div>

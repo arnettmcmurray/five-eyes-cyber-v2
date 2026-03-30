@@ -36,8 +36,8 @@ export default function AdminProfile() {
     <div className="max-w-md mx-auto p-6 mt-10">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold">Admin Profile</h1>
-        <Link to="/kb" className="text-xs text-gray-400 hover:text-gray-600">
-          ← Back to KB
+        <Link to="/admin" className="text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
+          ← Dashboard
         </Link>
       </div>
 

@@ -1,5 +1,5 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { LearnService } from '../../services/learn/learn.service.js';
 import { ModuleService } from '../../services/kb/module.service.js';
 import { LearnProgressService } from '../../services/learn/progress.service.js';
@@ -258,10 +258,9 @@ router.post('/chat', async (req, res) => {
     return;
   }
 
-  const key = process.env['ANTHROPIC_API_KEY'];
-  if (!key) { res.status(503).json({ error: 'AI unavailable' }); return; }
+  const key = process.env['OPENAI_API_KEY'];
 
-  // Get KB context from last user message
+  // Get KB context from last user message (always attempt, even without AI key)
   const lastUserMsg = [...messages].reverse().find((m: { role: string }) => m.role === 'user');
   let kbSnippet = '';
   if (lastUserMsg?.content) {
@@ -271,23 +270,45 @@ router.post('/chat', async (req, res) => {
     } catch { /* retrieval is best-effort */ }
   }
 
+  if (!key) {
+    if (kbSnippet) {
+      res.json({ content: `Based on your training materials:\n\n${kbSnippet}\n\nFor deeper AI-assisted analysis, an active AI subscription is required.` });
+    } else {
+      res.status(503).json({ error: 'AI unavailable' });
+    }
+    return;
+  }
+
+  const systemPrompt = [
+    'You are a Study Assistant for the Five Eyes cybersecurity training platform — a professional security education programme for freight and logistics teams.',
+    'Your role: help learners understand cybersecurity threats, policies, best practices, and how to apply them in logistics operations.',
+    '',
+    'RESPONSE STYLE:',
+    '- Be direct and practical. Use plain language a logistics professional will understand.',
+    '- Lead with the most useful answer, then provide context or examples.',
+    '- Use concrete logistics examples (freight brokers, carriers, TMS, load boards, invoice fraud) when explaining concepts.',
+    '- Format responses clearly: use short paragraphs or numbered/bulleted steps for procedures.',
+    '- Keep responses under 250 words unless the topic genuinely requires more depth.',
+    '- Do not give direct answers to quiz questions — instead explain the underlying concept.',
+    '- If KB reference material is provided below, ground your answer in it. Cite it naturally ("according to your training material", "the KB notes that...").',
+    '- If you are not confident about something, say so rather than speculating.',
+    kbSnippet ? `\nKNOWLEDGE BASE REFERENCE (grounded, authoritative):\n${kbSnippet}` : '',
+  ].filter(Boolean).join('\n');
+
   try {
-    const client = new Anthropic({ apiKey: key });
-    const completion = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 500,
-      system: [
-        'You are a learning assistant for the Five Eyes cybersecurity training platform.',
-        'You help freight and logistics professionals understand cybersecurity threats, policies, and best practices.',
-        'Be concise and practical. Use plain language. Explain concepts without giving direct quiz answers.',
-        kbSnippet ? `\nREFERENCE MATERIAL FROM KNOWLEDGE BASE:\n${kbSnippet}` : '',
-      ].filter(Boolean).join('\n'),
-      messages: messages.map((m: { role: string; content: string }) => ({
-        role: m.role === 'assistant' ? 'assistant' as const : 'user' as const,
-        content: String(m.content),
-      })),
+    const client = new OpenAI({ apiKey: key });
+    const completion = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      max_tokens: 700,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages.map((m: { role: string; content: string }) => ({
+          role: m.role === 'assistant' ? 'assistant' as const : 'user' as const,
+          content: String(m.content),
+        })),
+      ],
     });
-    const text = completion.content[0]?.type === 'text' ? completion.content[0].text : null;
+    const text = completion.choices[0]?.message?.content ?? null;
     res.json({ content: text ?? 'Unable to respond at this time.' });
   } catch (err) {
     res.status(503).json({ error: err instanceof Error ? err.message : 'AI unavailable' });

@@ -25,6 +25,8 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
+    // Clear stale learner token on 401 — AdminGuard/page guards will redirect on next render.
+    if (res.status === 401) localStorage.removeItem('learner_token');
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error ?? res.statusText);
   }
@@ -46,6 +48,8 @@ async function adminReq<T>(method: string, path: string, body?: unknown): Promis
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
+    // Clear stale admin token on 401 — AdminGuard will redirect to /admin/login on next render.
+    if (res.status === 401) localStorage.removeItem('admin_token');
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error ?? res.statusText);
   }
@@ -171,6 +175,7 @@ export const api = {
     learner: (learnerId: string) => adminReq<LearnerProgressDetail>('GET', `/admin/progress/learners/${learnerId}`),
     module: (moduleId: string) => adminReq<ModuleProgressDetail>('GET', `/admin/progress/modules/${moduleId}`),
     groups: () => adminReq<GroupSummary[]>('GET', '/admin/progress/groups'),
+    groupDetail: (groupId: string) => adminReq<{ group: GroupSummary; learners: LearnerSummary[] }>('GET', `/admin/progress/groups/${groupId}`),
   },
   admin: {
     access: {
@@ -612,6 +617,10 @@ export interface AccessOverride {
 export interface LearnerProgressDetail {
   learnerId: string;
   handle: string;
+  rawEmail: string | null;
+  fullName: string | null;
+  company: string | null;
+  role: string | null;
   modules: Array<{
     moduleId: string;
     moduleTitle: string;
@@ -688,6 +697,8 @@ export interface TtxScenario {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  sectionCount?: number;
+  stepCount?: number;
 }
 
 export interface TtxScenarioDetail extends TtxScenario {
@@ -721,10 +732,11 @@ export interface TtxExerciseRun {
   scheduledAt: string | null;
   startedAt: string | null;
   endedAt: string | null;
-  status: 'planned' | 'active' | 'complete';
+  status: 'planned' | 'active' | 'complete' | 'ended';
   facilitatorId: string;
   currentStepId: string | null;
   createdAt: string;
+  participantCount?: number;
 }
 
 export interface TtxExerciseRunDetail extends TtxExerciseRun {

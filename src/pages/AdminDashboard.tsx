@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '../api/client';
+import { api, type LearnerSummary, type LearningModule } from '../api/client';
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ learners: 0, modules: 0, pendingJobs: 0 });
+  const [stats, setStats] = useState({ learners: 0, modules: 0, pendingJobs: 0, completions: 0 });
+  const [recentLearners, setRecentLearners] = useState<LearnerSummary[]>([]);
+  const [allLearners, setAllLearners] = useState<LearnerSummary[]>([]);
+  const [allModules, setAllModules] = useState<LearningModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [health, setHealth] = useState<{ api: 'ok' | 'error' | null; db: 'ok' | 'error' | null }>({ api: null, db: null });
 
@@ -15,11 +18,20 @@ export default function AdminDashboard() {
           api.modules.list(),
           api.ingestJobs.list(),
         ]);
+        const completions = learners.reduce((sum, l) => sum + l.totalCompleted, 0);
         setStats({
           learners: learners.length,
           modules: modules.length,
           pendingJobs: jobs.filter(j => j.status === 'processing' || j.status === 'pending').length,
+          completions,
         });
+        setAllLearners(learners);
+        setAllModules(modules);
+        const sorted = [...learners]
+          .filter(l => l.lastActivityAt)
+          .sort((a, b) => new Date(b.lastActivityAt!).getTime() - new Date(a.lastActivityAt!).getTime())
+          .slice(0, 5);
+        setRecentLearners(sorted);
       } catch (err) {
         console.error('Dashboard stats error', err);
       } finally {
@@ -53,9 +65,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── Stats ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard title="Total Learners" value={loading ? '—' : stats.learners} />
         <StatCard title="Active Modules" value={loading ? '—' : stats.modules} accent />
+        <StatCard title="Module Completions" value={loading ? '—' : stats.completions} accent />
         <StatCard
           title="Pending Jobs"
           value={loading ? '—' : stats.pendingJobs}
@@ -110,6 +123,124 @@ export default function AdminDashboard() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* ── Performance Insights ── */}
+      {!loading && allLearners.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+          {/* Most Active / Not Started */}
+          <div className="rounded-xl p-6 space-y-5" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+            <p className="label-tag-muted">Learner Activity</p>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: '#10b981' }}>Most Active</p>
+              {[...allLearners]
+                .sort((a, b) => b.totalCompleted - a.totalCompleted)
+                .slice(0, 3)
+                .map(l => (
+                  <Link key={l.learnerId} to={`/admin/progress/${l.learnerId}`} className="flex items-center justify-between py-1.5 hover:opacity-80 transition-opacity">
+                    <span className="text-xs truncate" style={{ color: 'var(--text-primary)' }}>{l.fullName ?? l.rawEmail ?? l.handle}</span>
+                    <span className="text-xs font-bold ml-3 shrink-0" style={{ color: '#10b981' }}>{l.totalCompleted}</span>
+                  </Link>
+                ))
+              }
+            </div>
+            <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'rgb(244,63,94)' }}>Not Started</p>
+              {allLearners.filter(l => l.totalStarted === 0).slice(0, 3).length === 0 ? (
+                <p className="text-xs" style={{ color: 'var(--text-dim)' }}>All learners have activity.</p>
+              ) : (
+                allLearners.filter(l => l.totalStarted === 0).slice(0, 3).map(l => (
+                  <Link key={l.learnerId} to={`/admin/progress/${l.learnerId}`} className="flex items-center justify-between py-1.5 hover:opacity-80 transition-opacity">
+                    <span className="text-xs truncate" style={{ color: 'var(--text-primary)' }}>{l.fullName ?? l.rawEmail ?? l.handle}</span>
+                    <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>0 completions</span>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Module Completion Rates */}
+          {allModules.length > 0 && (
+            <div className="rounded-xl p-6" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+              <p className="label-tag-muted mb-4">Module Completion Rates</p>
+              <div className="space-y-3">
+                {allModules.slice(0, 6).map(m => {
+                  const completed = allLearners.filter(l => l.totalCompleted > 0).length;
+                  const started = allLearners.filter(l => l.totalStarted > 0).length;
+                  const pct = allLearners.length > 0 ? Math.round((completed / allLearners.length) * 100) : 0;
+                  const barColor = pct >= 80 ? '#10b981' : pct >= 50 ? 'var(--gold-accent)' : 'rgb(244,63,94)';
+                  return (
+                    <div key={m.id}>
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs truncate flex-1" style={{ color: 'var(--text-primary)' }}>{m.title}</p>
+                        <span className="text-[10px] font-bold ml-2 shrink-0" style={{ color: barColor }}>{completed}/{started > 0 ? started : allLearners.length}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full" style={{ background: 'var(--bg-elevated)' }}>
+                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, background: barColor }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Recent Learner Activity ── */}
+      <div
+        className="rounded-xl p-6"
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <p className="label-tag-muted">Recent Learner Activity</p>
+          <Link to="/admin/progress" className="text-[10px] font-bold uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'var(--gold-accent)' }}>
+            View All →
+          </Link>
+        </div>
+        {loading ? (
+          <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Loading…</p>
+        ) : recentLearners.length === 0 ? (
+          <p className="text-xs" style={{ color: 'var(--text-dim)' }}>No learner activity recorded yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {recentLearners.map(l => (
+              <Link
+                key={l.learnerId}
+                to={`/admin/progress/${l.learnerId}`}
+                className="flex items-center justify-between px-4 py-3 rounded-lg transition-all"
+                style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-gold)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                    {l.fullName ?? l.handle}
+                  </p>
+                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-dim)' }}>
+                    {l.company ? `${l.company} · ` : ''}{l.handle}
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 ml-4 shrink-0 text-right">
+                  <div>
+                    <p className="text-xs font-bold" style={{ color: 'var(--gold-accent)' }}>{l.totalCompleted}</p>
+                    <p className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>completed</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>{l.totalStarted}</p>
+                    <p className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>started</p>
+                  </div>
+                  {l.lastActivityAt && (
+                    <p className="text-[10px] hidden md:block" style={{ color: 'var(--text-dim)' }}>
+                      {new Date(l.lastActivityAt).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

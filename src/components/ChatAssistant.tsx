@@ -15,6 +15,13 @@ const INITIAL_MESSAGE: Message = {
   content: 'What would you like to learn or understand better? I can explain cybersecurity concepts, help with policy questions, or clarify anything from your training material.',
 };
 
+const STARTER_PROMPTS = [
+  'What is BEC fraud in freight?',
+  'How do I verify a carrier is legitimate?',
+  'What is phishing and how do I spot it?',
+  'Explain DMARC and why it matters',
+];
+
 export default function ChatAssistant() {
   const location = useLocation();
   const { tier, loading } = useLearnerTier();
@@ -54,7 +61,7 @@ export default function ChatAssistant() {
     } catch {
       setMessages(prev => [
         ...prev,
-        { role: 'assistant', content: "I'm having trouble connecting right now. Please try again." },
+        { role: 'assistant', content: "Knowledge base search is available but AI responses are currently offline. Try rephrasing your question or check back later." },
       ]);
     } finally {
       setBusy(false);
@@ -154,6 +161,7 @@ export default function ChatAssistant() {
                                 border: '1px solid var(--border-subtle)',
                                 color: 'var(--text-secondary)',
                                 borderBottomLeftRadius: '4px',
+                                whiteSpace: 'pre-wrap',
                               }
                         }
                       >
@@ -161,6 +169,41 @@ export default function ChatAssistant() {
                       </div>
                     </motion.div>
                   ))}
+
+                  {messages.length === 1 && (
+                    <motion.div
+                      key="starters"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2, delay: 0.1 }}
+                      className="flex flex-col gap-2 mt-1"
+                    >
+                      {STARTER_PROMPTS.map(prompt => (
+                        <button
+                          key={prompt}
+                          onClick={() => send(prompt)}
+                          disabled={busy}
+                          className="text-left text-xs px-3 py-2 rounded-xl transition-all disabled:opacity-40"
+                          style={{
+                            background: 'var(--bg-elevated)',
+                            border: '1px solid var(--border-subtle)',
+                            color: 'var(--text-secondary)',
+                          }}
+                          onMouseEnter={e => {
+                            (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-gold)';
+                            (e.currentTarget as HTMLElement).style.color = 'var(--gold-accent)';
+                          }}
+                          onMouseLeave={e => {
+                            (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)';
+                            (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)';
+                          }}
+                        >
+                          {prompt}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
 
                   {busy && (
                     <motion.div
@@ -243,7 +286,7 @@ export default function ChatAssistant() {
         }}
       >
         {open ? <X size={16} /> : <Bot size={16} />}
-        <span>{open ? 'Close' : 'Ask AI'}</span>
+        <span>{open ? 'Close' : 'Study Assistant'}</span>
       </motion.button>
     </>
   );

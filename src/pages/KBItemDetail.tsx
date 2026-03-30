@@ -116,8 +116,8 @@ export default function KBItemDetail() {
     }
   }
 
-  if (loading) return <div className="p-6 text-gray-500">Loading…</div>;
-  if (!item) return <div className="p-6 text-gray-500">Not found.</div>;
+  if (loading) return <div className="p-6" style={{ color: 'var(--text-muted)' }}>Loading…</div>;
+  if (!item) return <div className="p-6" style={{ color: 'var(--text-muted)' }}>Not found.</div>;
 
   const currentRevision = revisions.find(r => r.id === item.currentRevisionId) ?? revisions[revisions.length - 1];
   const actions = WORKFLOW_ACTIONS[item.status] ?? [];
@@ -126,7 +126,7 @@ export default function KBItemDetail() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <Link to="/kb" className="text-blue-600 text-sm hover:underline">&larr; Back to KB</Link>
+      <Link to="/kb" className="text-sm hover:underline" style={{ color: 'var(--gold-accent)' }}>&larr; Back to KB</Link>
 
       {error && <div className="p-3 bg-red-100 text-red-800 rounded text-sm">{error}</div>}
 
@@ -142,18 +142,20 @@ export default function KBItemDetail() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold">{item.title}</h1>
-            <p className="text-gray-500 text-sm mt-1">{item.slug} &middot; {item.type} &middot; {item.sourceTrust}</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{item.slug} &middot; {item.type} &middot; {item.sourceTrust}</p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setEditingMeta(v => !v)}
-              className="text-sm text-gray-500 hover:text-gray-800 border rounded px-2 py-1"
+              className="text-sm border rounded px-2 py-1"
+              style={{ color: 'var(--text-muted)' }}
             >
               {editingMeta ? 'Cancel' : 'Edit'}
             </button>
             <button
               onClick={deleteItem}
-              className="text-sm text-red-500 hover:text-red-700 border border-red-200 rounded px-2 py-1"
+              className="text-sm border border-red-200 rounded px-2 py-1"
+              style={{ color: 'rgb(244,63,94)' }}
             >
               Delete
             </button>
@@ -182,13 +184,14 @@ export default function KBItemDetail() {
       {/* Content */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-semibold text-gray-700 flex items-center gap-1.5">
+          <h2 className="font-semibold flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
             Content
-            {currentRevision && <span className="text-xs text-gray-400 font-normal">v{currentRevision.version}</span>}
+            {currentRevision && <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>v{currentRevision.version}</span>}
           </h2>
           <button
             onClick={() => setAddingRevision(v => !v)}
-            className="text-sm border rounded px-2 py-1 text-gray-600 hover:bg-gray-50"
+            className="text-sm border rounded px-2 py-1"
+            style={{ color: 'var(--text-muted)' }}
           >
             {addingRevision ? 'Cancel' : '+ New revision'}
           </button>
@@ -204,28 +207,29 @@ export default function KBItemDetail() {
         )}
 
         {currentRevision ? (
-          <pre className="bg-gray-50 border rounded p-4 text-sm whitespace-pre-wrap font-mono leading-relaxed">
+          <pre className="border rounded p-4 text-sm whitespace-pre-wrap font-mono leading-relaxed" style={{ background: 'var(--bg-elevated)' }}>
             {currentRevision.content}
           </pre>
         ) : (
-          <p className="text-sm text-gray-400">No content yet. Add a revision to get started.</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No content yet. Add a revision to get started.</p>
         )}
 
         {revisions.length > 1 && (
           <details className="mt-2">
-            <summary className="text-sm text-gray-500 cursor-pointer">
+            <summary className="text-sm cursor-pointer" style={{ color: 'var(--text-muted)' }}>
               {revisions.length} revision{revisions.length !== 1 ? 's' : ''}
             </summary>
             <ul className="mt-2 space-y-1">
               {[...revisions].reverse().map(rev => (
                 <li key={rev.id} className="flex items-center gap-3 text-sm">
-                  <span className="text-gray-400 w-6">v{rev.version}</span>
-                  <span className="text-gray-600">{rev.createdBy}</span>
-                  <span className="text-gray-400 text-xs">{new Date(rev.createdAt).toLocaleString()}</span>
+                  <span className="w-6" style={{ color: 'var(--text-muted)' }}>v{rev.version}</span>
+                  <span style={{ color: 'var(--text-muted)' }}>{rev.createdBy}</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{new Date(rev.createdAt).toLocaleString()}</span>
                   {rev.id !== item.currentRevisionId && (
                     <button
                       onClick={() => doRollback(rev.id)}
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs hover:underline"
+                      style={{ color: 'var(--gold-accent)' }}
                     >
                       rollback
                     </button>
@@ -242,9 +246,9 @@ export default function KBItemDetail() {
 
       {/* Topics */}
       <div>
-        <h2 className="font-semibold text-gray-700 mb-2">Topics</h2>
+        <h2 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Topics</h2>
         <div className="flex flex-wrap gap-2 mb-2">
-          {assigned.length === 0 && <span className="text-sm text-gray-400">None assigned.</span>}
+          {assigned.length === 0 && <span className="text-sm" style={{ color: 'var(--text-muted)' }}>None assigned.</span>}
           {assigned.map(rel => {
             const t = allTopics.find(x => x.id === rel.topicId);
             return (
@@ -268,7 +272,7 @@ export default function KBItemDetail() {
           </select>
         )}
         {allTopics.length === 0 && (
-          <p className="text-sm text-gray-400">No topics exist. <Link to="/kb/topics" className="text-blue-600 hover:underline">Create one</Link>.</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No topics exist. <Link to="/kb/topics" className="hover:underline" style={{ color: 'var(--gold-accent)' }}>Create one</Link>.</p>
         )}
       </div>
 
@@ -291,13 +295,13 @@ export default function KBItemDetail() {
 
       {/* Workflow */}
       <div>
-        <h2 className="font-semibold text-gray-700 mb-2">Workflow</h2>
+        <h2 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Workflow</h2>
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm text-gray-500">As:</span>
-          <span className="text-sm font-medium text-gray-700">{actor}</span>
+          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>As:</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{actor}</span>
         </div>
         {actions.length === 0 ? (
-          <p className="text-sm text-gray-400">No actions available for "{item.status}".</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No actions available for "{item.status}".</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {actions.map(action => (
@@ -305,7 +309,8 @@ export default function KBItemDetail() {
                 key={action}
                 onClick={() => doAction(action)}
                 disabled={acting !== null}
-                className="px-3 py-1.5 rounded text-sm border font-medium hover:bg-gray-50 disabled:opacity-50 capitalize"
+                className="px-3 py-1.5 rounded text-sm border font-medium disabled:opacity-50 capitalize"
+                style={{ color: 'var(--text-muted)' }}
               >
                 {acting === action ? `${action}ing…` : action}
               </button>
@@ -317,14 +322,14 @@ export default function KBItemDetail() {
       {/* Workflow history */}
       {history.length > 0 && (
         <div>
-          <h2 className="font-semibold text-gray-700 mb-2">History</h2>
+          <h2 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>History</h2>
           <ul className="space-y-2">
             {[...history].reverse().map(ev => (
-              <li key={ev.id} className="text-sm border-l-2 border-gray-200 pl-3">
+              <li key={ev.id} className="text-sm border-l-2 pl-3" style={{ borderColor: 'var(--border-subtle)' }}>
                 <span className="font-medium capitalize">{ev.action}</span>
-                <span className="text-gray-500"> by {ev.performedBy}</span>
-                {ev.note && <span className="text-gray-400"> — {ev.note}</span>}
-                <span className="ml-2 text-gray-300 text-xs">{new Date(ev.performedAt).toLocaleString()}</span>
+                <span style={{ color: 'var(--text-muted)' }}> by {ev.performedBy}</span>
+                {ev.note && <span style={{ color: 'var(--text-muted)' }}> — {ev.note}</span>}
+                <span className="ml-2 text-xs" style={{ color: 'var(--text-muted)' }}>{new Date(ev.performedAt).toLocaleString()}</span>
               </li>
             ))}
           </ul>
@@ -359,7 +364,7 @@ function ReviewPanel({ status, actor: _actor, acting, onAction }: {
         <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${isDraft ? 'bg-yellow-200 text-yellow-900' : 'bg-blue-200 text-blue-900'}`}>
           {isDraft ? 'Draft' : 'Under Review'}
         </span>
-        <span className="text-sm text-gray-600">
+        <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
           {isDraft
             ? 'Review content below, then submit for review when ready.'
             : 'Ready to review — publish, approve, or send back for changes.'}
@@ -371,14 +376,16 @@ function ReviewPanel({ status, actor: _actor, acting, onAction }: {
             <button
               onClick={() => fire('submit')}
               disabled={acting !== null}
-              className="px-4 py-1.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-1.5 rounded text-sm font-medium disabled:opacity-50"
+              style={{ background: 'var(--gold-accent)', color: '#000' }}
             >
               {acting === 'submit' ? 'Submitting…' : 'Submit for review'}
             </button>
             <button
               onClick={() => fire('archive')}
               disabled={acting !== null}
-              className="px-3 py-1.5 border rounded text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+              className="px-3 py-1.5 border rounded text-sm disabled:opacity-50"
+              style={{ color: 'var(--text-muted)' }}
             >
               Archive
             </button>
@@ -395,7 +402,8 @@ function ReviewPanel({ status, actor: _actor, acting, onAction }: {
             <button
               onClick={() => fire('approve')}
               disabled={acting !== null}
-              className="px-3 py-1.5 border rounded text-sm font-medium hover:bg-gray-100 disabled:opacity-50"
+              className="px-3 py-1.5 border rounded text-sm font-medium disabled:opacity-50"
+              style={{ color: 'var(--text-muted)' }}
             >
               {acting === 'approve' ? '…' : 'Approve'}
             </button>
@@ -409,14 +417,16 @@ function ReviewPanel({ status, actor: _actor, acting, onAction }: {
             <button
               onClick={() => setNoteAction(noteAction === 'changes' ? null : 'changes')}
               disabled={acting !== null}
-              className="px-3 py-1.5 border rounded text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+              className="px-3 py-1.5 border rounded text-sm disabled:opacity-50"
+              style={{ color: 'var(--text-muted)' }}
             >
               Request changes
             </button>
             <button
               onClick={() => fire('archive')}
               disabled={acting !== null}
-              className="px-3 py-1.5 border rounded text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-50"
+              className="px-3 py-1.5 border rounded text-sm disabled:opacity-50"
+              style={{ color: 'var(--text-muted)' }}
             >
               Archive
             </button>
@@ -443,7 +453,8 @@ function ReviewPanel({ status, actor: _actor, acting, onAction }: {
             </button>
             <button
               onClick={() => { setNoteAction(null); setNote(''); }}
-              className="text-xs text-gray-400 text-center"
+              className="text-xs text-center"
+              style={{ color: 'var(--text-muted)' }}
             >
               cancel
             </button>
@@ -512,18 +523,19 @@ function QuizCandidatesSection({ itemId, revisionId, candidates, actor, onUpdate
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <h2 className="font-semibold text-gray-700">
+        <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>
           Quiz Candidates
-          {candidates.length > 0 && <span className="ml-2 text-xs font-normal text-gray-400">{candidates.length}</span>}
+          {candidates.length > 0 && <span className="ml-2 text-xs font-normal" style={{ color: 'var(--text-muted)' }}>{candidates.length}</span>}
         </h2>
         <button
           onClick={() => setShowCreate(v => !v)}
-          className="text-sm border rounded px-2 py-1 text-gray-600 hover:bg-gray-50"
+          className="text-sm border rounded px-2 py-1"
+          style={{ color: 'var(--text-muted)' }}
         >
           {showCreate ? 'Cancel' : '+ New candidate'}
         </button>
       </div>
-      <p className="text-xs text-gray-400 mb-2">
+      <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
         Approved candidates appear as practice questions in any module this item is linked to.
       </p>
 
@@ -547,7 +559,7 @@ function QuizCandidatesSection({ itemId, revisionId, candidates, actor, onUpdate
       )}
 
       {candidates.length === 0 && !showCreate ? (
-        <p className="text-sm text-gray-400">No candidates yet.</p>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No candidates yet.</p>
       ) : (
       <ul className="space-y-3">
         {candidates.map(c => (
@@ -559,7 +571,7 @@ function QuizCandidatesSection({ itemId, revisionId, candidates, actor, onUpdate
               </span>
             </div>
 
-            <ol className="list-decimal list-inside space-y-0.5 mb-2 text-gray-600">
+            <ol className="list-decimal list-inside space-y-0.5 mb-2" style={{ color: 'var(--text-muted)' }}>
               {c.options.map((opt, i) => (
                 <li key={i} className={i === c.suggestedCorrectIndex ? 'font-semibold text-green-700' : ''}>
                   {opt}
@@ -567,17 +579,18 @@ function QuizCandidatesSection({ itemId, revisionId, candidates, actor, onUpdate
               ))}
             </ol>
 
-            <p className="text-xs text-gray-500 mb-2 italic">{c.explanation}</p>
+            <p className="text-xs mb-2 italic" style={{ color: 'var(--text-muted)' }}>{c.explanation}</p>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-gray-400">confidence: {(c.confidence * 100).toFixed(0)}%</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>confidence: {(c.confidence * 100).toFixed(0)}%</span>
 
               {c.status === 'pending-review' && (
                 <>
                   <button
                     onClick={() => doApprove(c.id)}
                     disabled={acting !== null}
-                    className="px-2 py-0.5 text-xs border rounded hover:bg-gray-50 disabled:opacity-50"
+                    className="px-2 py-0.5 text-xs border rounded disabled:opacity-50"
+                    style={{ color: 'var(--text-muted)' }}
                   >
                     {acting === c.id + ':approve' ? '…' : 'Approve'}
                   </button>
@@ -605,16 +618,17 @@ function QuizCandidatesSection({ itemId, revisionId, candidates, actor, onUpdate
                         {modules.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
                       </select>
                     ) : (
-                      <span className="text-xs text-gray-400">Loading modules…</span>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Loading modules…</span>
                     )}
                     <button
                       onClick={() => doPromote(c.id)}
                       disabled={acting !== null || !promoteModuleId}
-                      className="px-2 py-0.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                      className="px-2 py-0.5 text-xs rounded disabled:opacity-50"
+                      style={{ background: 'var(--gold-accent)', color: '#000' }}
                     >
                       {acting === c.id + ':promote' ? '…' : 'Confirm'}
                     </button>
-                    <button onClick={() => { setPromoteTarget(null); setPromoteModuleId(''); }} className="text-xs text-gray-400">
+                    <button onClick={() => { setPromoteTarget(null); setPromoteModuleId(''); }} className="text-xs" style={{ color: 'var(--text-muted)' }}>
                       cancel
                     </button>
                   </span>
@@ -626,7 +640,8 @@ function QuizCandidatesSection({ itemId, revisionId, candidates, actor, onUpdate
                         try { setModules(await api.modules.list()); } catch { /* fall through */ }
                       }
                     }}
-                    className="px-2 py-0.5 text-xs border rounded hover:bg-gray-50"
+                    className="px-2 py-0.5 text-xs border rounded"
+                    style={{ color: 'var(--text-muted)' }}
                   >
                     Promote to module
                   </button>
@@ -683,11 +698,11 @@ function CreateQuizCandidateForm({ itemId, revisionId, onSave }: {
   }
 
   return (
-    <form onSubmit={submit} className="mb-4 p-3 border rounded bg-gray-50 space-y-3 text-sm">
+    <form onSubmit={submit} className="mb-4 p-3 border rounded space-y-3 text-sm" style={{ background: 'var(--bg-elevated)' }}>
       {err && <div className="p-2 bg-red-100 text-red-800 rounded text-sm">{err}</div>}
 
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Question</label>
+        <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Question</label>
         <input
           className="w-full border rounded px-2 py-1.5 text-sm"
           value={questionText}
@@ -697,7 +712,7 @@ function CreateQuizCandidateForm({ itemId, revisionId, onSave }: {
       </div>
 
       <div className="space-y-1">
-        <label className="block text-xs text-gray-500">Options — select correct answer</label>
+        <label className="block text-xs" style={{ color: 'var(--text-muted)' }}>Options — select correct answer</label>
         {options.map((opt, i) => (
           <div key={i} className="flex items-center gap-2">
             <input
@@ -718,7 +733,7 @@ function CreateQuizCandidateForm({ itemId, revisionId, onSave }: {
       </div>
 
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Explanation</label>
+        <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Explanation</label>
         <textarea
           className="w-full border rounded px-2 py-1.5 text-sm"
           rows={2}
@@ -729,7 +744,7 @@ function CreateQuizCandidateForm({ itemId, revisionId, onSave }: {
       </div>
 
       <div className="flex items-center gap-3">
-        <label className="text-xs text-gray-500">Confidence: {(confidence * 100).toFixed(0)}%</label>
+        <label className="text-xs" style={{ color: 'var(--text-muted)' }}>Confidence: {(confidence * 100).toFixed(0)}%</label>
         <input
           type="range"
           min={0} max={1} step={0.05}
@@ -742,7 +757,8 @@ function CreateQuizCandidateForm({ itemId, revisionId, onSave }: {
       <button
         type="submit"
         disabled={saving}
-        className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+        className="px-3 py-1.5 rounded text-sm disabled:opacity-50"
+        style={{ background: 'var(--gold-accent)', color: '#000' }}
       >
         {saving ? 'Saving…' : 'Create candidate'}
       </button>
@@ -812,10 +828,11 @@ function LessonsSection({ itemId, actor, lessons, onUpdate }: {
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h2 className="font-semibold text-gray-700">Module Links</h2>
+        <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Module Links</h2>
         <button
           onClick={openForm}
-          className="text-sm border rounded px-2 py-1 text-gray-600 hover:bg-gray-50"
+          className="text-sm border rounded px-2 py-1"
+          style={{ color: 'var(--text-muted)' }}
         >
           {showForm ? 'Cancel' : '+ Link to module'}
         </button>
@@ -824,9 +841,9 @@ function LessonsSection({ itemId, actor, lessons, onUpdate }: {
       {err && <div className="mb-2 p-2 bg-red-100 text-red-800 rounded text-sm">{err}</div>}
 
       {showForm && (
-        <form onSubmit={addLink} className="mb-3 p-3 border rounded bg-gray-50 flex flex-wrap gap-2 items-end">
+        <form onSubmit={addLink} className="mb-3 p-3 border rounded flex flex-wrap gap-2 items-end" style={{ background: 'var(--bg-elevated)' }}>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Module</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Module</label>
             {modules.length > 0 ? (
               <select
                 className="border rounded px-2 py-1 text-sm w-56"
@@ -840,13 +857,13 @@ function LessonsSection({ itemId, actor, lessons, onUpdate }: {
                 ))}
               </select>
             ) : (
-              <span className="text-xs text-gray-400">
-                No modules yet. <Link to="/kb/modules" className="text-blue-600 hover:underline">Create one</Link>.
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                No modules yet. <Link to="/kb/modules" className="hover:underline" style={{ color: 'var(--gold-accent)' }}>Create one</Link>.
               </span>
             )}
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Role</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Role</label>
             <select
               className="border rounded px-2 py-1 text-sm"
               value={role}
@@ -856,7 +873,7 @@ function LessonsSection({ itemId, actor, lessons, onUpdate }: {
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Order</label>
+            <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Order</label>
             <input
               type="number"
               className="border rounded px-2 py-1 text-sm w-16"
@@ -869,7 +886,8 @@ function LessonsSection({ itemId, actor, lessons, onUpdate }: {
             <button
               type="submit"
               disabled={saving || !moduleId}
-              className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+              className="px-3 py-1.5 rounded text-sm disabled:opacity-50"
+              style={{ background: 'var(--gold-accent)', color: '#000' }}
             >
               {saving ? 'Linking…' : 'Link'}
             </button>
@@ -878,15 +896,15 @@ function LessonsSection({ itemId, actor, lessons, onUpdate }: {
       )}
 
       {lessons.length === 0 ? (
-        <p className="text-sm text-gray-400">Not linked to any modules. Use <span className="font-mono bg-gray-100 px-1 rounded">+ Link to module</span> or the Content panel in Modules.</p>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Not linked to any modules. Use <span className="font-mono px-1 rounded" style={{ background: 'var(--bg-elevated)' }}>+ Link to module</span> or the Content panel in Modules.</p>
       ) : (
         <ul className="space-y-1">
           {lessons.map(l => (
             <li key={l.id} className="flex items-center gap-3 text-sm border-b py-1.5">
               <span className="font-medium text-sm">{moduleLabel(l.moduleId)}</span>
-              <span className="font-mono text-xs text-gray-400 truncate max-w-[120px]">{l.moduleId}</span>
-              <span className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">{l.role}</span>
-              <span className="text-gray-400 text-xs">order {l.order}</span>
+              <span className="font-mono text-xs truncate max-w-[120px]" style={{ color: 'var(--text-muted)' }}>{l.moduleId}</span>
+              <span className="px-1.5 py-0.5 rounded text-xs" style={{ background: 'var(--bg-elevated)' }}>{l.role}</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>order {l.order}</span>
               <button
                 onClick={() => removeLink(l.id)}
                 className="ml-auto text-red-400 hover:text-red-600 text-xs"
@@ -904,7 +922,7 @@ function LessonsSection({ itemId, actor, lessons, onUpdate }: {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-gray-500 text-xs uppercase tracking-wide">{label}</dt>
+      <dt className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{label}</dt>
       <dd className="mt-0.5 font-medium">{value}</dd>
     </div>
   );
@@ -941,20 +959,20 @@ function EditMetaForm({ item, onSave }: {
     <form onSubmit={submit} className="mt-4 space-y-3">
       {err && <div className="p-2 bg-red-100 text-red-800 rounded text-sm">{err}</div>}
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Title</label>
+        <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Title</label>
         <input className="w-full border rounded px-3 py-1.5 text-sm" value={title} onChange={e => setTitle(e.target.value)} required />
       </div>
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Type</label>
+        <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Type</label>
         <select className="border rounded px-3 py-1.5 text-sm" value={type} onChange={e => setType(e.target.value)}>
           {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Tags (comma-separated)</label>
+        <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Tags (comma-separated)</label>
         <input className="w-full border rounded px-3 py-1.5 text-sm" value={tags} onChange={e => setTags(e.target.value)} />
       </div>
-      <button type="submit" disabled={saving} className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+      <button type="submit" disabled={saving} className="px-3 py-1.5 rounded text-sm disabled:opacity-50" style={{ background: 'var(--gold-accent)', color: '#000' }}>
         {saving ? 'Saving…' : 'Save'}
       </button>
     </form>
@@ -995,7 +1013,7 @@ function NewRevisionForm({ itemId, actor, currentContent, onSave }: {
         onChange={e => setContent(e.target.value)}
         required
       />
-      <button type="submit" disabled={saving} className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+      <button type="submit" disabled={saving} className="px-3 py-1.5 rounded text-sm disabled:opacity-50" style={{ background: 'var(--gold-accent)', color: '#000' }}>
         {saving ? 'Saving…' : 'Save revision'}
       </button>
     </form>

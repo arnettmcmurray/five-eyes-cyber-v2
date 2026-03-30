@@ -1,47 +1,54 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Lock, Map, Zap, CheckCircle2 } from 'lucide-react';
 
 const CAPABILITIES = [
   {
-    icon: Lock,
-    title: 'Freight Security Analysis',
-    description:
-      'Intelligence-grade assessment of physical and digital supply chain vulnerabilities, modeled after defense sector threat analysis.',
-    benefits: ['Real-time threat mapping', 'Route vulnerability analysis', 'Vendor risk profiling'],
-    image: '/assets/dashboard/freight_fraud.png',
-  },
-  {
     icon: Shield,
     title: 'Cyber Resilience Training',
     description:
-      'Specialized training modules focusing on the specific tactics used by ransomware gangs and nation-state actors targeting logistics.',
-    benefits: ['Interactive tabletop exercises', 'Realistic phishing scenarios', 'Incident response drills'],
+      'Scenario-based training modules built around the specific tactics used by ransomware gangs and nation-state actors targeting logistics — delivered through an interactive, trackable platform.',
+    benefits: ['Scenario-based phishing awareness', 'BEC and payment fraud modules', 'Incident response training'],
+    detail: 'This is a platform feature — interactive modules your team completes independently, tracked per learner. Admins assign modules, monitor progress, and review scores. No analyst time required for delivery. Best suited for Individual and Professional tier subscribers.',
     image: '/assets/dashboard/ransomware.png',
+  },
+  {
+    icon: Lock,
+    title: 'Freight Security Analysis',
+    description:
+      'Intelligence-grade assessment of physical and digital supply chain vulnerabilities by former defence sector analysts — identifying your highest-risk exposure points.',
+    benefits: ['Supply chain vulnerability assessment', 'Route and vendor risk profiling', 'Carrier vetting guidance'],
+    detail: 'This is a team-delivered service — a Five Eyes analyst conducts a structured review of your carrier network, vendor relationships, and route exposures, then produces a written assessment. Delivered on the Enterprise tier as a scheduled engagement.',
+    image: '/assets/dashboard/freight_fraud.png',
   },
   {
     icon: Map,
     title: 'Strategic Threat Intelligence',
     description:
-      'Actionable intelligence feeds curated by former military and intelligence analysts, translating global events to supply chain impacts.',
-    benefits: ['Quarterly threat briefs', 'Emergency flash reports', 'Geopolitical risk analysis'],
+      'Curated intelligence from former military and intelligence analysts, translating global events and threat actor activity into actionable supply chain risk guidance.',
+    benefits: ['Quarterly logistics threat briefs', 'Sector-specific flash reports', 'Geopolitical risk analysis'],
+    detail: 'This is a team-produced service — our analysts author quarterly briefs and ad-hoc flash reports based on live threat data. Delivered as PDFs and briefing calls. Available on Enterprise tier. Not an automated feed.',
     image: '/assets/dashboard/supply_chain.png',
   },
   {
     icon: Zap,
-    title: 'Rapid Incident Response',
+    title: 'Incident Response Support',
     description:
-      'On-call expertise to guide your executive team through the critical first 72 hours of a major cyber or physical breach.',
+      'Analyst-led guidance to support your executive team through the critical first 72 hours of a major cyber or physical breach.',
     benefits: [
       'Executive communication strategy',
       'Legal notification guidance',
-      'Containment protocols',
+      'Containment and recovery planning',
     ],
+    detail: 'This is a retainer-backed analyst service, not an automated platform feature. When a breach occurs, a Five Eyes analyst joins your team to guide executive decisions, draft communications, and coordinate with legal. Available on Enterprise tier only.',
     image: '/assets/ttx/bec_scenario_hero.png',
   },
 ];
 
 export default function CapabilitiesPage() {
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+
   return (
     <div className="relative z-10 min-h-screen">
 
@@ -69,15 +76,17 @@ export default function CapabilitiesPage() {
       {/* ── Capability Cards ── */}
       <section className="px-4 md:px-8 pb-14 md:pb-24">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-7">
-          {CAPABILITIES.map((cap, i) => (
+          {CAPABILITIES.map((cap, i) => {
+            const isOpen = expandedCard === cap.title;
+            return (
             <motion.div
               key={cap.title}
               initial={{ opacity: 0, y: 22 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.65, delay: i * 0.1 }}
-              className="group rounded-[1.75rem] overflow-hidden gold-hover transition-all duration-500"
-              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+              className="group rounded-[1.75rem] overflow-hidden transition-all duration-500"
+              style={{ background: 'var(--bg-surface)', border: isOpen ? '1px solid var(--border-gold)' : '1px solid var(--border-subtle)' }}
             >
               {/* Image header */}
               <div className="relative h-36 md:h-48 overflow-hidden">
@@ -116,7 +125,7 @@ export default function CapabilitiesPage() {
                   {cap.description}
                 </p>
 
-                <ul className="space-y-3">
+                <ul className="space-y-3 mb-6">
                   {cap.benefits.map(b => (
                     <li key={b} className="flex items-center gap-3 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
                       <CheckCircle2 size={15} style={{ color: 'var(--gold-accent)', flexShrink: 0 }} />
@@ -124,9 +133,34 @@ export default function CapabilitiesPage() {
                     </li>
                   ))}
                 </ul>
+
+                <button
+                  onClick={() => setExpandedCard(isOpen ? null : cap.title)}
+                  className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70"
+                  style={{ color: 'var(--gold-accent)' }}
+                >
+                  {isOpen ? 'Hide Details ▲' : 'How it\'s delivered ▼'}
+                </button>
+
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="text-sm leading-relaxed mt-4 pt-4" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)' }}>
+                        {cap.detail}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

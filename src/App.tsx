@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import NavShell from './components/layouts/NavShell';
 import { PublicLayout } from './components/PublicLayout';
 import { NeuralBackground } from './components/NeuralBackground';
 import FreeTierGate from './components/FreeTierGate';
 import { useLearnerTier } from './hooks/useLearnerTier';
+import { getAdminToken } from './lib/adminSession';
 
 // Public pages
 import LandingPage from './pages/public/LandingPage';
@@ -25,6 +26,7 @@ import ModuleManager from './pages/ModuleManager';
 import LearnHub from './pages/LearnHub';
 import LearnModule from './pages/LearnModule';
 import AdminProgress from './pages/AdminProgress';
+import AdminLearnerDetail from './pages/AdminLearnerDetail';
 import AdminAssignments from './pages/AdminAssignments';
 import AdminLogin from './pages/AdminLogin';
 import AdminProfile from './pages/AdminProfile';
@@ -70,11 +72,12 @@ export default function App() {
         {/* ── Admin login (standalone) ── */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* ── Protected app routes with NavShell ── */}
-        <Route element={<NavWrapper />}>
+        {/* ── Admin routes — redirect to /admin/login if no admin token ── */}
+        <Route element={<AdminGuard />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/profile" element={<AdminProfile />} />
           <Route path="/admin/progress" element={<AdminProgress />} />
+          <Route path="/admin/progress/:learnerId" element={<AdminLearnerDetail />} />
           <Route path="/admin/assignments" element={<AdminAssignments />} />
 
           <Route path="/kb" element={<KBAdmin />} />
@@ -83,6 +86,15 @@ export default function App() {
           <Route path="/kb/modules" element={<ModuleManager />} />
           <Route path="/kb/:id" element={<KBItemDetail />} />
 
+          {/* TTX facilitator/admin routes */}
+          <Route path="/ttx/scenarios" element={<TtxScenarios />} />
+          <Route path="/ttx/scenarios/:id" element={<TtxScenarioEdit />} />
+          <Route path="/ttx/sessions" element={<TtxSessions />} />
+          <Route path="/ttx/sessions/:id/aar" element={<TtxAAR />} />
+        </Route>
+
+        {/* ── Learner routes — tier check via NavWrapper ── */}
+        <Route element={<NavWrapper />}>
           <Route path="/learn/dashboard" element={<LearnDashboard />} />
           <Route path="/learn" element={<LearnHub />} />
           <Route path="/learn/modules/:id" element={<LearnModule />} />
@@ -91,12 +103,6 @@ export default function App() {
           <Route path="/learn/scorecard" element={<LearnScorecard />} />
           <Route path="/learn/ttx" element={<LearnTTX />} />
           <Route path="/learn/game" element={<SecurityGame />} />
-
-          {/* TTX routes */}
-          <Route path="/ttx/scenarios" element={<TtxScenarios />} />
-          <Route path="/ttx/scenarios/:id" element={<TtxScenarioEdit />} />
-          <Route path="/ttx/sessions" element={<TtxSessions />} />
-          <Route path="/ttx/sessions/:id/aar" element={<TtxAAR />} />
         </Route>
 
         {/* ── Full-screen TTX apps (no shell) ── */}
@@ -109,8 +115,6 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
-import { Outlet } from 'react-router-dom';
 
 function PublicWrapper({ minimal }: { minimal?: boolean }) {
   if (minimal) {
@@ -128,6 +132,21 @@ function PublicWrapper({ minimal }: { minimal?: boolean }) {
     <PublicLayout>
       <Outlet />
     </PublicLayout>
+  );
+}
+
+/**
+ * AdminGuard — wraps all admin/kb/ttx routes.
+ * Redirects to /admin/login if no admin token is present in localStorage.
+ * The admin token is also cleared automatically by adminReq() on any 401 response,
+ * so an expired session causes a redirect on the next route visit.
+ */
+function AdminGuard() {
+  if (!getAdminToken()) return <Navigate to="/admin/login" replace />;
+  return (
+    <NavShell>
+      <Outlet />
+    </NavShell>
   );
 }
 

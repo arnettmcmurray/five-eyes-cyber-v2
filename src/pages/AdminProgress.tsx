@@ -1,5 +1,6 @@
 import { useState, useEffect, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   api,
   type LearnerSummary,
@@ -22,40 +23,58 @@ export default function AdminProgress() {
   const [tab, setTab] = useState<Tab>('learners');
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3 flex-wrap">
-          <Link to="/kb" className="text-sm text-gray-500 hover:text-gray-800">← KB</Link>
-          <Link to="/kb/modules" className="text-sm text-gray-500 hover:text-gray-800">Modules</Link>
-          <Link to="/admin/assignments" className="text-sm text-gray-500 hover:text-gray-800">Assignments</Link>
-          <h1 className="text-xl font-bold">Progress</h1>
+    <div className="max-w-5xl mx-auto space-y-8">
+
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="label-tag-muted mb-1">Administration</p>
+          <h1 className="font-display font-black text-2xl md:text-3xl tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Learner <span style={{ color: 'var(--gold-accent)' }}>Progress</span>
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+            Track completion, manage access, and view activity across learners, modules, and groups.
+          </p>
         </div>
-        <button
-          onClick={() => { clearAdminSession(); navigate('/admin/login'); }}
-          className="text-xs text-gray-400 hover:text-gray-600"
-        >
-          {getAdminUsername() ?? 'admin'} · Logout
-        </button>
+        <div className="flex items-center gap-4 shrink-0">
+          <Link to="/admin" className="text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
+            ← Dashboard
+          </Link>
+          <button
+            onClick={() => { clearAdminSession(); navigate('/admin/login'); }}
+            className="text-xs transition-opacity hover:opacity-70"
+            style={{ color: 'var(--text-dim)' }}
+          >
+            {getAdminUsername() ?? 'admin'} · Logout
+          </button>
+        </div>
       </div>
-      <div className="flex gap-1 border-b mb-5">
+
+      {/* Tab Bar */}
+      <div className="flex gap-1 rounded-xl p-1" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
         {(['learners', 'modules', 'groups'] as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px ${
-              tab === t ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+            className="flex-1 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all"
+            style={tab === t
+              ? { background: 'var(--gold-accent)', color: '#000' }
+              : { color: 'var(--text-muted)' }
+            }
           >
             {t === 'learners' ? 'By Learner' : t === 'modules' ? 'By Module' : 'Groups'}
           </button>
         ))}
       </div>
+
       {tab === 'learners' && <ByLearner />}
       {tab === 'modules' && <ByModule />}
       {tab === 'groups' && <ByGroup />}
     </div>
   );
 }
+
+type SortOption = 'name' | 'last_active' | 'completions';
 
 function ByLearner() {
   const [learners, setLearners] = useState<LearnerSummary[]>([]);
@@ -66,12 +85,11 @@ function ByLearner() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [overrides, setOverrides] = useState<Map<string, string>>(new Map());
   const [actionPending, setActionPending] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState<SortOption>('last_active');
 
   useEffect(() => {
-    Promise.all([
-      api.adminProgress.learners(),
-      api.admin.access.list(),
-    ])
+    Promise.all([api.adminProgress.learners(), api.admin.access.list()])
       .then(([ls, acs]) => {
         setLearners(ls);
         setOverrides(new Map(acs.map((a: AccessOverride) => [a.learnerId, a.tier])));
@@ -106,11 +124,7 @@ function ByLearner() {
     setActionPending(learnerId);
     try {
       await api.admin.access.revoke(learnerId);
-      setOverrides(prev => {
-        const next = new Map(prev);
-        next.delete(learnerId);
-        return next;
-      });
+      setOverrides(prev => { const next = new Map(prev); next.delete(learnerId); return next; });
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Revoke failed');
     } finally {
@@ -118,130 +132,159 @@ function ByLearner() {
     }
   }
 
-  if (error) return <div className="p-3 bg-red-100 text-red-800 rounded text-sm">{error}</div>;
-  if (loading) return <p className="text-gray-500 text-sm">Loading…</p>;
-  if (learners.length === 0) return <p className="text-gray-400 text-sm">No learners yet.</p>;
+  if (error) return <div className="rounded-xl p-4 text-sm" style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: 'rgb(244,63,94)' }}>{error}</div>;
+  if (loading) return <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Loading…</p>;
+  if (learners.length === 0) return <p className="text-sm" style={{ color: 'var(--text-dim)' }}>No learners yet.</p>;
+
+  const q = search.toLowerCase();
+  const filtered = learners.filter(l =>
+    !q ||
+    (l.fullName ?? '').toLowerCase().includes(q) ||
+    (l.rawEmail ?? '').toLowerCase().includes(q) ||
+    l.handle.toLowerCase().includes(q) ||
+    (l.company ?? '').toLowerCase().includes(q)
+  ).sort((a, b) => {
+    if (sort === 'name') return (a.fullName ?? a.rawEmail ?? a.handle).localeCompare(b.fullName ?? b.rawEmail ?? b.handle);
+    if (sort === 'completions') return b.totalCompleted - a.totalCompleted;
+    // last_active
+    const ta = a.lastActivityAt ? new Date(a.lastActivityAt).getTime() : 0;
+    const tb = b.lastActivityAt ? new Date(b.lastActivityAt).getTime() : 0;
+    return tb - ta;
+  });
 
   return (
-    <table className="w-full text-sm border-collapse">
-      <thead>
-        <tr className="border-b text-left text-gray-500">
-          <th className="py-2 pr-4 font-medium">Handle</th>
-          <th className="py-2 pr-4 font-medium">Access</th>
-          <th className="py-2 pr-4 font-medium">Started</th>
-          <th className="py-2 pr-4 font-medium">Completed</th>
-          <th className="py-2 font-medium">Last activity</th>
-        </tr>
-      </thead>
-      <tbody>
-        {learners.map(l => {
-          const tier = overrides.get(l.learnerId);
-          const isPending = actionPending === l.learnerId;
-          return (
-            <Fragment key={l.learnerId}>
-              <tr
-                className="border-b hover:bg-gray-50 cursor-pointer"
+    <div className="space-y-4">
+      {/* Search + Sort bar */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <input
+          className="flex-1 min-w-[200px] px-4 py-2 rounded-xl text-sm outline-none"
+          style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+          placeholder="Search by name, email, company…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          onFocus={e => (e.target.style.borderColor = 'var(--border-gold)')}
+          onBlur={e => (e.target.style.borderColor = 'var(--border-subtle)')}
+        />
+        <select
+          className="px-3 py-2 rounded-xl text-xs outline-none font-bold uppercase tracking-widest"
+          style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}
+          value={sort}
+          onChange={e => setSort(e.target.value as SortOption)}
+        >
+          <option value="last_active">Last Active</option>
+          <option value="name">Name A–Z</option>
+          <option value="completions">Most Completions</option>
+        </select>
+        <p className="text-[10px] font-bold uppercase tracking-widest shrink-0" style={{ color: 'var(--text-dim)' }}>
+          {filtered.length} of {learners.length}
+        </p>
+      </div>
+      <div className="space-y-2">
+      {filtered.map((l, i) => {
+        const tier = overrides.get(l.learnerId);
+        const isPending = actionPending === l.learnerId;
+        const isOpen = selected === l.learnerId;
+        return (
+          <Fragment key={l.learnerId}>
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: i * 0.03 }}
+              className="rounded-xl overflow-hidden"
+              style={{ background: 'var(--bg-surface)', border: isOpen ? '1px solid var(--border-gold)' : '1px solid var(--border-subtle)' }}
+            >
+              {/* Learner Row */}
+              <button
+                className="w-full flex items-center gap-4 px-5 py-4 text-left transition-all"
                 onClick={() => selectLearner(l.learnerId)}
               >
-                <td className="py-2 pr-4 font-mono text-blue-700">
-                  {l.handle}
-                  {l.company && <span className="ml-2 text-xs text-gray-400 font-sans">{l.company}</span>}
-                </td>
-                <td className="py-2 pr-4" onClick={e => e.stopPropagation()}>
-                  {tier === 'individual' || tier === 'professional' || tier === 'paid' ? (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                        tier === 'professional' || tier === 'paid'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {tier === 'paid' ? 'Active' : tier.charAt(0).toUpperCase() + tier.slice(1)}
-                      </span>
-                      {tier === 'individual' && (
-                        <button
-                          disabled={isPending}
-                          onClick={() => grantAccess(l.learnerId, 'professional')}
-                          className="text-xs text-green-600 hover:text-green-800 disabled:opacity-40"
-                        >
-                          {isPending ? '…' : '↑ Pro'}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Link
+                      to={`/admin/progress/${l.learnerId}`}
+                      onClick={e => e.stopPropagation()}
+                      className="text-sm font-bold hover:underline"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {l.fullName ?? l.rawEmail ?? l.handle}
+                    </Link>
+                    {l.rawEmail && l.fullName && <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{l.rawEmail}</p>}
+                    {!l.fullName && !l.rawEmail && <p className="text-xs font-mono" style={{ color: 'var(--text-dim)' }}>{l.handle}</p>}
+                    {l.company && <p className="text-[10px]" style={{ color: 'var(--text-dim)' }}>{l.company}</p>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 shrink-0">
+                  {/* Access tier */}
+                  <div onClick={e => e.stopPropagation()} className="flex items-center gap-2">
+                    {tier === 'individual' || tier === 'professional' || tier === 'paid' ? (
+                      <div className="flex items-center gap-2">
+                        <TierBadge tier={tier} />
+                        {tier === 'individual' && (
+                          <button disabled={isPending} onClick={() => grantAccess(l.learnerId, 'professional')} className="text-[9px] font-black uppercase tracking-widest transition-opacity hover:opacity-70 disabled:opacity-30" style={{ color: '#10b981' }}>
+                            {isPending ? '…' : '↑ Pro'}
+                          </button>
+                        )}
+                        <button disabled={isPending} onClick={() => revokeAccess(l.learnerId)} className="text-[9px] font-black uppercase tracking-widest transition-opacity hover:opacity-70 disabled:opacity-30" style={{ color: 'rgb(244,63,94)' }}>
+                          Revoke
                         </button>
-                      )}
-                      <button
-                        disabled={isPending}
-                        onClick={() => revokeAccess(l.learnerId)}
-                        className="text-xs text-red-500 hover:text-red-700 disabled:opacity-40"
-                      >
-                        Revoke
-                      </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <button disabled={isPending} onClick={() => grantAccess(l.learnerId, 'individual')} className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest transition-all hover:brightness-110 disabled:opacity-30" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}>
+                          {isPending ? '…' : 'Individual'}
+                        </button>
+                        <button disabled={isPending} onClick={() => grantAccess(l.learnerId, 'professional')} className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest transition-all hover:brightness-110 disabled:opacity-30" style={{ background: 'var(--gold-muted)', border: '1px solid var(--border-gold)', color: 'var(--gold-accent)' }}>
+                          {isPending ? '…' : 'Professional'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {/* Stats */}
+                  <div className="text-right hidden md:block">
+                    <p className="text-[10px] font-bold" style={{ color: 'var(--gold-accent)' }}>{l.totalCompleted} completed</p>
+                    <p className="text-[9px]" style={{ color: 'var(--text-dim)' }}>{l.totalStarted} started · {l.lastActivityAt ? new Date(l.lastActivityAt).toLocaleDateString() : 'no activity'}</p>
+                  </div>
+                  <span className="text-xs" style={{ color: 'var(--text-dim)' }}>{isOpen ? '▲' : '▼'}</span>
+                </div>
+              </button>
+
+              {/* Detail Drawer */}
+              {isOpen && (
+                <div className="px-5 pb-4 pt-1" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                  {detailLoading ? (
+                    <p className="text-xs py-3" style={{ color: 'var(--text-dim)' }}>Loading…</p>
+                  ) : detail && detail.modules.length > 0 ? (
+                    <div className="space-y-2 mt-3">
+                      {detail.modules.map(m => (
+                        <div
+                          key={m.moduleId}
+                          className="flex items-center justify-between px-4 py-2.5 rounded-lg"
+                          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
+                        >
+                          <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{m.moduleTitle}</p>
+                          <div className="flex items-center gap-4 shrink-0">
+                            <ModuleStatusBadge status={m.status} />
+                            <p className="text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
+                              {m.score != null && m.total != null ? `${m.score}/${m.total} (${m.percentage}%)` : '—'}
+                            </p>
+                            <p className="text-[10px] hidden md:block" style={{ color: 'var(--text-dim)' }}>
+                              {m.completedAt ? new Date(m.completedAt).toLocaleDateString() : '—'}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <button
-                        disabled={isPending}
-                        onClick={() => grantAccess(l.learnerId, 'individual')}
-                        className="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 disabled:opacity-40"
-                      >
-                        {isPending ? '…' : 'Individual'}
-                      </button>
-                      <button
-                        disabled={isPending}
-                        onClick={() => grantAccess(l.learnerId, 'professional')}
-                        className="px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 disabled:opacity-40"
-                      >
-                        {isPending ? '…' : 'Professional'}
-                      </button>
-                    </div>
+                    <p className="text-xs py-3" style={{ color: 'var(--text-dim)' }}>No module activity recorded.</p>
                   )}
-                </td>
-                <td className="py-2 pr-4">{l.totalStarted}</td>
-                <td className="py-2 pr-4">{l.totalCompleted}</td>
-                <td className="py-2 text-gray-400">
-                  {l.lastActivityAt ? new Date(l.lastActivityAt).toLocaleDateString() : '—'}
-                </td>
-              </tr>
-              {selected === l.learnerId && (
-                <tr className="bg-gray-50">
-                  <td colSpan={5} className="py-3 px-2">
-                    {detailLoading ? (
-                      <p className="text-gray-400 text-xs">Loading…</p>
-                    ) : detail && detail.modules.length > 0 ? (
-                      <table className="w-full text-xs border-collapse">
-                        <thead>
-                          <tr className="text-gray-400 border-b">
-                            <th className="py-1 pr-3 text-left font-medium">Module</th>
-                            <th className="py-1 pr-3 text-left font-medium">Status</th>
-                            <th className="py-1 pr-3 text-left font-medium">Score</th>
-                            <th className="py-1 text-left font-medium">Completed</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {detail.modules.map(m => (
-                            <tr key={m.moduleId} className="border-b border-gray-100">
-                              <td className="py-1 pr-3">{m.moduleTitle}</td>
-                              <td className="py-1 pr-3"><StatusBadge status={m.status} /></td>
-                              <td className="py-1 pr-3">
-                                {m.score != null && m.total != null
-                                  ? `${m.score}/${m.total} (${m.percentage}%)`
-                                  : '—'}
-                              </td>
-                              <td className="py-1 text-gray-400">
-                                {m.completedAt ? new Date(m.completedAt).toLocaleDateString() : '—'}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <p className="text-gray-400 text-xs">No module activity.</p>
-                    )}
-                  </td>
-                </tr>
+                </div>
               )}
-            </Fragment>
-          );
-        })}
-      </tbody>
-    </table>
+            </motion.div>
+          </Fragment>
+        );
+      })}
+      </div>
+    </div>
   );
 }
 
@@ -269,69 +312,73 @@ function ByModule() {
       .finally(() => setDetailLoading(false));
   }
 
-  if (loading) return <p className="text-gray-500 text-sm">Loading…</p>;
-  if (modules.length === 0) return <p className="text-gray-400 text-sm">No modules yet.</p>;
+  if (loading) return <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Loading…</p>;
+  if (modules.length === 0) return <p className="text-sm" style={{ color: 'var(--text-dim)' }}>No modules yet.</p>;
 
   return (
-    <table className="w-full text-sm border-collapse">
-      <thead>
-        <tr className="border-b text-left text-gray-500">
-          <th className="py-2 pr-4 font-medium">Module</th>
-          <th className="py-2 font-medium">Published</th>
-        </tr>
-      </thead>
-      <tbody>
-        {modules.map(m => (
+    <div className="space-y-2">
+      {modules.map((m, i) => {
+        const isOpen = selected === m.id;
+        return (
           <Fragment key={m.id}>
-            <tr
-              className="border-b hover:bg-gray-50 cursor-pointer"
-              onClick={() => selectModule(m.id)}
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: i * 0.04 }}
+              className="rounded-xl overflow-hidden"
+              style={{ background: 'var(--bg-surface)', border: isOpen ? '1px solid var(--border-gold)' : '1px solid var(--border-subtle)' }}
             >
-              <td className="py-2 pr-4 font-medium text-blue-700">{m.title}</td>
-              <td className="py-2 text-gray-400">{m.published ? 'Yes' : 'No'}</td>
-            </tr>
-            {selected === m.id && (
-              <tr className="bg-gray-50">
-                <td colSpan={2} className="py-3 px-2">
+              <button
+                className="w-full flex items-center justify-between px-5 py-4 text-left"
+                onClick={() => selectModule(m.id)}
+              >
+                <div className="flex items-center gap-3">
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{m.title}</p>
+                  <span
+                    className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+                    style={m.published ? { background: 'rgba(16,185,129,0.12)', color: '#10b981' } : { background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}
+                  >
+                    {m.published ? 'Published' : 'Draft'}
+                  </span>
+                </div>
+                <span className="text-xs" style={{ color: 'var(--text-dim)' }}>{isOpen ? '▲' : '▼'}</span>
+              </button>
+
+              {isOpen && (
+                <div className="px-5 pb-4 pt-1" style={{ borderTop: '1px solid var(--border-subtle)' }}>
                   {detailLoading ? (
-                    <p className="text-gray-400 text-xs">Loading…</p>
+                    <p className="text-xs py-3" style={{ color: 'var(--text-dim)' }}>Loading…</p>
                   ) : detail && detail.learners.length > 0 ? (
-                    <table className="w-full text-xs border-collapse">
-                      <thead>
-                        <tr className="text-gray-400 border-b">
-                          <th className="py-1 pr-3 text-left font-medium">Handle</th>
-                          <th className="py-1 pr-3 text-left font-medium">Status</th>
-                          <th className="py-1 pr-3 text-left font-medium">Score</th>
-                          <th className="py-1 text-left font-medium">Last attempt</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {detail.learners.map(l => (
-                          <tr key={l.learnerId} className="border-b border-gray-100">
-                            <td className="py-1 pr-3 font-mono">{l.handle}</td>
-                            <td className="py-1 pr-3"><StatusBadge status={l.status} /></td>
-                            <td className="py-1 pr-3">
-                              {l.score != null && l.total != null
-                                ? `${l.score}/${l.total} (${l.percentage}%)`
-                                : '—'}
-                            </td>
-                            <td className="py-1 text-gray-400">
+                    <div className="space-y-2 mt-3">
+                      {detail.learners.map(l => (
+                        <div
+                          key={l.learnerId}
+                          className="flex items-center justify-between px-4 py-2.5 rounded-lg"
+                          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
+                        >
+                          <p className="text-xs font-mono" style={{ color: 'var(--text-primary)' }}>{l.handle}</p>
+                          <div className="flex items-center gap-4 shrink-0">
+                            <ModuleStatusBadge status={l.status} />
+                            <p className="text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
+                              {l.score != null && l.total != null ? `${l.score}/${l.total} (${l.percentage}%)` : '—'}
+                            </p>
+                            <p className="text-[10px]" style={{ color: 'var(--text-dim)' }}>
                               {new Date(l.lastAttemptAt).toLocaleDateString()}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   ) : (
-                    <p className="text-gray-400 text-xs">No learner activity yet.</p>
+                    <p className="text-xs py-3" style={{ color: 'var(--text-dim)' }}>No learner activity yet.</p>
                   )}
-                </td>
-              </tr>
-            )}
+                </div>
+              )}
+            </motion.div>
           </Fragment>
-        ))}
-      </tbody>
-    </table>
+        );
+      })}
+    </div>
   );
 }
 
@@ -339,6 +386,9 @@ function ByGroup() {
   const [groups, setGroups] = useState<GroupSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [memberMap, setMemberMap] = useState<Map<string, LearnerSummary[]>>(new Map());
+  const [memberLoading, setMemberLoading] = useState<string | null>(null);
 
   useEffect(() => {
     api.adminProgress.groups()
@@ -347,43 +397,132 @@ function ByGroup() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (error) return <div className="p-3 bg-red-100 text-red-800 rounded text-sm">{error}</div>;
-  if (loading) return <p className="text-gray-500 text-sm">Loading…</p>;
-  if (groups.length === 0) return <p className="text-gray-400 text-sm">No groups yet.</p>;
+  function toggleGroup(groupId: string) {
+    if (expanded === groupId) { setExpanded(null); return; }
+    setExpanded(groupId);
+    if (memberMap.has(groupId)) return;
+    setMemberLoading(groupId);
+    api.adminProgress.groupDetail(groupId)
+      .then(d => setMemberMap(prev => new Map(prev).set(groupId, d.learners)))
+      .catch(() => setMemberMap(prev => new Map(prev).set(groupId, [])))
+      .finally(() => setMemberLoading(null));
+  }
+
+  if (error) return <div className="rounded-xl p-4 text-sm" style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: 'rgb(244,63,94)' }}>{error}</div>;
+  if (loading) return <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Loading…</p>;
+  if (groups.length === 0) return <p className="text-sm" style={{ color: 'var(--text-dim)' }}>No groups yet.</p>;
 
   return (
-    <table className="w-full text-sm border-collapse">
-      <thead>
-        <tr className="border-b text-left text-gray-500">
-          <th className="py-2 pr-4 font-medium">Group</th>
-          <th className="py-2 pr-4 font-medium">Members</th>
-          <th className="py-2 pr-4 font-medium">Completions</th>
-          <th className="py-2 font-medium">Avg score</th>
-        </tr>
-      </thead>
-      <tbody>
-        {groups.map(g => (
-          <tr key={g.groupId} className="border-b hover:bg-gray-50">
-            <td className="py-2 pr-4 font-medium">{g.name}</td>
-            <td className="py-2 pr-4 text-gray-600">{g.memberCount}</td>
-            <td className="py-2 pr-4 text-gray-600">{g.totalCompleted}</td>
-            <td className="py-2 text-gray-400">
-              {g.avgPercentage != null ? `${g.avgPercentage}%` : '—'}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="space-y-2">
+      {groups.map((g, i) => {
+        const isOpen = expanded === g.groupId;
+        const members = memberMap.get(g.groupId) ?? [];
+        return (
+          <motion.div
+            key={g.groupId}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, delay: i * 0.04 }}
+            className="rounded-xl overflow-hidden"
+            style={{ background: 'var(--bg-surface)', border: isOpen ? '1px solid var(--border-gold)' : '1px solid var(--border-subtle)' }}
+          >
+            <button
+              className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left transition-all"
+              onClick={() => toggleGroup(g.groupId)}
+            >
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{g.name}</p>
+                <p className="text-[10px] mt-0.5 font-mono" style={{ color: 'var(--text-dim)' }}>{g.slug}</p>
+              </div>
+              <div className="flex items-center gap-6 shrink-0">
+                <div className="text-right">
+                  <p className="text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>{g.memberCount}</p>
+                  <p className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>members</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-bold" style={{ color: 'var(--gold-accent)' }}>{g.totalCompleted}</p>
+                  <p className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>completions</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>
+                    {g.avgPercentage != null ? `${g.avgPercentage}%` : '—'}
+                  </p>
+                  <p className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>avg score</p>
+                </div>
+                <span className="text-xs" style={{ color: 'var(--text-dim)' }}>{isOpen ? '▲' : '▼'}</span>
+              </div>
+            </button>
+            {isOpen && (
+              <div className="px-5 pb-4 pt-1" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                {memberLoading === g.groupId ? (
+                  <p className="text-xs py-3" style={{ color: 'var(--text-dim)' }}>Loading members…</p>
+                ) : members.length === 0 ? (
+                  <p className="text-xs py-3" style={{ color: 'var(--text-dim)' }}>No members in this group.</p>
+                ) : (
+                  <div className="space-y-1 mt-3">
+                    {members.map(m => (
+                      <div
+                        key={m.learnerId}
+                        className="flex items-center justify-between px-4 py-2.5 rounded-lg"
+                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <Link
+                            to={`/admin/progress/${m.learnerId}`}
+                            className="text-xs font-bold hover:underline"
+                            style={{ color: 'var(--text-primary)' }}
+                          >
+                            {m.fullName ?? m.rawEmail ?? m.handle}
+                          </Link>
+                          {m.rawEmail && m.fullName && (
+                            <p className="text-[10px]" style={{ color: 'var(--text-dim)' }}>{m.rawEmail}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 shrink-0">
+                          <p className="text-[10px] font-bold" style={{ color: 'var(--gold-accent)' }}>{m.totalCompleted} completed</p>
+                          <p className="text-[10px]" style={{ color: 'var(--text-dim)' }}>
+                            {m.lastActivityAt ? new Date(m.lastActivityAt).toLocaleDateString() : 'no activity'}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        );
+      })}
+    </div>
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const cls = status === 'completed'
-    ? 'bg-green-100 text-green-800'
-    : 'bg-yellow-100 text-yellow-800';
+function TierBadge({ tier }: { tier: string }) {
+  const styles: Record<string, { bg: string; color: string }> = {
+    professional: { bg: 'rgba(16,185,129,0.12)', color: '#10b981' },
+    paid:         { bg: 'rgba(16,185,129,0.12)', color: '#10b981' },
+    individual:   { bg: 'var(--gold-muted)', color: 'var(--gold-accent)' },
+  };
+  const s = styles[tier] ?? styles.individual;
+  const label = tier === 'paid' ? 'Active' : tier.charAt(0).toUpperCase() + tier.slice(1);
   return (
-    <span className={`px-1.5 py-0.5 rounded text-xs font-medium capitalize ${cls}`}>
-      {status}
+    <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>
+      {label}
+    </span>
+  );
+}
+
+function ModuleStatusBadge({ status }: { status: string }) {
+  const completed = status === 'completed';
+  return (
+    <span
+      className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full capitalize"
+      style={completed
+        ? { background: 'rgba(16,185,129,0.12)', color: '#10b981' }
+        : { background: 'rgba(245,158,11,0.12)', color: 'var(--gold-accent)' }
+      }
+    >
+      {status.replace('_', ' ')}
     </span>
   );
 }

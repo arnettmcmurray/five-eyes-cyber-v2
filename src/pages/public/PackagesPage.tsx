@@ -35,7 +35,7 @@ const PACKAGES = [
       'Everything in Individual',
       'Full training academy — all modules',
       'Tabletop exercise (TTX) platform',
-      'Ransomware & BEC simulation exercises',
+      'Ransomware & BEC scenario-based training',
       'Learner progress tracking',
       'Admin dashboard & reporting',
       'Priority support',
@@ -50,6 +50,7 @@ const PACKAGES = [
     highlight: false,
     cta: 'Book Assessment Call',
     ctaPath: '/enterprise',
+    note: 'Delivered by Five Eyes analysts — not automated platform features.',
     features: [
       'Everything in Professional',
       'Advanced KB access & custom content development',
@@ -144,7 +145,7 @@ export default function PackagesPage() {
                   </div>
 
                   {/* Features */}
-                  <ul className="space-y-3 mb-8">
+                  <ul className="space-y-3 mb-6">
                     {pkg.features.map(f => (
                       <li key={f} className="flex items-start gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
                         <CheckCircle size={14} className="mt-0.5 shrink-0" style={{ color: 'var(--gold-accent)' }} />
@@ -152,6 +153,11 @@ export default function PackagesPage() {
                       </li>
                     ))}
                   </ul>
+                  {'note' in pkg && pkg.note && (
+                    <p className="text-[11px] leading-relaxed mb-6 px-3 py-2 rounded-lg italic" style={{ color: 'var(--text-dim)', background: 'var(--bg-canvas)', border: '1px solid var(--border-subtle)' }}>
+                      {pkg.note}
+                    </p>
+                  )}
                 </div>
 
                 {/* CTA */}

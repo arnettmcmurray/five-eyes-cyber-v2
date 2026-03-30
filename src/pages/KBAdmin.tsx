@@ -48,37 +48,39 @@ export default function KBAdmin() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Knowledge Base</h1>
         <div className="flex gap-2">
-          <a href="/learn" target="_blank" rel="noopener noreferrer" className="px-3 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50">
+          <a href="/learn" target="_blank" rel="noopener noreferrer" className="px-3 py-2 border rounded text-sm hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
             Learner ↗
           </a>
-          <Link to="/kb/search" className="px-3 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50">
+          <Link to="/kb/search" className="px-3 py-2 border rounded text-sm hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
             Search
           </Link>
-          <Link to="/kb/topics" className="px-3 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50">
+          <Link to="/kb/topics" className="px-3 py-2 border rounded text-sm hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
             Topics
           </Link>
-          <Link to="/kb/modules" className="px-3 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50">
+          <Link to="/kb/modules" className="px-3 py-2 border rounded text-sm hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
             Modules
           </Link>
-          <Link to="/admin/progress" className="px-3 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50">
+          <Link to="/admin/progress" className="px-3 py-2 border rounded text-sm hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
             Progress
           </Link>
-          <Link to="/admin/assignments" className="px-3 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50">
+          <Link to="/admin/assignments" className="px-3 py-2 border rounded text-sm hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
             Assignments
           </Link>
-          <Link to="/admin/profile" className="px-3 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50">
+          <Link to="/admin/profile" className="px-3 py-2 border rounded text-sm hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
             Profile
           </Link>
           <button
             onClick={() => { clearAdminSession(); navigate('/admin/login'); }}
-            className="px-3 py-2 border rounded text-sm text-gray-400 hover:bg-gray-50"
+            className="px-3 py-2 border rounded text-sm hover:opacity-80"
+            style={{ color: 'var(--text-muted)' }}
             title={`Logged in as ${adminUsername}`}
           >
             Logout
           </button>
           <button
             onClick={() => setShowGovernance(v => !v)}
-            className={`px-3 py-2 border rounded text-sm ${showGovernance ? 'bg-gray-100 text-gray-800' : 'text-gray-600 hover:bg-gray-50'}`}
+            className="px-3 py-2 border rounded text-sm"
+            style={showGovernance ? { background: 'var(--bg-elevated)', color: 'var(--text-primary)' } : { color: 'var(--text-muted)' }}
           >
             Governance
           </button>
@@ -87,13 +89,15 @@ export default function KBAdmin() {
               if (!showJobs) setJobs(await api.ingestJobs.list());
               setShowJobs(v => !v);
             }}
-            className="px-3 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50"
+            className="px-3 py-2 border rounded text-sm hover:opacity-80"
+            style={{ color: 'var(--text-muted)' }}
           >
             Jobs
           </button>
           <button
             onClick={() => setShowIngest(v => !v)}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 rounded hover:opacity-90"
+            style={{ background: 'var(--gold-accent)', color: '#000' }}
           >
             {showIngest ? 'Cancel' : '+ Ingest'}
           </button>
@@ -107,14 +111,14 @@ export default function KBAdmin() {
       )}
 
       {showJobs && (
-        <div className="mb-6 border rounded p-4 bg-gray-50">
-          <h2 className="font-semibold text-gray-700 mb-3">Ingestion Jobs</h2>
+        <div className="mb-6 border rounded p-4" style={{ background: 'var(--bg-elevated)' }}>
+          <h2 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Ingestion Jobs</h2>
           {jobs.length === 0 ? (
-            <p className="text-sm text-gray-400">No jobs found.</p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No jobs found.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-left text-gray-500">
+                <tr className="border-b text-left" style={{ color: 'var(--text-muted)' }}>
                   <th className="py-1 pr-4">Label</th>
                   <th className="py-1 pr-4">Type</th>
                   <th className="py-1 pr-4">Status</th>
@@ -127,7 +131,7 @@ export default function KBAdmin() {
                 {jobs.map(j => (
                   <tr key={j.id} className="border-b">
                     <td className="py-1 pr-4">{j.label ?? '—'}</td>
-                    <td className="py-1 pr-4 text-gray-500">{j.sourceType}</td>
+                    <td className="py-1 pr-4" style={{ color: 'var(--text-muted)' }}>{j.sourceType}</td>
                     <td className="py-1 pr-4">
                       <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
                         j.status === 'completed' ? 'bg-green-100 text-green-800' :
@@ -135,13 +139,14 @@ export default function KBAdmin() {
                         'bg-yellow-100 text-yellow-800'
                       }`}>{j.status}</span>
                     </td>
-                    <td className="py-1 pr-4 text-gray-500">{j.createdBy}</td>
-                    <td className="py-1 pr-4 text-gray-400 text-xs">{new Date(j.createdAt).toLocaleString()}</td>
+                    <td className="py-1 pr-4" style={{ color: 'var(--text-muted)' }}>{j.createdBy}</td>
+                    <td className="py-1 pr-4 text-xs" style={{ color: 'var(--text-muted)' }}>{new Date(j.createdAt).toLocaleString()}</td>
                     <td className="py-1">
                       {j.resultItemId && (
                         <Link
                           to={`/kb/${j.resultItemId}`}
-                          className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                          className="px-2 py-0.5 text-xs rounded hover:opacity-90"
+                          style={{ background: 'var(--gold-accent)', color: '#000' }}
                         >
                           Review →
                         </Link>
@@ -192,13 +197,13 @@ export default function KBAdmin() {
       )}
 
       {loading ? (
-        <p className="text-gray-500">Loading…</p>
+        <p style={{ color: 'var(--text-muted)' }}>Loading…</p>
       ) : items.length === 0 ? (
-        <p className="text-gray-500">No items match.</p>
+        <p style={{ color: 'var(--text-muted)' }}>No items match.</p>
       ) : (
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b text-left text-gray-500">
+            <tr className="border-b text-left" style={{ color: 'var(--text-muted)' }}>
               <th className="py-2 pr-4">Title</th>
               <th className="py-2 pr-4">Type</th>
               <th className="py-2 pr-4">Status</th>
@@ -208,22 +213,23 @@ export default function KBAdmin() {
           </thead>
           <tbody>
             {items.map(item => (
-              <tr key={item.id} className="border-b hover:bg-gray-50">
+              <tr key={item.id} className="border-b" onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elevated)')} onMouseLeave={e => (e.currentTarget.style.background = '')}>
                 <td className="py-2 pr-4">
                   <Link
                     to={`/kb/${item.id}`}
-                    className="text-blue-600 hover:underline font-medium"
+                    className="font-medium hover:underline"
+                    style={{ color: 'var(--gold-accent)' }}
                   >
                     {item.title}
                   </Link>
-                  <div className="text-gray-400 text-xs mt-0.5 max-w-xs truncate" title={item.slug}>{item.slug}</div>
+                  <div className="text-xs mt-0.5 max-w-xs truncate" style={{ color: 'var(--text-muted)' }} title={item.slug}>{item.slug}</div>
                 </td>
-                <td className="py-2 pr-4 text-gray-600">{item.type}</td>
+                <td className="py-2 pr-4" style={{ color: 'var(--text-muted)' }}>{item.type}</td>
                 <td className="py-2 pr-4">
                   <StatusBadge status={item.status} />
                 </td>
-                <td className="py-2 pr-4 text-gray-600">{item.sourceTrust}</td>
-                <td className="py-2 text-gray-400">
+                <td className="py-2 pr-4" style={{ color: 'var(--text-muted)' }}>{item.sourceTrust}</td>
+                <td className="py-2" style={{ color: 'var(--text-muted)' }}>
                   {new Date(item.createdAt).toLocaleDateString()}
                 </td>
               </tr>
@@ -292,14 +298,15 @@ function IngestForm({ onDone }: { onDone: () => void }) {
   const tabs: IngestTab[] = ['manual', 'file', 'url'];
 
   return (
-    <form onSubmit={submit} className="mb-6 p-4 border rounded bg-gray-50 space-y-3">
+    <form onSubmit={submit} className="mb-6 p-4 border rounded space-y-3" style={{ background: 'var(--bg-elevated)' }}>
       <div className="flex gap-2 border-b pb-2 mb-1">
         {tabs.map(t => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`px-3 py-1 text-sm rounded-t capitalize ${tab === t ? 'bg-white border border-b-white font-medium' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-3 py-1 text-sm rounded-t capitalize ${tab === t ? 'font-medium' : 'hover:opacity-80'}`}
+            style={tab === t ? { background: 'var(--bg-surface)', color: 'var(--text-primary)' } : { color: 'var(--text-muted)' }}
           >
             {t}
           </button>
@@ -344,12 +351,12 @@ function IngestForm({ onDone }: { onDone: () => void }) {
         </Field>
       )}
 
-      <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
         <span>Ingested by:</span>
-        <span className="font-medium text-gray-700">{actor}</span>
+        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{actor}</span>
       </div>
 
-      <button type="submit" disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+      <button type="submit" disabled={saving} className="px-4 py-2 rounded disabled:opacity-50" style={{ background: 'var(--gold-accent)', color: '#000' }}>
         {saving ? 'Ingesting…' : 'Ingest'}
       </button>
     </form>
@@ -359,8 +366,8 @@ function IngestForm({ onDone }: { onDone: () => void }) {
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-600 mb-1">{label}</label>
-      {hint && <p className="text-xs text-gray-400 mb-1">{hint}</p>}
+      <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-muted)' }}>{label}</label>
+      {hint && <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{hint}</p>}
       {children}
     </div>
   );
