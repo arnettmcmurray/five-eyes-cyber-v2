@@ -57,6 +57,20 @@ async function adminReq<T>(method: string, path: string, body?: unknown): Promis
   return res.json() as Promise<T>;
 }
 
+async function adminReqFile<T>(path: string, formData: FormData): Promise<T> {
+  const headers: Record<string, string> = { 'x-api-key': API_KEY };
+  const token = getAdminToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  // Do NOT set Content-Type — browser sets it with the multipart boundary.
+  const res = await fetch(`${BASE}${path}`, { method: 'POST', headers, body: formData });
+  if (!res.ok) {
+    if (res.status === 401) localStorage.removeItem('admin_token');
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error ?? res.statusText);
+  }
+  return res.json() as Promise<T>;
+}
+
 export const api = {
   auth: {
     register: (email: string, fullName?: string, company?: string, role?: string) =>
@@ -89,11 +103,15 @@ export const api = {
   },
   ingest: {
     manual: (body: { content: string; label: string; createdBy: string }) =>
-      adminReq('POST', '/kb/ingest/manual', body),
-    file: (body: { rawContent: string; filename: string; mimeType: string; uploadedBy: string }) =>
-      adminReq('POST', '/kb/ingest/file', body),
+      adminReq<IngestJob>('POST', '/kb/ingest/manual', body),
+    file: (file: File, uploadedBy: string) => {
+      const fd = new FormData();
+      fd.append('file', file, file.name);
+      fd.append('uploadedBy', uploadedBy);
+      return adminReqFile<IngestJob>('/kb/ingest/file', fd);
+    },
     url: (body: { url: string; fetchedBy: string }) =>
-      adminReq('POST', '/kb/ingest/url', body),
+      adminReq<IngestJob>('POST', '/kb/ingest/url', body),
   },
   quizCandidates: {
     forItem: (itemId: string) => adminReq<QuizCandidate[]>('GET', `/kb/items/${itemId}/quiz-candidates`),
@@ -175,7 +193,8 @@ export const api = {
     learner: (learnerId: string) => adminReq<LearnerProgressDetail>('GET', `/admin/progress/learners/${learnerId}`),
     module: (moduleId: string) => adminReq<ModuleProgressDetail>('GET', `/admin/progress/modules/${moduleId}`),
     groups: () => adminReq<GroupSummary[]>('GET', '/admin/progress/groups'),
-    groupDetail: (groupId: string) => adminReq<{ group: GroupSummary; learners: LearnerSummary[] }>('GET', `/admin/progress/groups/${groupId}`),
+    groupDetail: (groupId: string) => adminReq<GroupProgressDetail>('GET', `/admin/progress/groups/${groupId}`),
+    overview: () => adminReq<OverviewStats>('GET', '/admin/progress/overview'),
   },
   admin: {
     access: {
@@ -294,6 +313,7 @@ export const api = {
           adminReq<TtxActionItem>('PATCH', `/ttx/sessions/${sessionId}/aar/action-items/${itemId}`, body),
       },
       export: (id: string) => adminReq<TtxExport>('GET', `/ttx/sessions/${id}/export`),
+      evaluate: (id: string) => adminReq<{ rubric: RubricResult; session: TtxExerciseRun }>('POST', `/ttx/sessions/${id}/evaluate`, {}),
       streamUrl: (sessionId: string) =>
         `${BASE}/ttx/sessions/${sessionId}/stream?token=${getAdminToken() ?? ''}&x-api-key=${API_KEY}`,
     },
@@ -604,6 +624,36 @@ export interface GroupSummary {
   avgPercentage: number | null;
 }
 
+export interface GroupProgressDetail {
+  group: { id: string; name: string; slug: string };
+  memberCount: number;
+  completionRate: number;
+  avgScore: number | null;
+  passRate: number | null;
+  totalCompletions: number;
+  atRiskCount: number;
+  moduleStats: Array<{
+    moduleId: string;
+    moduleTitle: string;
+    completedCount: number;
+    memberCount: number;
+    avgScore: number | null;
+    passRate: number | null;
+  }>;
+  learners: Array<{
+    learnerId: string;
+    handle: string;
+    rawEmail: string | null;
+    fullName: string | null;
+    company: string | null;
+    totalStarted: number;
+    totalCompleted: number;
+    avgScore: number | null;
+    lastActivityAt: string | null;
+    riskFlags: string[];
+  }>;
+}
+
 export interface AccessOverride {
   id: string;
   learnerId: string;
@@ -639,6 +689,8 @@ export interface ModuleProgressDetail {
   learners: Array<{
     learnerId: string;
     handle: string;
+    fullName: string | null;
+    rawEmail: string | null;
     status: string;
     score: number | null;
     total: number | null;
@@ -646,6 +698,50 @@ export interface ModuleProgressDetail {
     lastAttemptAt: string;
     completedAt: string | null;
   }>;
+}
+
+export interface ModuleStatSummary {
+  moduleId: string;
+  moduleTitle: string;
+  totalLearners: number;
+  totalCompleted: number;
+  passRate: number | null;
+  avgScore: number | null;
+  difficulty: 'easy' | 'medium' | 'hard';
+}
+
+export interface LearnerStatSummary {
+  learnerId: string;
+  handle: string;
+  fullName: string | null;
+  rawEmail: string | null;
+  company: string | null;
+  totalCompleted: number;
+  totalStarted: number;
+  avgScore: number | null;
+  lastActivityAt: string | null;
+  riskFlags: Array<'inactive' | 'failing' | 'stuck' | 'no_activity'>;
+}
+
+export interface OverviewStats {
+  moduleStats: ModuleStatSummary[];
+  learnerStats: LearnerStatSummary[];
+  groupStats: Array<{
+    groupId: string;
+    name: string;
+    memberCount: number;
+    totalCompleted: number;
+    avgPercentage: number | null;
+    completionRate: number;
+  }>;
+  globalStats: {
+    totalLearners: number;
+    totalWithActivity: number;
+    avgCompletionRate: number;
+    avgScore: number | null;
+    passRate: number | null;
+    totalCompletions: number;
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -760,7 +856,67 @@ export interface TtxActionItem {
 export interface TtxAARSummary {
   summary: string;
   actionItems: TtxActionItem[];
+  rubric?: RubricResult;
   [key: string]: any;
+}
+
+export interface RubricCategoryResult {
+  id: string;
+  label: string;
+  weight: number;
+  rawScore: number;
+  weightedScore: number;
+  band: 'pass' | 'concern' | 'critical_miss';
+  evidence: string[];
+  gaps: string[];
+  baselineExpectation: string;
+  standardsReferences: string[];
+}
+
+export interface CorrectivePriority {
+  rank: number;
+  categoryId: string;
+  categoryLabel: string;
+  action: string;
+  ownerFunction: string;
+}
+
+export interface RubricResult {
+  scoredAt: string;
+  rubricVersion: string;
+  sessionId: string;
+  sessionTitle: string;
+  scenarioProfile: string;
+  baselineRubricId: string;
+  participantCount: number;
+  observationCount: number;
+  insufficientData: boolean;
+  overallScore: number;
+  overallBand: 'strong' | 'acceptable' | 'needs_attention' | 'critical_gaps';
+  categories: RubricCategoryResult[];
+  strengths: string[];
+  misses: string[];
+  criticalGaps: string[];
+  operationalRiskNote: string;
+  recommendedActions: string[];
+  trainingRecommendations: string[];
+  policyRecommendations: string[];
+  // Standards anchoring
+  baselineFrameworkNote: string;
+  standardsAnchored: true;
+  // Scenario expectation pack
+  scenarioExpectationPackId: string;
+  scenarioExpectationSummary: string;
+  scenarioSpecificFindings: string[];
+  criticalMissTriggers: string[];
+  // Executive / leadership summary
+  executiveSummary: string;
+  businessRiskStatement: string;
+  correctivePriorities: CorrectivePriority[];
+  leadershipBottomLine: string;
+  // Protocol overlay hooks
+  protocolOverlayAvailable: boolean;
+  protocolComparisonPending: boolean;
 }
 
 export interface TtxExport {

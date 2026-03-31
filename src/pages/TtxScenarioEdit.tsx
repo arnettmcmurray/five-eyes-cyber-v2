@@ -327,98 +327,147 @@ export default function TtxScenarioEdit() {
     }
   }
 
-  if (loading) return <div className="p-6">Loading…</div>;
-  if (!scenario) return <div className="p-6 text-red-600">{error ?? 'Not found'}</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-dim)' }}>
+      <span className="text-xs font-bold uppercase tracking-widest">Loading…</span>
+    </div>
+  );
+  if (!scenario) return (
+    <div className="p-6 rounded-xl text-sm" style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: 'rgb(244,63,94)' }}>
+      {error ?? 'Not found'}
+    </div>
+  );
+
+  const inputCls = {
+    background: 'var(--bg-elevated)',
+    border: '1px solid var(--border-subtle)',
+    color: 'var(--text-primary)',
+    borderRadius: '0.75rem',
+    padding: '0.5rem 0.875rem',
+    fontSize: '0.875rem',
+    width: '100%',
+    outline: 'none',
+  } as React.CSSProperties;
+
+  const injectTypePill = (type: string) => {
+    const map: Record<string, { bg: string; color: string }> = {
+      technical: { bg: 'rgba(59,130,246,0.12)', color: '#60a5fa' },
+      media:     { bg: 'rgba(245,158,11,0.12)', color: 'var(--gold-accent)' },
+      legal:     { bg: 'rgba(139,92,246,0.12)', color: '#a78bfa' },
+      customer:  { bg: 'rgba(16,185,129,0.12)', color: '#10b981' },
+      other:     { bg: 'var(--bg-elevated)',     color: 'var(--text-dim)' },
+    };
+    return map[type] ?? map.other;
+  };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-3">
-          <Link to="/ttx/scenarios" className="text-gray-400 hover:underline text-sm">← Scenarios</Link>
-          <h1 className="text-2xl font-bold">{scenario.title}</h1>
+    <div className="max-w-4xl mx-auto space-y-6">
+
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <Link
+            to="/ttx/scenarios"
+            className="text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-70 mb-2 inline-block"
+            style={{ color: 'var(--text-dim)' }}
+          >
+            ← Scenarios
+          </Link>
+          <h1 className="font-display font-black text-2xl tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            {scenario.title}
+          </h1>
         </div>
-        <div className="flex gap-3 text-sm">
-          <Link to="/ttx/sessions" className="text-blue-600 hover:underline">Sessions</Link>
-          <span className="text-gray-400">{getAdminUsername()}</span>
+        <div className="flex items-center gap-4 shrink-0">
+          <Link to="/ttx/sessions" className="text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'var(--gold-accent)' }}>Sessions →</Link>
+          <span className="text-xs" style={{ color: 'var(--text-dim)' }}>{getAdminUsername()}</span>
         </div>
       </div>
 
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+      {error && (
+        <div className="rounded-xl p-4 text-sm" style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: 'rgb(244,63,94)' }}>
+          {error}
+        </div>
+      )}
 
       {/* Scenario meta */}
-      <div className="border rounded p-4 mb-6">
+      <div className="rounded-xl p-5 space-y-3" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
         {editingMeta ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div>
-              <label className="text-xs text-gray-500 block mb-1">Title</label>
-              <input className="border w-full px-2 py-1 rounded text-sm" value={title}
-                onChange={e => setTitle(e.target.value)} />
+              <label className="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>Title</label>
+              <input style={inputCls} value={title} onChange={e => setTitle(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs text-gray-500 block mb-1">Description</label>
-              <textarea className="border w-full px-2 py-1 rounded text-sm" rows={2} value={description}
-                onChange={e => setDescription(e.target.value)} />
+              <label className="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>Description</label>
+              <textarea style={{ ...inputCls, minHeight: '64px', resize: 'vertical' }} value={description} onChange={e => setDescription(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs text-gray-500 block mb-1">Objective</label>
-              <textarea className="border w-full px-2 py-1 rounded text-sm" rows={2} value={objective}
-                onChange={e => setObjective(e.target.value)} />
+              <label className="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>Objective</label>
+              <textarea style={{ ...inputCls, minHeight: '64px', resize: 'vertical' }} value={objective} onChange={e => setObjective(e.target.value)} />
             </div>
-            <div className="flex gap-2">
-              <button onClick={saveMeta} disabled={saving} className="px-3 py-1 bg-green-600 text-white rounded text-sm disabled:opacity-50">
+            <div className="flex gap-3">
+              <button onClick={saveMeta} disabled={saving} className="px-5 py-2 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:brightness-110 disabled:opacity-40" style={{ background: 'var(--gold-accent)', color: '#000' }}>
                 Save
               </button>
-              <button onClick={() => setEditingMeta(false)} className="px-3 py-1 border rounded text-sm">Cancel</button>
+              <button onClick={() => setEditingMeta(false)} className="px-5 py-2 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:opacity-70" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
+                Cancel
+              </button>
             </div>
           </div>
         ) : (
           <div>
-            <p className="text-gray-600 mb-1">{scenario.description || <em className="text-gray-400">No description</em>}</p>
-            <p className="text-gray-600 text-sm"><span className="font-medium">Objective:</span> {scenario.objective || <em className="text-gray-400">None</em>}</p>
-            <div className="flex gap-3 mt-2">
-            <button onClick={() => setEditingMeta(true)} className="text-xs text-blue-600 hover:underline">Edit</button>
-            {scenario.objective && (
-              <button onClick={() => draftScenarioWithAI()} disabled={aiDrafting}
-                className="text-xs text-purple-600 hover:underline disabled:opacity-50">
-                {aiDrafting ? 'Drafting…' : '✦ Draft structure with AI'}
-              </button>
-            )}
-          </div>
+            <p className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>{scenario.description || <em style={{ color: 'var(--text-dim)' }}>No description</em>}</p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              <span className="font-bold" style={{ color: 'var(--text-secondary)' }}>Objective: </span>
+              {scenario.objective || <em style={{ color: 'var(--text-dim)' }}>None</em>}
+            </p>
+            <div className="flex gap-4 mt-3">
+              <button onClick={() => setEditingMeta(true)} className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'var(--gold-accent)' }}>Edit</button>
+              {scenario.objective && (
+                <button onClick={() => draftScenarioWithAI()} disabled={aiDrafting} className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70 disabled:opacity-40" style={{ color: '#a78bfa' }}>
+                  {aiDrafting ? 'Drafting…' : '✦ Draft structure with AI'}
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
 
       {/* AI error */}
-      {aiError && <p className="text-red-500 text-sm mb-4">{aiError}</p>}
+      {aiError && (
+        <div className="rounded-xl p-4 text-sm" style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: 'rgb(244,63,94)' }}>
+          {aiError}
+        </div>
+      )}
 
       {/* AI draft panel */}
       {aiDraft && (
-        <div className="border border-purple-200 rounded p-4 mb-6 bg-purple-50">
-          <div className="flex justify-between items-center mb-3">
-            <span className="font-medium text-sm text-purple-800">✦ AI Draft — {aiDraft.sections.length} sections suggested</span>
-            <button onClick={() => setAiDraft(null)} className="text-xs text-gray-400 hover:underline">Dismiss</button>
+        <div className="rounded-xl p-5 space-y-4" style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.25)' }}>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-bold" style={{ color: '#a78bfa' }}>✦ AI Draft — {aiDraft.sections.length} sections suggested</span>
+            <button onClick={() => setAiDraft(null)} className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'var(--text-dim)' }}>Dismiss</button>
           </div>
           <div className="space-y-3">
             {aiDraft.sections.map((sec, si) => (
-              <div key={si} className="border border-purple-100 rounded bg-white p-3 text-sm">
-                <div className="flex justify-between items-start mb-1">
-                  <span className="font-medium">{sec.title}</span>
-                  <button onClick={() => applyDraftSection(sec)}
-                    className="text-xs px-2 py-0.5 bg-purple-600 text-white rounded ml-3 shrink-0">
-                    Add section
+              <div key={si} className="rounded-lg p-4" style={{ background: 'var(--bg-elevated)', border: '1px solid rgba(139,92,246,0.2)' }}>
+                <div className="flex items-start justify-between mb-2">
+                  <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{sec.title}</span>
+                  <button onClick={() => applyDraftSection(sec)} className="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shrink-0 ml-3" style={{ background: 'rgba(139,92,246,0.2)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' }}>
+                    Add Section
                   </button>
                 </div>
                 {sec.steps.map((step, sti) => (
-                  <div key={sti} className="ml-3 mt-1 text-gray-600 text-xs">
-                    <span className="font-medium text-gray-700">{sti + 1}. {step.title}</span>
-                    {step.injects.map((inj, ii) => (
-                      <div key={ii} className="ml-3 mt-0.5 flex gap-1 items-start">
-                        <span className={`font-mono px-1 rounded shrink-0 ${inj.injectType === 'technical' ? 'bg-blue-100' : inj.injectType === 'media' ? 'bg-yellow-100' : inj.injectType === 'legal' ? 'bg-purple-100' : 'bg-gray-100'}`}>
-                          {inj.injectType}
-                        </span>
-                        <span>{inj.content}</span>
-                      </div>
-                    ))}
+                  <div key={sti} className="ml-3 mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <span className="font-bold" style={{ color: 'var(--text-secondary)' }}>{sti + 1}. {step.title}</span>
+                    {step.injects.map((inj, ii) => {
+                      const pill = injectTypePill(inj.injectType);
+                      return (
+                        <div key={ii} className="ml-3 mt-0.5 flex gap-1 items-start">
+                          <span className="font-mono px-1 rounded shrink-0 text-[9px]" style={{ background: pill.bg, color: pill.color }}>{inj.injectType}</span>
+                          <span>{inj.content}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 ))}
               </div>
@@ -427,232 +476,214 @@ export default function TtxScenarioEdit() {
         </div>
       )}
 
-      {/* Inject suggestions panel */}
+      {/* Inject suggestions */}
       {injectSuggestions && (
-        <div className="border border-blue-200 rounded p-4 mb-6 bg-blue-50">
-          <div className="flex justify-between items-center mb-3">
-            <span className="font-medium text-sm text-blue-800">✦ Suggested injects</span>
-            <button onClick={() => setInjectSuggestions(null)} className="text-xs text-gray-400 hover:underline">Dismiss</button>
+        <div className="rounded-xl p-5 space-y-3" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.25)' }}>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-bold" style={{ color: '#60a5fa' }}>✦ Suggested Injects</span>
+            <button onClick={() => setInjectSuggestions(null)} className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'var(--text-dim)' }}>Dismiss</button>
           </div>
-          <div className="space-y-2">
-            {injectSuggestions.injects.map((inj, ii) => {
-              const sectionId = scenario.sections.flatMap(s => s.steps).find(st => st.id === injectSuggestions.stepId)
-                ? scenario.sections.find(s => s.steps.some(st => st.id === injectSuggestions.stepId))!.id
-                : '';
-              return (
-                <div key={ii} className="border rounded bg-white p-3 text-sm flex justify-between items-start gap-3">
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${inj.injectType === 'technical' ? 'bg-blue-100 text-blue-800' : inj.injectType === 'media' ? 'bg-yellow-100 text-yellow-800' : inj.injectType === 'legal' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-600'}`}>
-                        {inj.injectType}
-                      </span>
-                      {inj.targetRoles.length > 0 && <span className="text-xs text-gray-400">→ {inj.targetRoles.join(', ')}</span>}
-                      {inj.consequenceLogic && <span className="text-xs text-gray-400">— {inj.consequenceLogic}</span>}
-                    </div>
-                    <p className="text-gray-800">{inj.content}</p>
+          {injectSuggestions.injects.map((inj, ii) => {
+            const sectionId = scenario.sections.find(s => s.steps.some(st => st.id === injectSuggestions.stepId))?.id ?? '';
+            const pill = injectTypePill(inj.injectType);
+            return (
+              <div key={ii} className="rounded-lg p-3 flex items-start justify-between gap-3" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: pill.bg, color: pill.color }}>{inj.injectType}</span>
+                    {inj.targetRoles.length > 0 && <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>→ {inj.targetRoles.join(', ')}</span>}
+                    {inj.consequenceLogic && <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>— {inj.consequenceLogic}</span>}
                   </div>
-                  <button onClick={() => applyInjectSuggestion(sectionId, injectSuggestions.stepId, inj)}
-                    className="text-xs px-2 py-0.5 bg-blue-600 text-white rounded shrink-0">Use</button>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{inj.content}</p>
                 </div>
-              );
-            })}
-          </div>
+                <button onClick={() => applyInjectSuggestion(sectionId, injectSuggestions.stepId, inj)} className="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shrink-0" style={{ background: 'rgba(59,130,246,0.15)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)' }}>Use</button>
+              </div>
+            );
+          })}
         </div>
       )}
 
       {/* Sections */}
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="font-semibold text-lg">Sections</h2>
-        <button onClick={() => setAddingSection(a => !a)} className="px-2 py-1 bg-blue-600 text-white rounded text-sm">
-          + Section
-        </button>
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <p className="label-tag-muted">Sections & Steps</p>
+          <button onClick={() => setAddingSection(a => !a)} className="px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-ultra transition-all hover:brightness-110" style={{ background: addingSection ? 'var(--bg-elevated)' : 'var(--gold-accent)', color: addingSection ? 'var(--text-muted)' : '#000', border: addingSection ? '1px solid var(--border-subtle)' : undefined }}>
+            {addingSection ? 'Cancel' : '+ Section'}
+          </button>
+        </div>
+
+        {addingSection && (
+          <div className="rounded-xl p-4 mb-4 flex gap-3" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-gold)' }}>
+            <input style={{ ...inputCls, flex: 1 }} placeholder="Section title" value={newSectionTitle} onChange={e => setNewSectionTitle(e.target.value)} />
+            <button onClick={addSection} className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-ultra" style={{ background: 'var(--gold-accent)', color: '#000' }}>Add</button>
+          </div>
+        )}
+
+        {scenario.sections.length === 0 && (
+          <div className="rounded-xl p-8 text-center" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+            <p className="text-sm" style={{ color: 'var(--text-dim)' }}>No sections yet. Add one above or use AI draft.</p>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          {scenario.sections.map((section, si) => (
+            <div key={section.id} className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+              {/* Section header */}
+              <div className="flex items-center justify-between px-5 py-3" style={{ background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                  {si + 1}. {section.title}
+                  {aiCreated.has(section.id) && <span className="ml-2 text-[9px] font-black uppercase tracking-widest" style={{ color: '#a78bfa' }}>✦ AI</span>}
+                </span>
+                <button onClick={() => deleteSection(section.id)} className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'rgb(244,63,94)' }}>Delete</button>
+              </div>
+
+              <div className="p-4 space-y-3">
+                {section.steps.map((step, sti) => (
+                  <div key={step.id} className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border-subtle)' }}>
+                    {/* Step header */}
+                    <div className="flex items-start justify-between px-4 py-3" style={{ background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                          {si + 1}.{sti + 1} {step.title}
+                          {aiCreated.has(step.id) && <span className="ml-2 text-[9px] font-black uppercase tracking-widest" style={{ color: '#a78bfa' }}>✦ AI</span>}
+                        </p>
+                        {step.facilitatorNarrative && (
+                          <p className="text-[10px] mt-0.5 italic" style={{ color: 'var(--text-dim)' }}>
+                            Narrative: {step.facilitatorNarrative.slice(0, 100)}…
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-3 ml-3 shrink-0">
+                        <button onClick={() => suggestInjects(step.id, step.title)} disabled={suggestingInjects === step.id} className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70 disabled:opacity-40" style={{ color: '#a78bfa' }}>
+                          {suggestingInjects === step.id ? 'Suggesting…' : '✦ Injects'}
+                        </button>
+                        <button onClick={() => deleteStep(section.id, step.id)} className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'rgb(244,63,94)' }}>Delete</button>
+                      </div>
+                    </div>
+
+                    {/* Injects */}
+                    <div className="p-3 space-y-2">
+                      {step.injects.map((inject) => {
+                        const pill = injectTypePill(inject.injectType);
+                        return (
+                          <div key={inject.id} className="flex items-start justify-between rounded-lg px-3 py-2" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: pill.bg, color: pill.color }}>{inject.injectType}</span>
+                                {inject.targetRoles.length > 0 && <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>→ {inject.targetRoles.join(', ')}</span>}
+                                {inject.consequenceLogic && <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>| {inject.consequenceLogic}</span>}
+                                {aiCreated.has(inject.id) && <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#a78bfa' }}>✦ AI</span>}
+                              </div>
+                              <p className="text-sm leading-snug" style={{ color: 'var(--text-secondary)' }}>{inject.content}</p>
+                            </div>
+                            <button onClick={() => deleteInject(section.id, step.id, inject.id)} className="text-xs ml-3 shrink-0 transition-opacity hover:opacity-70" style={{ color: 'rgb(244,63,94)' }}>✕</button>
+                          </div>
+                        );
+                      })}
+
+                      {addingInject === step.id ? (
+                        <div className="rounded-lg p-3 space-y-3" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-gold)' }}>
+                          <textarea style={{ ...inputCls, minHeight: '64px', resize: 'vertical' }} placeholder="Inject content *" value={newInject.content} onChange={e => setNewInject(n => ({ ...n, content: e.target.value }))} />
+                          <div className="flex gap-2 flex-wrap">
+                            <select style={{ ...inputCls, width: 'auto', flex: '0 0 auto' }} value={newInject.injectType} onChange={e => setNewInject(n => ({ ...n, injectType: e.target.value }))}>
+                              {INJECT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                            <input style={{ ...inputCls, flex: 1 }} placeholder="Target roles (comma-separated)" value={newInject.targetRoles} onChange={e => setNewInject(n => ({ ...n, targetRoles: e.target.value }))} />
+                            <input style={{ ...inputCls, flex: 1 }} placeholder="Consequence logic" value={newInject.consequenceLogic} onChange={e => setNewInject(n => ({ ...n, consequenceLogic: e.target.value }))} />
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => addInject(section.id, step.id)} className="px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-ultra" style={{ background: 'var(--gold-accent)', color: '#000' }}>Add Inject</button>
+                            <button onClick={() => setAddingInject(null)} className="px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-ultra" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button onClick={() => { setAddingInject(step.id); setNewInject({ content: '', injectType: 'other', targetRoles: '', consequenceLogic: '' }); }} className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'var(--gold-accent)' }}>+ Inject</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {addingStep === section.id ? (
+                  <div className="rounded-lg p-3 space-y-3" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-gold)' }}>
+                    <textarea style={{ ...inputCls, minHeight: '64px', resize: 'vertical' }} placeholder="Step prompt *" value={newStep.title} onChange={e => setNewStep(s => ({ ...s, title: e.target.value }))} />
+                    <input style={inputCls} placeholder="Facilitator narrative (read-aloud)" value={newStep.facilitatorNarrative} onChange={e => setNewStep(s => ({ ...s, facilitatorNarrative: e.target.value }))} />
+                    <div className="flex gap-2">
+                      <button onClick={() => addStep(section.id)} className="px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-ultra" style={{ background: 'var(--gold-accent)', color: '#000' }}>Add Step</button>
+                      <button onClick={() => setAddingStep(null)} className="px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-ultra" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => { setAddingStep(section.id); setNewStep({ title: '', facilitatorNarrative: '' }); }} className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'var(--text-dim)' }}>+ Step</button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {addingSection && (
-        <div className="border rounded p-3 mb-4 bg-gray-50 flex gap-2">
-          <input className="border flex-1 px-2 py-1 rounded text-sm" placeholder="Section title"
-            value={newSectionTitle} onChange={e => setNewSectionTitle(e.target.value)} />
-          <button onClick={addSection} className="px-3 py-1 bg-green-600 text-white rounded text-sm">Add</button>
-          <button onClick={() => setAddingSection(false)} className="px-3 py-1 border rounded text-sm">Cancel</button>
-        </div>
-      )}
-
-      {scenario.sections.length === 0 && <p className="text-gray-400 text-sm mb-4">No sections yet.</p>}
-
-
-      {scenario.sections.map((section, si) => (
-        <div key={section.id} className="border rounded mb-4">
-          <div className="flex justify-between items-center px-4 py-2 bg-gray-100 border-b">
-            <span className="font-medium">
-              {si + 1}. {section.title}
-              {aiCreated.has(section.id) && <span className="ml-2 text-xs text-purple-500 font-normal">✦ AI</span>}
-            </span>
-            <button onClick={() => deleteSection(section.id)} className="text-xs text-red-500 hover:underline">Delete</button>
-          </div>
-
-          <div className="p-4 space-y-4">
-            {section.steps.map((step, sti) => (
-              <div key={step.id} className="border rounded">
-                <div className="flex justify-between items-start px-3 py-2 bg-gray-50 border-b">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">
-                      {si + 1}.{sti + 1} {step.title}
-                      {aiCreated.has(step.id) && <span className="ml-2 text-xs text-purple-500 font-normal">✦ AI</span>}
-                    </p>
-                    {step.facilitatorNarrative && (
-                      <p className="text-xs text-gray-500 mt-1 italic">Narrative: {step.facilitatorNarrative.slice(0, 100)}…</p>
-                    )}
-                  </div>
-                  <div className="flex gap-2 ml-3 shrink-0">
-                    <button onClick={() => suggestInjects(step.id, step.title)} disabled={suggestingInjects === step.id}
-                      className="text-xs text-purple-600 hover:underline disabled:opacity-50">
-                      {suggestingInjects === step.id ? 'Suggesting…' : '✦ Suggest injects'}
-                    </button>
-                    <button onClick={() => deleteStep(section.id, step.id)} className="text-xs text-red-500 hover:underline">Delete</button>
-                  </div>
-                </div>
-
-                <div className="p-3 space-y-2">
-                  {step.injects.map((inject, ii) => (
-                    <div key={inject.id} className="flex justify-between items-start border rounded px-3 py-2 text-sm bg-white">
-                      <div>
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${inject.injectType === 'media' ? 'bg-yellow-100 text-yellow-800' : inject.injectType === 'technical' ? 'bg-blue-100 text-blue-800' : inject.injectType === 'legal' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-600'}`}>
-                            {inject.injectType}
-                          </span>
-                          {inject.targetRoles.length > 0 && (
-                            <span className="text-xs text-gray-400">→ {inject.targetRoles.join(', ')}</span>
-                          )}
-                          {inject.consequenceLogic && (
-                            <span className="text-xs text-gray-400">| {inject.consequenceLogic}</span>
-                          )}
-                          {aiCreated.has(inject.id) && <span className="text-xs text-purple-400">✦ AI</span>}
-                        </div>
-                        <p className="text-gray-800 leading-snug">{inject.content}</p>
-                      </div>
-                      <button onClick={() => deleteInject(section.id, step.id, inject.id)} className="text-xs text-red-400 hover:underline ml-3 shrink-0">✕</button>
-                    </div>
-                  ))}
-
-                  {addingInject === step.id ? (
-                    <div className="border rounded p-3 bg-gray-50 space-y-2">
-                      <textarea className="border w-full px-2 py-1 rounded text-sm" rows={2} placeholder="Inject content *"
-                        value={newInject.content} onChange={e => setNewInject(n => ({ ...n, content: e.target.value }))} />
-                      <div className="flex gap-2">
-                        <select className="border px-2 py-1 rounded text-sm" value={newInject.injectType}
-                          onChange={e => setNewInject(n => ({ ...n, injectType: e.target.value }))}>
-                          {INJECT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                        <input className="border flex-1 px-2 py-1 rounded text-sm" placeholder="Target roles (comma-separated)"
-                          value={newInject.targetRoles} onChange={e => setNewInject(n => ({ ...n, targetRoles: e.target.value }))} />
-                        <input className="border flex-1 px-2 py-1 rounded text-sm" placeholder="Consequence logic"
-                          value={newInject.consequenceLogic} onChange={e => setNewInject(n => ({ ...n, consequenceLogic: e.target.value }))} />
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => addInject(section.id, step.id)} className="px-2 py-1 bg-green-600 text-white rounded text-sm">Add Inject</button>
-                        <button onClick={() => setAddingInject(null)} className="px-2 py-1 border rounded text-sm">Cancel</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button onClick={() => { setAddingInject(step.id); setNewInject({ content: '', injectType: 'other', targetRoles: '', consequenceLogic: '' }); }}
-                      className="text-xs text-blue-600 hover:underline">+ Inject</button>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {addingStep === section.id ? (
-              <div className="border rounded p-3 bg-gray-50 space-y-2">
-                <textarea className="border w-full px-2 py-1 rounded text-sm" rows={2} placeholder="Step prompt *"
-                  value={newStep.title} onChange={e => setNewStep(s => ({ ...s, title: e.target.value }))} />
-                <input className="border w-full px-2 py-1 rounded text-sm" placeholder="Facilitator narrative (read-aloud)"
-                  value={newStep.facilitatorNarrative} onChange={e => setNewStep(s => ({ ...s, facilitatorNarrative: e.target.value }))} />
-                <div className="flex gap-2">
-                  <button onClick={() => addStep(section.id)} className="px-2 py-1 bg-green-600 text-white rounded text-sm">Add Step</button>
-                  <button onClick={() => setAddingStep(null)} className="px-2 py-1 border rounded text-sm">Cancel</button>
-                </div>
-              </div>
-            ) : (
-              <button onClick={() => { setAddingStep(section.id); setNewStep({ title: '', facilitatorNarrative: '' }); }}
-                className="text-xs text-blue-600 hover:underline">+ Step</button>
-            )}
-          </div>
-        </div>
-      ))}
       {/* KB References */}
-      <div className="mt-8">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="font-semibold text-lg">KB References</h2>
-          <button onClick={() => setAddingKbRef(a => !a)} className="px-2 py-1 bg-blue-600 text-white rounded text-sm">
-            + Add Reference
+      <div className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: kbRefs.length > 0 || addingKbRef ? '1px solid var(--border-subtle)' : undefined }}>
+          <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>KB References</p>
+          <button onClick={() => setAddingKbRef(a => !a)} className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: addingKbRef ? 'var(--text-dim)' : 'var(--gold-accent)' }}>
+            {addingKbRef ? 'Close' : '+ Add Reference'}
           </button>
         </div>
 
         {kbRefs.length === 0 && !addingKbRef && (
-          <p className="text-gray-400 text-sm mb-4">No KB items linked. Add references to surface relevant content to TTX participants.</p>
+          <div className="px-5 py-6">
+            <p className="text-sm italic" style={{ color: 'var(--text-dim)' }}>No KB items linked. Add references to surface relevant content to TTX participants.</p>
+          </div>
         )}
 
         {kbRefs.length > 0 && (
-          <div className="space-y-2 mb-4">
-            {kbRefs.map(ref => (
-              <div key={ref.id} className="border rounded px-3 py-2 flex justify-between items-start text-sm">
-                <div>
-                  <p className="font-medium">{ref.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+          <div>
+            {kbRefs.map((ref, i) => (
+              <div key={ref.id} className="flex items-start justify-between px-5 py-3" style={{ borderBottom: i < kbRefs.length - 1 ? '1px solid var(--border-subtle)' : undefined }}>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{ref.title}</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-dim)' }}>
                     {ref.stepId ? `Scoped to step ${ref.stepId.slice(0, 8)}…` : 'Scenario-wide'}
                     {ref.topics.length > 0 && ` · ${ref.topics.map(t => t.name).join(', ')}`}
                   </p>
-                  {ref.excerpt && <p className="text-xs text-gray-400 mt-1 line-clamp-2">{ref.excerpt}</p>}
+                  {ref.excerpt && <p className="text-[10px] mt-1 line-clamp-2" style={{ color: 'var(--text-dim)' }}>{ref.excerpt}</p>}
                 </div>
-                <button onClick={() => removeKbRef(ref.id)} className="text-xs text-red-400 hover:underline ml-3 shrink-0">Remove</button>
+                <button onClick={() => removeKbRef(ref.id)} className="text-[10px] font-black uppercase tracking-widest ml-3 shrink-0 transition-opacity hover:opacity-70" style={{ color: 'rgb(244,63,94)' }}>Remove</button>
               </div>
             ))}
           </div>
         )}
 
         {addingKbRef && (
-          <div className="border rounded p-4 bg-gray-50 space-y-3">
+          <div className="p-5 space-y-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
             <div>
-              <label className="text-xs text-gray-500 block mb-1">Search KB items</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>Search KB items</label>
               <div className="flex gap-2">
                 <input
-                  className="border flex-1 px-2 py-1 rounded text-sm"
+                  style={{ ...inputCls, flex: 1 }}
                   placeholder="Type to search published KB items…"
                   value={kbRefSearch}
-                  onChange={e => {
-                    setKbRefSearch(e.target.value);
-                    setKbRefSelectedItem(null);
-                    searchKbItems(e.target.value);
-                  }}
+                  onChange={e => { setKbRefSearch(e.target.value); setKbRefSelectedItem(null); searchKbItems(e.target.value); }}
                 />
-                {kbRefSearching && <span className="text-xs text-gray-400 self-center">Searching…</span>}
+                {kbRefSearching && <span className="text-[10px] self-center" style={{ color: 'var(--text-dim)' }}>Searching…</span>}
               </div>
               {kbRefHits.length > 0 && !kbRefSelectedItem && (
-                <div className="border rounded mt-1 bg-white divide-y max-h-48 overflow-y-auto">
+                <div className="rounded-xl mt-1 overflow-hidden max-h-48 overflow-y-auto" style={{ border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)' }}>
                   {kbRefHits.map(hit => (
-                    <button
-                      key={hit.itemId}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
-                      onClick={() => { setKbRefSelectedItem(hit); setKbRefHits([]); setKbRefSearch(hit.title); }}
-                    >
-                      <p className="font-medium">{hit.title}</p>
-                      {hit.excerpt && <p className="text-xs text-gray-400 line-clamp-1">{hit.excerpt}</p>}
+                    <button key={hit.itemId} className="w-full text-left px-4 py-2.5 transition-opacity hover:opacity-80" style={{ borderBottom: '1px solid var(--border-subtle)' }} onClick={() => { setKbRefSelectedItem(hit); setKbRefHits([]); setKbRefSearch(hit.title); }}>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{hit.title}</p>
+                      {hit.excerpt && <p className="text-[10px] line-clamp-1" style={{ color: 'var(--text-dim)' }}>{hit.excerpt}</p>}
                     </button>
                   ))}
                 </div>
               )}
               {kbRefSelectedItem && (
-                <p className="text-xs text-green-600 mt-1">✓ Selected: {kbRefSelectedItem.title}</p>
+                <p className="text-[10px] mt-1 font-bold" style={{ color: '#10b981' }}>✓ Selected: {kbRefSelectedItem.title}</p>
               )}
             </div>
-
             <div>
-              <label className="text-xs text-gray-500 block mb-1">Scope (optional)</label>
-              <select
-                className="border px-2 py-1 rounded text-sm w-full"
-                value={kbRefScopeStepId}
-                onChange={e => setKbRefScopeStepId(e.target.value)}
-              >
+              <label className="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>Scope (optional)</label>
+              <select style={inputCls} value={kbRefScopeStepId} onChange={e => setKbRefScopeStepId(e.target.value)}>
                 <option value="">Scenario-wide (shown at all steps)</option>
                 {scenario.sections.flatMap((sec, si) =>
                   sec.steps.map((step, sti) => (
@@ -661,25 +692,18 @@ export default function TtxScenarioEdit() {
                 )}
               </select>
             </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={addKbRef}
-                disabled={!kbRefSelectedItem || kbRefAdding}
-                className="px-3 py-1 bg-green-600 text-white rounded text-sm disabled:opacity-50"
-              >
+            <div className="flex gap-3">
+              <button onClick={addKbRef} disabled={!kbRefSelectedItem || kbRefAdding} className="px-5 py-2 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:brightness-110 disabled:opacity-40" style={{ background: 'var(--gold-accent)', color: '#000' }}>
                 {kbRefAdding ? 'Adding…' : 'Add'}
               </button>
-              <button
-                onClick={() => { setAddingKbRef(false); setKbRefSearch(''); setKbRefHits([]); setKbRefSelectedItem(null); setKbRefScopeStepId(''); }}
-                className="px-3 py-1 border rounded text-sm"
-              >
+              <button onClick={() => { setAddingKbRef(false); setKbRefSearch(''); setKbRefHits([]); setKbRefSelectedItem(null); setKbRefScopeStepId(''); }} className="px-5 py-2 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:opacity-70" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
                 Cancel
               </button>
             </div>
           </div>
         )}
       </div>
+
     </div>
   );
 }

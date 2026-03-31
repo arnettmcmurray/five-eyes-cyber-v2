@@ -16,9 +16,11 @@ export default function LearnHub() {
     api.learn.modules()
       .then(setResponse)
       .catch(e => {
-        if ((e as Error).message?.includes('Authentication')) {
+        // req() clears learner_token on 401; check token presence rather than matching error strings.
+        if (!getSessionToken()) {
           clearSession();
           setHasSession(false);
+          return;
         }
         setError(e instanceof Error ? e.message : String(e));
       })

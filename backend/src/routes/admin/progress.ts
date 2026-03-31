@@ -8,6 +8,15 @@ import { learners } from '../../db/schema/learners.js';
 const router = Router();
 const svc = new AdminProgressService();
 
+// GET /admin/progress/overview — aggregate analytics (one call)
+router.get('/overview', async (_req, res) => {
+  try {
+    res.json(await svc.getOverview());
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
 // GET /admin/progress/learners
 router.get('/learners', async (_req, res) => {
   try {

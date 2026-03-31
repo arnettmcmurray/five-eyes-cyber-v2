@@ -301,6 +301,26 @@ export default function TtxConduct() {
                     </div>
                   )}
 
+                  {/* What Good Looks Like */}
+                  {selectedStep.whatGoodLooksLike && (
+                    <div className="mb-12">
+                      <div className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-4">What Good Looks Like</div>
+                      <div className="p-5 rounded-lg border border-emerald-900/30 bg-emerald-900/10 text-sm text-emerald-100 leading-relaxed">
+                        {selectedStep.whatGoodLooksLike}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Consequence Note */}
+                  {selectedStep.consequenceNote && (
+                    <div className="mb-12">
+                      <div className="text-[10px] uppercase tracking-widest text-orange-400 font-bold mb-4">Facilitator Consequence Note</div>
+                      <div className="p-5 rounded-lg border border-orange-900/30 bg-orange-900/10 text-sm text-orange-200 leading-relaxed">
+                        {selectedStep.consequenceNote}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Step Injects */}
                   <div>
                     <div className="text-[10px] uppercase tracking-widest text-orange-500 font-bold mb-4">Step Injects (Tactical Comms)</div>

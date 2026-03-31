@@ -235,6 +235,42 @@ export const STUDY_CHAPTERS: StudyChapter[] = [
         ],
         relatedTopicIds: ['social-engineering', 'identity-credential-security', 'regulations-sector-guidance'],
       },
+      {
+        id: 'phishing-recognition-field-guide',
+        label: 'Phishing Recognition: Field Guide',
+        tagline: 'What every logistics professional needs to spot before they click.',
+        intro: 'Phishing is the entry point for the majority of freight fraud, ransomware deployments, and BEC attacks against logistics organisations. Unlike technical exploits, phishing succeeds by targeting human behaviour — urgency, authority, familiarity, and fear. This field guide provides a practical recognition framework built from real attack patterns observed across freight brokerage, fleet operations, and warehouse environments.',
+        sections: [
+          {
+            heading: 'The anatomy of a freight-targeted phishing email',
+            body: 'Logistics phishing emails are crafted to look like operational messages: rate confirmation requests, load board notifications, FMCSA compliance alerts, carrier verification requests, or urgent payment update notices. Key structural elements: (1) Display name spoofing — the "From" name shows a trusted company (e.g., "DAT Load Board") but the actual sending address is unrelated (e.g., noreply@datsystem-alerts.net). (2) Domain lookalike — attackers register near-miss domains (dat-board.com, fmcsa-safety-alert.org) that pass casual visual inspection. (3) Urgency + consequence framing — "Your carrier authority will be suspended in 24 hours unless you verify." (4) One-click action — the link leads to a credential harvesting page that mirrors the legitimate site exactly.',
+          },
+          {
+            heading: 'The five pre-click checks',
+            body: 'Before clicking any link or opening any attachment in an email: (1) Hover over the link — the actual URL in the status bar must match the expected domain of the sender. If it doesn\'t match, do not click. (2) Verify the sender address — not just the display name, but the full email address. Legitimate carriers use their registered domain. (3) Check the request makes sense — were you expecting this communication? Is this the normal channel for this type of request? (4) Assess urgency pressure — real businesses do not demand immediate action on security or payment changes via email alone. Urgency is a manipulation tactic. (5) Look for attachment extension spoofing — "Rate_Confirmation.pdf.exe" or "Invoice_2024.docx.zip" are malware delivery vectors disguised as business documents.',
+          },
+          {
+            heading: 'Spear phishing in freight operations',
+            body: 'Spear phishing is targeted phishing using personal or operational details. Attackers gather intelligence from LinkedIn, load boards, carrier databases, and company websites to craft messages that reference real shipments, real personnel, and real loads. A spear phishing attack on a freight broker might reference the broker\'s actual MC number, name a carrier they regularly use, cite a real load that appeared on a load board, and request payment to a "corrected" banking account. The specificity makes the email feel legitimate. Defence: verify payment change requests by calling a known phone number — never use contact details provided in the suspicious email itself.',
+          },
+          {
+            heading: 'Smishing and vishing in the cab and warehouse',
+            body: 'SMS phishing (smishing) and voice phishing (vishing) target drivers and warehouse staff who are less likely to scrutinise digital communications. Common patterns: (1) Fake TMS or ELD update SMS with a link to install malware. (2) Spoofed call from "fleet dispatch" requesting a driver\'s login credentials or delivery PIN. (3) Warehouse dock smishing: "Your delivery access code has expired — click here to renew." Training must extend beyond email awareness to cover all communication channels used in operations.',
+          },
+          {
+            heading: 'When you receive a suspicious email — response protocol',
+            body: 'Do not click, do not reply, do not forward, do not call numbers in the email. Steps: (1) Mark as phishing using your email client\'s reporting tool. (2) Alert your IT or security contact — provide the full email including headers if possible. (3) If you clicked a link or entered credentials, assume compromise: report immediately, change passwords from a different device, and notify your security team. (4) If a financial action was taken based on a phishing email, contact your bank immediately to request a recall — the sooner this happens, the higher the recovery probability. Speed is critical: wire transfers become unrecoverable within hours.',
+          },
+        ],
+        keyPoints: [
+          'Display name spoofing: the visible sender name can say anything — always verify the actual sending address',
+          'Five pre-click checks: hover URL, verify sender domain, check context, assess urgency, inspect attachment extensions',
+          'Spear phishing uses real operational data (load numbers, MC details, personnel names) to defeat scepticism',
+          'If credentials were entered on a suspicious site: assume compromise and act immediately',
+          'Wire recall window is hours — financial phishing requires immediate bank contact, not end-of-day reporting',
+        ],
+        relatedTopicIds: ['social-engineering', 'bec-payment-fraud', 'identity-credential-security'],
+      },
     ],
   },
 
@@ -307,6 +343,42 @@ export const STUDY_CHAPTERS: StudyChapter[] = [
         ],
         relatedTopicIds: ['bec-payment-fraud', 'identity-credential-security', 'incident-response'],
       },
+      {
+        id: 'bec-recovery-playbook',
+        label: 'BEC Recovery: What to Do After a Payment Is Made',
+        tagline: 'Hour-by-hour actions when a fraudulent transfer has already gone out.',
+        intro: 'Business Email Compromise fraud is devastating precisely because the loss is recognised after the payment has been made. Unlike ransomware — where operations halt and the breach is obvious — BEC losses are often discovered days or weeks later, when a vendor queries non-payment or a bank flags unusual activity. This playbook provides the hour-by-hour response framework for the critical window between discovery and unrecoverable loss.',
+        sections: [
+          {
+            heading: 'The first call: contacting your bank within the golden hour',
+            body: 'Wire transfers and ACH payments can be recalled if action is taken before the funds are moved onward. The "golden hour" is the window between the transfer being initiated and the receiving bank releasing funds to the beneficiary. Steps within the first 60 minutes of discovery: (1) Call your bank\'s wire department directly — use a phone number from your bank\'s official website or back of your card, not numbers on any correspondence. (2) Request an immediate wire recall or ACH return — state "I believe this payment was made due to fraud." (3) Ask the bank to place a hold on the beneficiary account and issue a "Financial Fraud Kill Chain" (FFKC) alert if available. (4) Get a case reference number and the name of every person you speak with. International wires are harder to recall; domestic ACH has clearer recall mechanisms. Do not wait for internal approvals before calling the bank.',
+          },
+          {
+            heading: 'Parallel action: FBI Internet Crime Complaint Center (IC3)',
+            body: 'File with the FBI IC3 at ic3.gov immediately — do not wait for the bank investigation to conclude. The IC3 operates the Financial Fraud Kill Chain (FFKC) programme, which can freeze mule accounts and flag beneficiary institutions. Provide: exact dollar amount, date and time of transfer, sending and receiving bank routing and account numbers, and all email correspondence with the fraudulent party. FBI field offices also have financial fraud units — for losses above $100K, call the local FBI field office directly in addition to filing online. Law enforcement involvement, even if recovery is uncertain, creates the documentation trail required for insurance claims and potential civil recovery.',
+          },
+          {
+            heading: 'Evidence preservation before remediation',
+            body: 'The instinct after discovering BEC fraud is to remediate — change passwords, delete the compromised account, wipe systems. This destroys forensic evidence needed for law enforcement, insurance, and litigation. Before any remediation: (1) Preserve email headers of all communications from the fraudulent party — do not delete, mark as read, or move to trash. (2) Export the full mailbox of the compromised account to a secure location. (3) Screenshot all relevant email conversations, payment instructions, and banking communications. (4) Preserve server logs, VPN access logs, and email gateway logs covering the period of suspected compromise. (5) Do not reuse any systems or accounts involved until forensic imaging is complete. The preservation window is often 24-72 hours before overwrites occur.',
+          },
+          {
+            heading: 'Internal containment and notification',
+            body: 'Simultaneously: (1) Identify and isolate the compromised email account — disable it but do not delete it. Change all passwords from a separate, uncompromised device. (2) Check for email forwarding rules the attacker may have set up (forwarding to external addresses, auto-deletion of replies). These are a standard attacker persistence mechanism. (3) Notify your CFO, CEO, and legal counsel — BEC over certain dollar thresholds may trigger regulatory notification obligations. (4) If personal data (employee records, customer data) was accessible via the compromised account, assess whether a data breach notification is required under GDPR, state breach laws, or sector regulations. (5) Notify your cyber insurance carrier — policy conditions typically require prompt notification to preserve coverage.',
+          },
+          {
+            heading: 'Root cause and process hardening',
+            body: 'BEC does not end at recovery — it is a signal of a process vulnerability that will be exploited again if not addressed. Post-incident analysis must answer: (1) How did the fraudulent payment instructions reach the person who actioned them? (2) Was there a callback verification step that was skipped, bypassed, or never existed? (3) Which email security controls (DMARC, anti-spoofing) failed or were absent? (4) Was the compromised account MFA-protected? If not, why not? The root cause in the majority of BEC cases is a missing or bypassed verification procedure — not a technical control failure. Process hardening: mandate dual approval for all payment changes, establish an out-of-band callback protocol to pre-registered numbers, implement DMARC at reject policy, and extend MFA to every account with access to payment systems.',
+          },
+        ],
+        keyPoints: [
+          'Golden hour recovery: call your bank\'s wire department immediately — delays beyond 60 minutes dramatically reduce recall probability',
+          'File IC3.gov report immediately to activate the FBI Financial Fraud Kill Chain programme',
+          'Preserve evidence before remediation — changing passwords or deleting accounts destroys the forensic record',
+          'Check for attacker-created forwarding rules in the compromised inbox — this is standard BEC persistence',
+          'Dual approval + out-of-band callback are the process controls that prevent recurrence',
+        ],
+        relatedTopicIds: ['bec-payment-fraud', 'operational-controls', 'incident-response'],
+      },
     ],
   },
 
@@ -378,6 +450,42 @@ export const STUDY_CHAPTERS: StudyChapter[] = [
           'Evidence first: preserve headers, logs, and browser history before any recovery action',
         ],
         relatedTopicIds: ['ransomware', 'bec-payment-fraud', 'operational-controls'],
+      },
+      {
+        id: 'ransomware-full-picture',
+        label: 'Ransomware: The Full Incident Picture',
+        tagline: 'From initial access to ransom demand — how the attack unfolds and what to do.',
+        intro: 'Ransomware has become the defining cyber threat to logistics operations. The transportation sector accounts for a disproportionate share of ransomware victims, partly because operators cannot afford downtime and partly because the interconnected nature of logistics amplifies attacker leverage. Understanding the full attack lifecycle — not just the encryption event — is essential for both prevention and response.',
+        sections: [
+          {
+            heading: 'The ransomware attack chain: seven stages',
+            body: 'Modern ransomware does not begin with encryption — it begins weeks or months earlier. The seven stages: (1) Initial access — typically via phishing, RDP exploitation, or compromised credentials purchased on the dark web. (2) Persistence — attackers establish multiple footholds (scheduled tasks, registry keys, backdoors) to survive password resets. (3) Discovery — the attacker maps the network, identifies domain controllers, backup systems, and high-value data stores. (4) Lateral movement — using legitimate credentials and tools (PsExec, WMI, RDP) to spread across the network without triggering alerts. (5) Exfiltration — data is staged and transferred to attacker-controlled infrastructure. This enables "double extortion": pay for decryption AND to prevent public data release. (6) Pre-encryption preparation — backup deletion (vssadmin.exe delete shadows), security tool disablement. (7) Encryption and ransom note deployment — typically triggered on a Friday night or before a public holiday to maximise dwell time before discovery.',
+          },
+          {
+            heading: 'Logistics-specific ransomware impact',
+            body: 'Ransomware in logistics is not only a data problem — it is an operations problem. When a TMS or WMS is encrypted, freight cannot be dispatched, deliveries cannot be confirmed, and customer communications fail. The NotPetya attack against A.P. Møller-Maersk in 2017 is the canonical example: 45,000 PCs and 1,000 applications encrypted simultaneously across 130 countries, costing approximately $300 million in damages. Maersk had to reinstall the entire infrastructure from scratch in 10 days using surviving domain controllers recovered from backups. Ransomware in a cold-chain warehouse can lead to temperature excursion of perishable goods. Ransomware in a port TOS (Terminal Operating System) can halt vessel loading and unloading. The financial loss from operational downtime typically exceeds the ransom demand itself.',
+          },
+          {
+            heading: 'Immediate response: the first 4 hours',
+            body: 'When ransomware is confirmed: (1) Isolate immediately — disconnect infected systems from the network by physically unplugging Ethernet cables or disabling WiFi. Do not power off (forensic evidence is in RAM). Do not run antivirus scans on infected systems — this can destroy artefacts. (2) Activate your incident response plan and contact your IR retainer or IT security provider. (3) Preserve backups — take offline copies of critical backups immediately and verify their integrity before attempting restoration. Attackers routinely target backup infrastructure first. (4) Establish a clean communication channel — assume your email may be compromised. Use personal devices and personal email for crisis communications. (5) Contact law enforcement (FBI or equivalent) and cyber insurance carrier.',
+          },
+          {
+            heading: 'The ransom payment decision',
+            body: 'The decision to pay a ransom involves legal, ethical, operational, and practical dimensions. Legally: in many jurisdictions, paying ransom to sanctioned threat actors (e.g., North Korean groups, Russian-sanctioned organisations) may violate OFAC regulations and expose the victim to civil penalties. Practically: payment does not guarantee decryption, recovery of exfiltrated data, or that attackers have not left persistence mechanisms. Statistically, organisations that pay are more likely to be targeted again. However: for some logistics operators where operational continuity is existential, and when law enforcement and legal counsel have assessed sanctions risk, payment may be the least-bad option. The decision must involve legal counsel, law enforcement liaison, and cyber insurance carrier before funds are transferred.',
+          },
+          {
+            heading: 'Resilience: what prevents ransomware from being catastrophic',
+            body: 'Three controls determine whether a ransomware attack is a major incident or a catastrophic one: (1) Offline, air-gapped backups — if backups are network-connected, they will be encrypted or deleted too. The 3-2-1 rule: 3 copies of data, on 2 different media types, with 1 copy offline/offsite. Test restores quarterly. (2) Network segmentation — if warehouse OT networks, TMS servers, and corporate endpoints are all on the same flat network, ransomware spreads without friction. Segmentation contains the blast radius. (3) Tested incident response plan — organisations that have never exercised their IR plan discover critical gaps during an active incident under maximum pressure. Tabletop exercises (TTX) specifically for ransomware scenarios reduce mean time to recovery measurably. Resilience is not about preventing every attack — it is about ensuring the attack is survivable.',
+          },
+        ],
+        keyPoints: [
+          'Ransomware begins weeks before encryption — the encryption event is the final stage, not the intrusion',
+          'Double extortion: attackers exfiltrate data first, then encrypt — paying the ransom does not recover the stolen data',
+          'First 4 hours: isolate (don\'t power off), preserve backups, establish clean communications, contact IR retainer and law enforcement',
+          'Ransom payment has sanctions implications — OFAC review required before any payment decision',
+          '3-2-1 backup rule + network segmentation + tested IR plan are the three resilience controls that separate survivable from catastrophic',
+        ],
+        relatedTopicIds: ['ransomware-syndicates', 'incident-response', 'pre-incident-indicators'],
       },
     ],
   },
@@ -837,8 +945,123 @@ export const STUDY_CHAPTERS: StudyChapter[] = [
 
   // ── Chapter 11 ────────────────────────────────────────────────────────────
   {
-    id: 'reference',
+    id: 'cyber-foundations',
     number: 11,
+    label: 'Cyber Foundations for Logistics Teams',
+    description: 'Network security, access control, and incident response fundamentals — explained through a logistics lens.',
+    topics: [
+      {
+        id: 'network-security-fundamentals',
+        label: 'Network Security Fundamentals',
+        tagline: 'Segmentation, firewalls, VLANs, and why network architecture is your first line of defence.',
+        intro: 'Network security is the practice of controlling who and what can communicate with what across your organisation\'s digital infrastructure. For logistics operators, network architecture directly determines whether a compromised laptop in dispatch can reach your payment systems, and whether a hacked IoT sensor in a warehouse can pivot to your TMS. Getting the basics right makes every other control more effective — and getting them wrong makes every other control irrelevant.',
+        sections: [
+          {
+            heading: 'Why network segmentation matters in logistics',
+            body: 'Segmentation divides your network into isolated zones so that a breach in one zone cannot freely move to others. In a flat (unsegmented) logistics network, a phishing attack on a dispatcher\'s laptop gives an attacker a direct path to the payment portal, TMS credentials, and warehouse control systems. With proper segmentation, that same compromised laptop is contained: it can reach email and shared drives, but not payment systems or operational technology. The key principle is "blast radius reduction" — limit how far damage can spread from any single point of failure.',
+          },
+          {
+            heading: 'VLANs and network zones for warehouse operations',
+            body: 'Virtual Local Area Networks (VLANs) allow a single physical network switch to carry multiple isolated logical networks. A well-designed warehouse network has at minimum three VLANs: the corporate IT network (workstations, email, TMS), the operational technology (OT) network (AGVs, conveyor controls, IoT sensors, ELDs), and the guest/visitor network (no corporate connectivity). Critically, these VLANs must be enforced by firewall rules at the layer where they connect — not just by VLAN tags, which can be bypassed if network equipment is misconfigured.',
+          },
+          {
+            heading: 'Firewalls, proxies, and traffic inspection',
+            body: 'A firewall is a policy enforcement point that permits or denies traffic based on rules — source, destination, port, and protocol. In logistics, the most important firewall boundaries are: between the public internet and internal systems, between corporate IT and OT networks, and between internal systems and cloud-based TMS/WMS platforms. A next-generation firewall (NGFW) also inspects the content of allowed traffic for known threat signatures. Web proxies add a logging and filtering layer for outbound internet requests, providing visibility into what data is leaving the network and blocking access to known-malicious destinations.',
+          },
+          {
+            heading: 'Wireless security in fleet and depot environments',
+            body: 'Wireless networks extend the attack surface beyond the building perimeter. In depot and yard environments, Wi-Fi networks must use WPA3 or WPA2-Enterprise (not WPA2-Personal with a shared passphrase that every driver and visitor knows). Fleet telematics and ELD devices that connect via cellular create an additional network boundary that must be managed: firmware must be kept current via authenticated OTA updates, and telematics management consoles must require MFA. GPS and cellular signal spoofing — relevant in port and border crossing environments — should be detected by comparing reported location against other data sources.',
+          },
+          {
+            heading: 'Monitoring and visibility',
+            body: 'You cannot defend what you cannot see. Network visibility starts with knowing what is on your network — an accurate asset inventory covering all workstations, servers, printers, IoT devices, AGVs, and telematics gateways. Anomaly-based detection identifies traffic that deviates from established baselines: a warehouse AGV suddenly making outbound internet connections, or a dispatch workstation communicating with a TMS server at 3am. Log retention is the foundation: retain network flow logs for a minimum of 90 days (NIST guidance) so that incident investigations can trace the full path of an attack.',
+          },
+        ],
+        keyPoints: [
+          'Segmentation limits blast radius: a compromised laptop must not reach payment systems or OT networks',
+          'Three minimum VLANs: corporate IT, OT/robotics, guest — enforced by firewall rules, not just VLAN tags',
+          'Firewalls at internet boundary, IT/OT boundary, and cloud service boundaries',
+          'Wireless: WPA2-Enterprise or WPA3, not shared passphrases — and monitor for rogue access points',
+        ],
+        relatedTopicIds: ['attack-surfaces-ecosystem', 'zero-trust-ai-defence', 'industrial-protocols-ics'],
+      },
+      {
+        id: 'access-control-least-privilege',
+        label: 'Access Control and Least Privilege',
+        tagline: 'Who should access what — and why minimising access rights is a core security control.',
+        intro: 'Access control answers a simple question: who is allowed to do what, on which systems? The principle of least privilege — giving every user and system the minimum access needed to perform their function — is one of the highest-impact, lowest-cost security controls available to any logistics operator. It does not require expensive technology; it requires a deliberate decision-making process applied consistently.',
+        sections: [
+          {
+            heading: 'Role-Based Access Control (RBAC) in practice',
+            body: 'RBAC assigns permissions to roles, and roles to users — rather than assigning permissions directly to individual users. In a freight brokerage, example roles might be: Dispatcher (can create and assign loads, read rate confirmations, no payment access), Accounts Payable (can process payments, no load creation, no carrier onboarding), Carrier Relations (can onboard new carriers, read SAFER verification results, no payment access), and Administrator (full access, assigned only to named individuals who need it, reviewed quarterly). RBAC makes access changes manageable: when a dispatcher is promoted to operations manager, you change their role assignment rather than editing dozens of individual permissions.',
+          },
+          {
+            heading: 'The principle of least privilege',
+            body: 'Least privilege means every user account, service account, and automated process is granted only the permissions it needs to perform its specific function — nothing more. A TMS integration service account that uploads shipping documents has no business having write access to the user database. A driver-facing mobile app has no reason to access headquarters network resources. When least privilege is applied consistently, the compromise of any single credential produces limited damage: an attacker who steals a dispatcher\'s credentials cannot access payment systems, cannot access HR records, and cannot disable security controls.',
+          },
+          {
+            heading: 'Multi-Factor Authentication as an access control layer',
+            body: 'MFA requires a second form of identity verification in addition to a password — typically a time-based one-time code (TOTP), a hardware security key (FIDO2/WebAuthn), or a push notification to a verified device. For logistics systems, MFA priority order is: (1) email accounts (highest value target for BEC), (2) TMS and WMS portals (operational critical), (3) payment systems and banking, (4) remote access / VPN. Phishing-resistant MFA (FIDO2 hardware keys or passkeys) provides stronger protection than TOTP codes, which can be intercepted by real-time phishing proxies. CISA guidance recommends phishing-resistant MFA for all high-value accounts.',
+          },
+          {
+            heading: 'Access reviews and offboarding',
+            body: 'Access rights accumulate over time as users change roles, join projects, and leave the organisation — without anyone removing the access they no longer need. Quarterly access reviews — where managers confirm that each team member\'s access rights match their current role — are the primary control against privilege accumulation. Offboarding is the critical moment: when an employee leaves, all system access must be revoked before the final day, not after. Shared credentials (team mailboxes, shared admin accounts) should be rotated immediately when any individual with access leaves. CISA data shows that a significant fraction of breaches involve credentials belonging to former employees.',
+          },
+          {
+            heading: 'Service accounts and API keys',
+            body: 'Service accounts — automated accounts used by software to access systems — are frequently neglected and overprivileged. A TMS-to-WMS integration should use a dedicated service account with only the permissions that integration requires: read inventory, write shipment events. It should not share credentials with any human user, and its credentials should be rotated on a schedule. API keys follow the same principle: each integration or application receives its own key with the minimum required scope, key usage is logged, and unused keys are revoked. A leaked API key with broad permissions is equivalent to a leaked admin password.',
+          },
+        ],
+        keyPoints: [
+          'RBAC: assign permissions to roles, roles to users — never assign permissions directly to individuals',
+          'Least privilege: every account gets only what it needs — limiting any single compromise\'s blast radius',
+          'MFA priority: email first, then TMS/WMS, then payments — phishing-resistant MFA for high-value accounts',
+          'Offboarding is critical: revoke all access before the final day, rotate shared credentials immediately',
+        ],
+        relatedTopicIds: ['identity-credential-security', 'zero-trust-ai-defence', 'bec-payment-security'],
+      },
+      {
+        id: 'incident-response-basics',
+        label: 'Incident Response: The First 24 Hours',
+        tagline: 'Contain, communicate, and document — what to do when something goes wrong.',
+        intro: 'Incident response is the organised approach to addressing and managing a security breach or cyberattack. In logistics operations where downtime translates directly to revenue loss and customer trust damage, having a pre-planned, rehearsed response capability is as important as any preventive control. Most organisations that suffer serious damage from a breach do so not because they were attacked, but because they did not know what to do in the first hours after detection.',
+        sections: [
+          {
+            heading: 'The five phases of incident response',
+            body: 'The NIST incident response lifecycle organises the response into five phases: Preparation (policies, procedures, team assignments, tooling — done before any incident), Detection and Analysis (identifying that an incident is occurring and understanding its scope), Containment (stopping the spread of damage without destroying forensic evidence), Eradication and Recovery (removing the threat and restoring systems to a known-good state), and Post-Incident Activity (root cause analysis, lessons learned, process improvement). For logistics operators, Containment is often the most time-critical phase — a ransomware infection spreading across a network doubles its damage every 15–30 minutes if not contained.',
+          },
+          {
+            heading: 'Detection: knowing something is wrong',
+            body: 'Incidents are detected through multiple channels: automated alerts from endpoint detection tools, anomaly detection in network monitoring, user reports ("I can\'t access my files," "I received a suspicious email"), and external notifications (law enforcement, partner companies, customers). The first 15 minutes after a potential incident is detected are the most important: the responder must make a rapid triage decision — is this a real incident or a false alarm? If uncertain, treat it as real and escalate. The cost of an unnecessary escalation is minor; the cost of a real incident treated as a false alarm compounds every minute.',
+          },
+          {
+            heading: 'Containment: stop the spread, preserve evidence',
+            body: 'Containment means isolating affected systems to prevent the attack from spreading, while preserving the forensic evidence needed to understand what happened. For ransomware: disconnect affected systems from the network (physically unplug if remote access is compromised), do not power them off (memory contains forensic evidence), do not run antivirus scans that will overwrite malware artefacts. For a compromised email account: revoke active sessions, reset credentials, enable MFA before restoring access — but capture the full email logs first. For a suspected load diversion via carrier impersonation: freeze any pending payments to the suspected carrier while verification is completed.',
+          },
+          {
+            heading: 'Communication during an incident',
+            body: 'Communication is the most underestimated aspect of incident response. Internal communication must follow a pre-designated chain: the responder notifies the incident commander, who notifies the executive team and legal counsel. Critically, do NOT use potentially-compromised communication channels (company email, collaboration platforms on affected networks) to discuss the incident — use out-of-band channels (personal mobile, a separate communication platform). External communication — to customers, partners, regulators, and media — must be coordinated through legal and executive leadership, and must meet regulatory notification timelines (NIS2: 72 hours; various US state breach notification laws: 30–72 hours depending on jurisdiction).',
+          },
+          {
+            heading: 'Documentation and post-incident review',
+            body: 'Document every action taken during the incident in a timestamped incident log — this is both a legal record and the foundation for the post-incident review. After recovery, conduct a structured review: What was the initial access vector? How long was the attacker present before detection? Which controls failed, and why? What controls would have prevented or limited the damage? The post-incident review is not a blame exercise — it is the primary mechanism for improving the organisation\'s security posture based on real operational data. NIST recommends reviewing and updating incident response procedures after every significant incident.',
+          },
+        ],
+        keyPoints: [
+          'Five phases: Preparation, Detection, Containment, Eradication/Recovery, Post-Incident — in that order',
+          'Containment: isolate affected systems from the network; do NOT power off — memory contains evidence',
+          'Out-of-band communication during incidents: do not use potentially-compromised company channels',
+          'Post-incident review is mandatory: identify the access vector, detection gap, and control failures',
+        ],
+        relatedTopicIds: ['pre-incident-indicators', 'logistics-threat-overview', 'playbook-warehouse-executive'],
+      },
+    ],
+  },
+
+  // ── Chapter 12 ────────────────────────────────────────────────────────────
+  {
+    id: 'reference',
+    number: 12,
     label: 'Standards, Frameworks, and Reference',
     description: 'NIST CSF, ISO 27001, CIS Controls, and the full logistics cybersecurity glossary.',
     topics: [

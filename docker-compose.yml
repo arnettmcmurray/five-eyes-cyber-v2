@@ -16,5 +16,13 @@ services:
       timeout: 5s
       retries: 5
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: five_eyes_v2_mailpit
+    ports:
+      - "8025:8025"   # web UI  →  http://localhost:8025
+      - "1025:1025"   # SMTP    →  matches SMTP_HOST=localhost SMTP_PORT=1025 in backend/.env
+    restart: unless-stopped
+
 volumes:
   db_data_v2:

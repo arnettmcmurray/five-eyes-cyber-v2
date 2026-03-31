@@ -12,7 +12,7 @@ interface Message {
 
 const INITIAL_MESSAGE: Message = {
   role: 'assistant',
-  content: 'What would you like to learn or understand better? I can explain cybersecurity concepts, help with policy questions, or clarify anything from your training material.',
+  content: 'Ask anything from your training material — I search the knowledge base to ground my answers. AI synthesis is available where enabled; otherwise you will see the relevant KB excerpts directly.',
 };
 
 const STARTER_PROMPTS = [
@@ -44,7 +44,8 @@ export default function ChatAssistant() {
   if (
     location.pathname.startsWith('/admin') ||
     location.pathname.startsWith('/kb') ||
-    location.pathname.startsWith('/ttx')
+    location.pathname.startsWith('/ttx') ||
+    location.pathname === '/learn/ttx'
   ) return null;
 
   const send = async (text: string) => {
@@ -123,10 +124,9 @@ export default function ChatAssistant() {
                       Learning Assistant
                     </p>
                     <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                      Knowledge-grounded · Paid access
+                      KB-grounded · AI-enhanced where available
                     </p>
                   </div>
-                  <div className="ml-1 w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--gold-accent)' }} />
                 </div>
                 <button
                   onClick={() => setOpen(false)}

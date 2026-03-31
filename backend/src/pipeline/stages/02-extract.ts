@@ -39,8 +39,7 @@ export function extractContent(
       .replace(/&mdash;/g, '—');
     text = text.replace(/\s{2,}/g, ' ').trim();
   } else if (effectiveMime === 'application/pdf') {
-    // Stub: real extraction requires pdf-parse or similar
-    text = `[PDF extraction stub — real extraction requires pdf-parse or similar]\n\n${text}`;
+    // rawContent is pre-extracted text from pdf-parse in the ingestion service — pass through
   }
   // text/plain and text/markdown pass through as-is
 

@@ -243,16 +243,41 @@ export default function KBAdmin() {
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    draft: 'bg-gray-100 text-gray-700',
     'under-review': 'bg-yellow-100 text-yellow-800',
     published: 'bg-green-100 text-green-800',
     archived: 'bg-red-100 text-red-700',
   };
+  const cls = colors[status];
   return (
-    <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status] ?? 'bg-gray-100'}`}>
+    <span
+      className={`px-2 py-0.5 rounded text-xs font-medium ${cls ?? ''}`}
+      style={!cls ? { background: 'var(--bg-elevated)', color: 'var(--text-muted)' } : undefined}
+    >
       {status}
     </span>
   );
+}
+
+const ACCEPTED_EXTENSIONS = ['.txt', '.md', '.markdown', '.html', '.htm', '.pdf', '.docx'];
+const MIME_MAP: Record<string, string> = {
+  '.txt': 'text/plain',
+  '.md': 'text/markdown',
+  '.markdown': 'text/markdown',
+  '.html': 'text/html',
+  '.htm': 'text/html',
+  '.pdf': 'application/pdf',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+};
+
+function getExtension(name: string): string {
+  const m = name.match(/(\.[^.]+)$/);
+  return m ? m[1].toLowerCase() : '';
+}
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 type IngestTab = 'manual' | 'file' | 'url';
@@ -262,32 +287,58 @@ function IngestForm({ onDone }: { onDone: () => void }) {
   const [actor, setActor] = useState(() => getAdminUsername() ?? 'admin');
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [ingestResult, setIngestResult] = useState<IngestJob | null>(null);
 
   // manual
   const [label, setLabel] = useState('');
   const [content, setContent] = useState('');
 
   // file
-  const [filename, setFilename] = useState('');
-  const [fileContent, setFileContent] = useState('');
-  const [mimeType, setMimeType] = useState('text/plain');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileErr, setFileErr] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   // url
   const [url, setUrl] = useState('');
+
+  function loadFile(file: File) {
+    setFileErr(null);
+    setSelectedFile(null);
+    const ext = getExtension(file.name);
+    if (!ACCEPTED_EXTENSIONS.includes(ext)) {
+      setFileErr(`Unsupported file type "${ext || '(none)'}". Accepted: .txt, .md, .markdown, .html, .htm, .pdf, .docx`);
+      return;
+    }
+    setSelectedFile(file);
+  }
+
+  function onFileInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) loadFile(file);
+    e.target.value = '';
+  }
+
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) loadFile(file);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
     setSaving(true);
     try {
+      let result: IngestJob;
       if (tab === 'manual') {
-        await api.ingest.manual({ content, label, createdBy: actor });
+        result = await api.ingest.manual({ content, label, createdBy: actor });
       } else if (tab === 'file') {
-        await api.ingest.file({ rawContent: fileContent, filename, mimeType, uploadedBy: actor });
+        result = await api.ingest.file(selectedFile!, actor);
       } else {
-        await api.ingest.url({ url, fetchedBy: actor });
+        result = await api.ingest.url({ url, fetchedBy: actor });
       }
-      onDone();
+      setIngestResult(result);
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
@@ -296,6 +347,39 @@ function IngestForm({ onDone }: { onDone: () => void }) {
   }
 
   const tabs: IngestTab[] = ['manual', 'file', 'url'];
+  const fileReady = tab === 'file' && !!selectedFile && !fileErr;
+
+  if (ingestResult) {
+    return (
+      <div className="mb-6 p-4 border rounded space-y-3" style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-gold)' }}>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Ingest complete
+          </p>
+          <button type="button" onClick={onDone} className="text-xs hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
+            ✕ Close
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+          <span>Label</span><span style={{ color: 'var(--text-primary)' }}>{ingestResult.label}</span>
+          <span>Status</span><span style={{ color: 'var(--text-primary)' }}>{ingestResult.status}</span>
+          <span>Source</span><span style={{ color: 'var(--text-primary)' }}>{ingestResult.sourceType}</span>
+          {ingestResult.errorMessage && (
+            <><span className="text-red-600 col-span-2">{ingestResult.errorMessage}</span></>
+          )}
+        </div>
+        {ingestResult.resultItemId && (
+          <Link
+            to={`/kb/${ingestResult.resultItemId}`}
+            className="inline-block px-3 py-1.5 rounded text-xs font-semibold hover:opacity-90"
+            style={{ background: 'var(--gold-accent)', color: '#000' }}
+          >
+            Review draft →
+          </Link>
+        )}
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={submit} className="mb-6 p-4 border rounded space-y-3" style={{ background: 'var(--bg-elevated)' }}>
@@ -328,20 +412,52 @@ function IngestForm({ onDone }: { onDone: () => void }) {
 
       {tab === 'file' && (
         <>
-          <Field label="Filename">
-            <input className="w-full border rounded px-3 py-1.5 text-sm" value={filename} onChange={e => setFilename(e.target.value)} required />
-          </Field>
-          <Field label="MIME type">
-            <select className="border rounded px-3 py-1.5 text-sm" value={mimeType} onChange={e => setMimeType(e.target.value)}>
-              <option value="text/plain">text/plain</option>
-              <option value="text/markdown">text/markdown</option>
-              <option value="text/html">text/html</option>
-              <option value="application/pdf">application/pdf</option>
-            </select>
-          </Field>
-          <Field label="Content">
-            <textarea className="w-full border rounded px-3 py-1.5 text-sm font-mono" rows={6} value={fileContent} onChange={e => setFileContent(e.target.value)} required />
-          </Field>
+          <div
+            onDragEnter={e => { e.preventDefault(); setDragOver(true); }}
+            onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={onDrop}
+            className="relative border-2 border-dashed rounded-lg px-6 py-8 text-center transition-colors"
+            style={{
+              borderColor: dragOver ? 'var(--gold-accent)' : 'var(--border-subtle)',
+              background: dragOver ? 'var(--gold-muted)' : 'var(--bg-surface)',
+            }}
+          >
+            <input
+              type="file"
+              accept=".txt,.md,.markdown,.html,.htm,.pdf,.docx"
+              onChange={onFileInput}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+              Drop a file here or click to select
+            </p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+              Supported: .txt, .md, .html, .pdf, .docx
+            </p>
+          </div>
+
+          {fileErr && (
+            <div className="p-2 bg-red-100 text-red-800 rounded text-sm">{fileErr}</div>
+          )}
+
+          {selectedFile && !fileErr && (
+            <div className="flex items-center gap-3 px-3 py-2 rounded border text-sm" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}>
+              <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{selectedFile.name}</span>
+              <span className="px-1.5 py-0.5 rounded text-xs font-mono" style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}>
+                {MIME_MAP[getExtension(selectedFile.name)] ?? selectedFile.type}
+              </span>
+              <span style={{ color: 'var(--text-muted)' }}>{formatBytes(selectedFile.size)}</span>
+              <button
+                type="button"
+                className="ml-auto text-xs hover:opacity-70"
+                style={{ color: 'var(--text-muted)' }}
+                onClick={() => { setSelectedFile(null); setFileErr(null); }}
+              >
+                ✕ Clear
+              </button>
+            </div>
+          )}
         </>
       )}
 
@@ -356,7 +472,12 @@ function IngestForm({ onDone }: { onDone: () => void }) {
         <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{actor}</span>
       </div>
 
-      <button type="submit" disabled={saving} className="px-4 py-2 rounded disabled:opacity-50" style={{ background: 'var(--gold-accent)', color: '#000' }}>
+      <button
+        type="submit"
+        disabled={saving || (tab === 'file' && !fileReady)}
+        className="px-4 py-2 rounded disabled:opacity-50"
+        style={{ background: 'var(--gold-accent)', color: '#000' }}
+      >
         {saving ? 'Ingesting…' : 'Ingest'}
       </button>
     </form>

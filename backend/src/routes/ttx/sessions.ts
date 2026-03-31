@@ -14,6 +14,7 @@ import {
 } from '../../db/schema/ttx.js';
 import { adminUsers } from '../../db/schema/admin-auth.js';
 import { addClient, broadcast } from '../../lib/ttx-sse.js';
+import { scoreSession } from '../../services/ttx/rubric.js';
 import type { Request, Response, NextFunction } from 'express';
 
 const router = Router();
@@ -314,6 +315,37 @@ router.patch('/:id/aar/action-items/:itemId', async (req, res) => {
   }).where(eq(ttxActionItems.id, req.params.itemId)).returning();
   if (!row) { res.status(404).json({ error: 'Not found' }); return; }
   res.json(row);
+});
+
+// ---------------------------------------------------------------------------
+// Rubric evaluation — POST /ttx/sessions/:id/evaluate
+// Scores the session against the standards-based TTX rubric.
+// Result is stored in decisions.rubric and also returned in the response.
+// ---------------------------------------------------------------------------
+
+router.post('/:id/evaluate', async (req, res) => {
+  const session = await getSession(req.params.id);
+  if (!session) { res.status(404).json({ error: 'Session not found' }); return; }
+
+  const [participants, events] = await Promise.all([
+    db.select().from(ttxRunParticipants).where(eq(ttxRunParticipants.runId, session.id)),
+    db.select().from(ttxRunEvents).where(eq(ttxRunEvents.runId, session.id)).orderBy(asc(ttxRunEvents.occurredAt)),
+  ]);
+
+  const rubric = scoreSession({
+    sessionId: session.id,
+    sessionTitle: session.title,
+    snapshot: (session.snapshot ?? {}) as Record<string, unknown>,
+    events: events.map(e => ({ eventType: e.eventType, body: e.body, actorHandle: e.actorHandle })),
+    participants,
+  });
+
+  const updated = await db.update(ttxExerciseRuns)
+    .set({ decisions: { ...(session.decisions as object), rubric } })
+    .where(eq(ttxExerciseRuns.id, session.id))
+    .returning();
+
+  res.json({ rubric, session: updated[0] });
 });
 
 // GET /ttx/sessions/:id/export

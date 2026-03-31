@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -13,6 +13,40 @@ import {
   type KBHelpResult,
 } from '../api/client';
 import { getSessionToken } from '../lib/session';
+import { STUDY_CHAPTERS } from '../data/studyMaterial';
+
+// Module slug → relevant Study Material topic IDs
+const MODULE_STUDY_LINKS: Record<string, string[]> = {
+  't1-phishing-email-security': [
+    'phishing-recognition-field-guide',
+    'social-engineering',
+    'email-authentication',
+    'identity-credential-security',
+  ],
+  't2-bec-payment-protection': [
+    'bec-payment-fraud',
+    'operational-controls',
+    'bec-recovery-playbook',
+    'double-brokering-cargo-theft',
+  ],
+  't3-account-security-mfa': [
+    'identity-credential-security',
+    'access-control-least-privilege',
+    'email-authentication',
+    'ransomware-full-picture',
+  ],
+  't4-invoice-fraud': [
+    'bec-payment-fraud',
+    'bec-recovery-playbook',
+    'operational-controls',
+  ],
+  't5-ransomware-response': [
+    'ransomware-full-picture',
+    'ransomware-syndicates',
+    'incident-response',
+    'pre-incident-indicators',
+  ],
+};
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -238,6 +272,19 @@ function OverviewScreen({
   references: LearnReference[];
   onBegin: () => void;
 }) {
+  const studyLinks = useMemo(() => {
+    const topicIds = MODULE_STUDY_LINKS[module.slug] ?? [];
+    const results: { id: string; label: string; tagline: string; chapterLabel: string }[] = [];
+    for (const chapter of STUDY_CHAPTERS) {
+      for (const topic of chapter.topics) {
+        if (topicIds.includes(topic.id)) {
+          results.push({ id: topic.id, label: topic.label, tagline: topic.tagline, chapterLabel: chapter.label });
+        }
+      }
+    }
+    return results;
+  }, [module.slug]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -307,6 +354,37 @@ function OverviewScreen({
         <ReferencesSection references={references} />
       )}
 
+      {/* Study Material cross-references */}
+      {studyLinks.length > 0 && (
+        <div
+          className="rounded-xl p-5"
+          style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+        >
+          <p className="label-tag-muted mb-4">Recommended Reading — Reference Library</p>
+          <div className="space-y-2">
+            {studyLinks.map(link => (
+              <Link
+                key={link.id}
+                to={`/learn/library/${link.id}`}
+                className="flex items-start justify-between gap-3 px-4 py-3 rounded-lg transition-all"
+                style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-gold)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
+              >
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{link.label}</p>
+                  <p className="text-[10px] mt-0.5 leading-snug" style={{ color: 'var(--text-muted)' }}>{link.tagline}</p>
+                </div>
+                <span className="text-[10px] shrink-0 mt-0.5" style={{ color: 'var(--gold-accent)' }}>→</span>
+              </Link>
+            ))}
+          </div>
+          <p className="text-[10px] mt-3" style={{ color: 'var(--text-dim)' }}>
+            These articles support deeper understanding. Reading them before or after the module is recommended.
+          </p>
+        </div>
+      )}
+
       {/* CTA */}
       <button
         onClick={onBegin}
@@ -319,11 +397,11 @@ function OverviewScreen({
       {/* Back link */}
       <div className="text-center">
         <Link
-          to="/learn/hub"
+          to="/learn/dashboard"
           className="text-xs font-medium"
           style={{ color: 'var(--text-muted)' }}
         >
-          ← Back to modules
+          ← Back to Dashboard
         </Link>
       </div>
     </motion.div>
@@ -697,23 +775,31 @@ function DebriefScreen({
         >
           <p className="label-tag-muted mb-3">Results by Task</p>
           {checkpointResults.map((r) => (
-            <div key={r.questionId} className="flex items-center gap-3">
-              <span
-                className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
-                style={{
-                  background: r.correct ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)',
-                  color: r.correct ? '#10b981' : 'rgb(244,63,94)',
-                }}
-              >
-                {r.correct ? '✓' : '✗'}
-              </span>
-              <span className="text-sm flex-1" style={{ color: 'var(--text-secondary)' }}>
-                {questionTaskMap.get(r.questionId) ?? 'Task'}
-              </span>
-              {!r.correct && r.explanation && (
-                <span className="text-[10px] italic" style={{ color: 'var(--text-muted)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {r.explanation}
+            <div key={r.questionId} className="space-y-1.5 py-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+              <div className="flex items-center gap-3">
+                <span
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
+                  style={{
+                    background: r.correct ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)',
+                    color: r.correct ? '#10b981' : 'rgb(244,63,94)',
+                  }}
+                >
+                  {r.correct ? '✓' : '✗'}
                 </span>
+                <span className="text-sm font-medium flex-1" style={{ color: 'var(--text-primary)' }}>
+                  {questionTaskMap.get(r.questionId) ?? 'Task'}
+                </span>
+                <span
+                  className="text-[9px] font-black uppercase tracking-widest shrink-0"
+                  style={{ color: r.correct ? '#10b981' : 'rgb(244,63,94)' }}
+                >
+                  {r.correct ? 'Correct' : 'Incorrect'}
+                </span>
+              </div>
+              {!r.correct && r.explanation && (
+                <p className="text-xs leading-relaxed pl-8" style={{ color: 'var(--text-secondary)' }}>
+                  {r.explanation}
+                </p>
               )}
             </div>
           ))}
@@ -743,6 +829,26 @@ function DebriefScreen({
           style={{ background: 'var(--bg-surface)', color: 'var(--gold-accent)', border: '1px solid var(--border-gold)' }}
         >
           Back to Dashboard
+        </Link>
+      </div>
+
+      {/* Study Material nudge */}
+      <div
+        className="rounded-xl px-5 py-4 flex items-center justify-between"
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+      >
+        <div>
+          <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>Want to go deeper?</p>
+          <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            The Study Material library has full reference articles on every topic in this module.
+          </p>
+        </div>
+        <Link
+          to="/learn/library"
+          className="shrink-0 ml-4 text-[10px] font-black uppercase tracking-ultra px-3 py-2 rounded-lg transition-all hover:opacity-80"
+          style={{ background: 'var(--gold-muted)', color: 'var(--gold-accent)', border: '1px solid var(--border-gold)' }}
+        >
+          Browse →
         </Link>
       </div>
     </motion.div>
@@ -787,7 +893,7 @@ function HelpPanel({ moduleId }: { moduleId: string }) {
         style={{ background: 'var(--bg-surface)' }}
       >
         <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-          KB Help
+          Knowledge Base
         </span>
         <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>
           {open ? '▲' : '▼'}
@@ -797,7 +903,7 @@ function HelpPanel({ moduleId }: { moduleId: string }) {
       {open && (
         <div className="px-4 pb-4 pt-2 space-y-3" style={{ background: 'var(--bg-surface)' }}>
           <p className="text-[10px]" style={{ color: 'var(--text-dim)' }}>
-            Search this module's knowledge base
+            Search for definitions, context, or related concepts from this module's knowledge base.
           </p>
           <div className="flex gap-2">
             <input
@@ -1025,7 +1131,7 @@ function RemediationSection({
                   {item.topics.map(t => (
                     <Link
                       key={t.slug}
-                      to={`/kb/search?q=${encodeURIComponent(t.name)}`}
+                      to={`/learn/library`}
                       className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest transition-opacity hover:opacity-75"
                       style={{ background: 'var(--gold-muted)', color: 'var(--gold-accent)', border: '1px solid var(--border-gold)' }}
                     >
@@ -1038,20 +1144,24 @@ function RemediationSection({
           ))}
         </div>
       ) : (
-        // Fallback when no FTS chunks exist (Phase B will fix this)
-        <ul className="space-y-2">
-          {fallbackTopics.map(t => (
-            <li key={t.slug}>
-              <Link
-                to={`/kb/search?q=${encodeURIComponent(t.name)}`}
-                className="text-xs font-medium underline transition-opacity hover:opacity-75"
-                style={{ color: 'var(--gold-accent)' }}
-              >
-                {t.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="space-y-2">
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            Review these topics in the Study Material library:
+          </p>
+          <ul className="space-y-1.5">
+            {fallbackTopics.map(t => (
+              <li key={t.slug}>
+                <Link
+                  to="/learn/library"
+                  className="text-xs font-semibold transition-opacity hover:opacity-75 flex items-center gap-1.5"
+                  style={{ color: 'var(--gold-accent)' }}
+                >
+                  <span>→</span> {t.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

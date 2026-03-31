@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, type LearnModulesResponse } from '../api/client';
 import { getSessionToken, getStoredHandle } from '../lib/session';
+import { STUDY_CHAPTERS } from '../data/studyMaterial';
+
+const FEATURED_TOPICS = [
+  'phishing-recognition-field-guide',
+  'bec-payment-fraud',
+  'ransomware-full-picture',
+  'bec-recovery-playbook',
+];
 
 /* Map module slug keywords → owned images */
 const IMAGE_MAP: Record<string, string> = {
@@ -50,10 +58,14 @@ export default function LearnDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!getSessionToken()) { navigate('/learn', { replace: true }); return; }
+    if (!getSessionToken()) { navigate('/login', { replace: true }); return; }
     api.learn.modules()
       .then(setData)
-      .catch(e => setError(e instanceof Error ? e.message : String(e)))
+      .catch(e => {
+        // req() clears learner_token on 401 — redirect to login instead of showing a raw error.
+        if (!getSessionToken()) { navigate('/login', { replace: true }); return; }
+        setError(e instanceof Error ? e.message : String(e));
+      })
       .finally(() => setLoading(false));
   }, [navigate]);
 
@@ -187,11 +199,11 @@ export default function LearnDashboard() {
               </Link>
             ) : (
               <Link
-                to="/kb/search"
+                to="/learn/library"
                 className="inline-block px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-ultra transition-all hover:scale-[1.02]"
                 style={{ background: 'var(--bg-elevated)', color: 'var(--gold-accent)', border: '1px solid var(--border-gold)' }}
               >
-                Explore Knowledge Base
+                Explore Reference Library
               </Link>
             )}
           </div>
@@ -261,6 +273,48 @@ export default function LearnDashboard() {
           </div>
         </div>
       )}
+
+      {/* ── Reference Library Quick Access ── */}
+      {(() => {
+        const featured = FEATURED_TOPICS.flatMap(id => {
+          for (const ch of STUDY_CHAPTERS) {
+            const t = ch.topics.find(tp => tp.id === id);
+            if (t) return [{ id: t.id, label: t.label, tagline: t.tagline }];
+          }
+          return [];
+        });
+        return (
+          <div
+            className="rounded-xl p-5"
+            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <p className="label-tag-muted">Reference Library — Featured Articles</p>
+              <Link to="/learn/library" className="text-[10px] font-bold uppercase tracking-widest transition-opacity hover:opacity-70" style={{ color: 'var(--gold-accent)' }}>
+                All Articles →
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {featured.map(t => (
+                <Link
+                  key={t.id}
+                  to={`/learn/library/${t.id}`}
+                  className="flex items-start gap-3 px-4 py-3 rounded-lg transition-all"
+                  style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-gold)')}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
+                >
+                  <span className="text-xs mt-0.5 shrink-0" style={{ color: 'var(--gold-accent)' }}>→</span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>{t.label}</p>
+                    <p className="text-[10px] mt-0.5 leading-snug line-clamp-1" style={{ color: 'var(--text-muted)' }}>{t.tagline}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Guidelines ── */}
       <div

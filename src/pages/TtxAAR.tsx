@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { api, TtxAARSummary, TtxExport } from '../api/client';
+import { api, TtxAARSummary, TtxExport, RubricResult, RubricCategoryResult, CorrectivePriority } from '../api/client';
 import { getAdminToken, getAdminUsername } from '../lib/adminSession';
 
 export default function TtxAAR() {
@@ -17,6 +17,8 @@ export default function TtxAAR() {
   const [editingAAR, setEditingAAR] = useState(false);
   const [newItem, setNewItem] = useState({ title: '', body: '', owner: '', dueAt: '' });
   const [addingItem, setAddingItem] = useState(false);
+  const [rubric, setRubric] = useState<RubricResult | null>(null);
+  const [evaluating, setEvaluating] = useState(false);
 
   useEffect(() => {
     if (!getAdminToken()) { navigate('/admin/login', { replace: true }); return; }
@@ -32,6 +34,7 @@ export default function TtxAAR() {
       setExportData(exp);
       setAar(aarData);
       setSummary(aarData.summary || '');
+      if (aarData.rubric) setRubric(aarData.rubric);
       if (!aarData.summary) setEditingAAR(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -78,6 +81,19 @@ export default function TtxAAR() {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function runEvaluation() {
+    setEvaluating(true);
+    try {
+      const result = await api.ttx.sessions.evaluate(id!);
+      setRubric(result.rubric);
+      setAar(prev => prev ? { ...prev, rubric: result.rubric } : prev);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setEvaluating(false);
     }
   }
 
@@ -186,6 +202,64 @@ export default function TtxAAR() {
         </div>
       )}
 
+      {/* Session Context */}
+      {(() => {
+        const snap = session.snapshot as Record<string, unknown>;
+        const objective = (snap.objective as string | undefined) || '';
+        const theme = (snap.signatureTheme as string | undefined) || '';
+        const execSummary = (snap.executiveSummary as string | undefined) || '';
+        const goals = Array.isArray(snap.goals) ? snap.goals as string[] : [];
+        const audience = Array.isArray(snap.targetAudience) ? snap.targetAudience as string[] : [];
+        if (!objective && !theme && !execSummary) return null;
+        return (
+          <section className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+            <div className="px-6 py-3 flex items-center gap-3" style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)' }}>
+              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Scenario Brief</p>
+              {theme && (
+                <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--gold-accent)', border: '1px solid rgba(245,158,11,0.25)' }}>
+                  {theme}
+                </span>
+              )}
+            </div>
+            <div className="px-6 py-4 space-y-3">
+              {objective && (
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-dim)' }}>Exercise Objective</p>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{objective}</p>
+                </div>
+              )}
+              {execSummary && !objective && (
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{execSummary}</p>
+              )}
+              {(goals.length > 0 || audience.length > 0) && (
+                <div className="flex flex-wrap gap-4 pt-1">
+                  {audience.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-dim)' }}>Target Roles</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {audience.map((r, i) => (
+                          <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>{r}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {goals.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-dim)' }}>Goals</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {goals.map((g, i) => (
+                          <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>{g}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      })()}
+
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-4">
         {[
@@ -203,6 +277,249 @@ export default function TtxAAR() {
           </div>
         ))}
       </div>
+
+      {/* ── Rubric Evaluation ── */}
+      <section className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+        <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Standards-Based Rubric Evaluation</p>
+            {rubric && (
+              <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-dim)' }}>
+                Profile: {PROFILE_LABELS[rubric.scenarioProfile] ?? rubric.scenarioProfile} · Rubric {rubric.rubricVersion} · Scored {new Date(rubric.scoredAt).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+          {!isFinal && (
+            <button
+              onClick={runEvaluation}
+              disabled={evaluating}
+              className="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-ultra transition-all hover:brightness-110 disabled:opacity-40"
+              style={{ background: evaluating ? 'var(--bg-elevated)' : 'var(--gold-accent)', color: evaluating ? 'var(--text-muted)' : '#000', border: evaluating ? '1px solid var(--border-subtle)' : 'none' }}
+            >
+              {evaluating ? 'Scoring…' : rubric ? 'Re-Score Session' : 'Score This Session'}
+            </button>
+          )}
+        </div>
+
+        {!rubric ? (
+          <div className="px-6 py-10 text-center">
+            <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>No evaluation yet</p>
+            <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
+              Score this session against the Five Eyes TTX rubric to generate a category breakdown, gap analysis, and leadership-ready recommendations.
+            </p>
+          </div>
+        ) : (
+          <div className="p-6 space-y-8">
+
+            {/* Overall band + score */}
+            <div className="flex items-center gap-6 flex-wrap">
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <p
+                    className="font-display font-black text-4xl leading-none"
+                    style={{ color: BAND_COLORS[rubric.overallBand].text }}
+                  >
+                    {rubric.insufficientData ? '—' : `${rubric.overallScore}`}
+                  </p>
+                  {!rubric.insufficientData && (
+                    <p className="text-[10px] font-bold uppercase tracking-widest mt-1" style={{ color: 'var(--text-dim)' }}>/ 100</p>
+                  )}
+                </div>
+                <div>
+                  <span
+                    className="text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-lg inline-block"
+                    style={{ background: BAND_COLORS[rubric.overallBand].bg, color: BAND_COLORS[rubric.overallBand].text, border: `1px solid ${BAND_COLORS[rubric.overallBand].border}` }}
+                  >
+                    {BAND_LABELS[rubric.overallBand]}
+                  </span>
+                  <p className="text-[10px] mt-1.5" style={{ color: 'var(--text-dim)' }}>
+                    {rubric.observationCount} observation{rubric.observationCount !== 1 ? 's' : ''} · {rubric.participantCount} participant{rubric.participantCount !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
+              {rubric.insufficientData && (
+                <div className="rounded-lg px-4 py-2.5 flex-1" style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)' }}>
+                  <p className="text-xs font-bold" style={{ color: '#f59e0b' }}>Insufficient session data</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>{rubric.operationalRiskNote}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Executive Leadership Summary */}
+            {!rubric.insufficientData && rubric.executiveSummary && (
+              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)' }}>
+                <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)' }}>
+                  <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--gold-accent)' }}>Leadership Brief</span>
+                  <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>— for executive and board review</span>
+                </div>
+                <div className="p-5 space-y-5">
+
+                  {/* Bottom line callout */}
+                  <div className="rounded-lg px-4 py-3" style={{ background: `${BAND_COLORS[rubric.overallBand].bg}`, border: `1px solid ${BAND_COLORS[rubric.overallBand].border}` }}>
+                    <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: BAND_COLORS[rubric.overallBand].text }}>Bottom Line</p>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>{rubric.leadershipBottomLine}</p>
+                  </div>
+
+                  {/* Executive summary + business risk in two cells */}
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Exercise Summary</p>
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{rubric.executiveSummary}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Business Risk Statement</p>
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{rubric.businessRiskStatement}</p>
+                    </div>
+                  </div>
+
+                  {/* Top 3 corrective priorities */}
+                  {rubric.correctivePriorities.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>Top Corrective Priorities</p>
+                      <div className="space-y-2">
+                        {rubric.correctivePriorities.map(p => (
+                          <CorrectivePriorityRow key={p.rank} priority={p} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            )}
+
+            {/* Category breakdown */}
+            {!rubric.insufficientData && (
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-4" style={{ color: 'var(--text-dim)' }}>Category Breakdown</p>
+                <div className="space-y-3">
+                  {rubric.categories.map(cat => (
+                    <RubricCategoryRow key={cat.id} cat={cat} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Strengths */}
+            {rubric.strengths.length > 0 && (
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: '#10b981' }}>▲ Strengths</p>
+                <div className="space-y-2">
+                  {rubric.strengths.map((s, i) => (
+                    <div key={i} className="flex gap-3 text-xs leading-relaxed px-4 py-3 rounded-lg" style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                      <span style={{ color: '#10b981', flexShrink: 0 }}>✓</span>
+                      <p style={{ color: 'var(--text-secondary)' }}>{s}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Misses */}
+            {rubric.misses.length > 0 && (
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: '#f59e0b' }}>◆ Concerns</p>
+                <div className="space-y-2">
+                  {rubric.misses.map((m, i) => (
+                    <div key={i} className="flex gap-3 text-xs leading-relaxed px-4 py-3 rounded-lg" style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                      <span style={{ color: '#f59e0b', flexShrink: 0 }}>!</span>
+                      <p style={{ color: 'var(--text-secondary)' }}>{m}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Critical gaps */}
+            {rubric.criticalGaps.length > 0 && (
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: 'rgb(244,63,94)' }}>▼ Critical Gaps</p>
+                <div className="space-y-2">
+                  {rubric.criticalGaps.map((g, i) => (
+                    <div key={i} className="flex gap-3 text-xs leading-relaxed px-4 py-3 rounded-lg" style={{ background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.25)' }}>
+                      <span style={{ color: 'rgb(244,63,94)', flexShrink: 0 }}>✕</span>
+                      <p style={{ color: 'var(--text-secondary)' }}>{g}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Scenario-specific findings */}
+            {!rubric.insufficientData && (rubric.scenarioSpecificFindings.length > 0 || rubric.criticalMissTriggers.length > 0) && (
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: 'var(--text-dim)' }}>
+                  Scenario Expectation Pack · <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>{rubric.scenarioExpectationPackId}</span>
+                </p>
+                {rubric.criticalMissTriggers.length > 0 && (
+                  <div className="mb-2 space-y-1.5">
+                    {rubric.criticalMissTriggers.map((f, i) => (
+                      <div key={i} className="flex gap-2.5 text-xs px-3 py-2 rounded-lg" style={{ background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.18)' }}>
+                        <span style={{ color: 'rgb(244,63,94)', flexShrink: 0 }}>✗</span>
+                        <p style={{ color: 'var(--text-secondary)' }}>{f}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="space-y-1.5">
+                  {rubric.scenarioSpecificFindings.map((f, i) => {
+                    const isGap = f.startsWith('Gap:');
+                    return (
+                      <div key={i} className="flex gap-2.5 text-xs px-3 py-2 rounded-lg" style={{
+                        background: isGap ? 'rgba(245,158,11,0.06)' : 'rgba(16,185,129,0.06)',
+                        border: isGap ? '1px solid rgba(245,158,11,0.18)' : '1px solid rgba(16,185,129,0.18)',
+                      }}>
+                        <span style={{ color: isGap ? '#f59e0b' : '#10b981', flexShrink: 0 }}>{isGap ? '△' : '✓'}</span>
+                        <p style={{ color: 'var(--text-secondary)' }}>{f}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Operational risk note */}
+            {!rubric.insufficientData && (
+              <div className="rounded-xl px-5 py-4" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-dim)' }}>Operational Risk Assessment</p>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{rubric.operationalRiskNote}</p>
+              </div>
+            )}
+
+            {/* Recommendations: 3-column */}
+            {(rubric.recommendedActions.length > 0 || rubric.trainingRecommendations.length > 0 || rubric.policyRecommendations.length > 0) && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <RecommendationColumn
+                  label="Recommended Actions"
+                  accentColor="var(--gold-accent)"
+                  items={rubric.recommendedActions}
+                />
+                <RecommendationColumn
+                  label="Training Recommendations"
+                  accentColor="#60a5fa"
+                  items={rubric.trainingRecommendations}
+                />
+                <RecommendationColumn
+                  label="Policy & Process"
+                  accentColor="#a78bfa"
+                  items={rubric.policyRecommendations}
+                />
+              </div>
+            )}
+
+            {/* Protocol overlay notice */}
+            {rubric.protocolComparisonPending && (
+              <div className="rounded-lg px-4 py-3 flex items-start gap-3" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
+                <span className="text-[10px] font-black uppercase tracking-widest shrink-0 mt-0.5 px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}>Coming</span>
+                <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-dim)' }}>
+                  Company-protocol overlay: when your organisation uploads documented procedures, this evaluation will compare actual responses against your specific protocols — not just the baseline best-practice standard. Rubric ID: <span className="font-mono">{rubric.baselineRubricId}</span>
+                </p>
+              </div>
+            )}
+
+          </div>
+        )}
+      </section>
 
       {/* Executive Summary */}
       <section className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
@@ -358,6 +675,25 @@ export default function TtxAAR() {
         )}
       </section>
 
+      {/* Participating Roles */}
+      {exportData.participants.length > 0 && (
+        <section className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+          <div className="px-6 py-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+            <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Participating Roles</p>
+          </div>
+          <div className="px-6 py-4 flex flex-wrap gap-3">
+            {exportData.participants.map(p => (
+              <div key={p.id} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
+                <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{p.handle}</span>
+                {p.role && (
+                  <span className="text-[10px] font-semibold" style={{ color: 'var(--text-dim)' }}>· {p.role}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Tactical Timeline */}
       <section className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
         <div className="px-6 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
@@ -419,6 +755,156 @@ export default function TtxAAR() {
         </button>
       </div>
 
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Rubric display constants
+// ---------------------------------------------------------------------------
+
+const BAND_LABELS: Record<string, string> = {
+  strong:           'Strong',
+  acceptable:       'Acceptable',
+  needs_attention:  'Needs Attention',
+  critical_gaps:    'Critical Gaps',
+};
+
+const BAND_COLORS: Record<string, { text: string; bg: string; border: string }> = {
+  strong:          { text: '#10b981', bg: 'rgba(16,185,129,0.10)',  border: 'rgba(16,185,129,0.30)' },
+  acceptable:      { text: '#f59e0b', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.30)' },
+  needs_attention: { text: '#f97316', bg: 'rgba(249,115,22,0.10)', border: 'rgba(249,115,22,0.30)' },
+  critical_gaps:   { text: 'rgb(244,63,94)', bg: 'rgba(244,63,94,0.08)', border: 'rgba(244,63,94,0.30)' },
+};
+
+const CAT_BAND_COLORS: Record<string, { text: string; bg: string }> = {
+  pass:          { text: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+  concern:       { text: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+  critical_miss: { text: 'rgb(244,63,94)', bg: 'rgba(244,63,94,0.12)' },
+};
+
+const CAT_BAND_LABELS: Record<string, string> = {
+  pass:          'Pass',
+  concern:       'Concern',
+  critical_miss: 'Critical Miss',
+};
+
+const PROFILE_LABELS: Record<string, string> = {
+  bec:          'BEC / Payment Fraud',
+  ransomware:   'Ransomware / Operational',
+  ceo_fraud:    'CEO Fraud / Impersonation',
+  supply_chain: 'Supply Chain / Cargo',
+  general:      'General Threat',
+};
+
+// ---------------------------------------------------------------------------
+// Rubric sub-components
+// ---------------------------------------------------------------------------
+
+function RubricCategoryRow({ cat }: { cat: RubricCategoryResult }) {
+  const bandStyle = CAT_BAND_COLORS[cat.band] ?? CAT_BAND_COLORS.concern;
+  const [expanded, setExpanded] = useState(false);
+  const hasDetail = cat.evidence.length > 0 || cat.gaps.length > 0;
+
+  return (
+    <div className="rounded-lg overflow-hidden" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
+      <button
+        className="w-full flex items-center gap-3 px-4 py-3 text-left"
+        onClick={() => hasDetail && setExpanded(v => !v)}
+        style={{ cursor: hasDetail ? 'pointer' : 'default' }}
+      >
+        {/* Band pill */}
+        <span
+          className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full shrink-0 w-24 text-center"
+          style={{ background: bandStyle.bg, color: bandStyle.text }}
+        >
+          {CAT_BAND_LABELS[cat.band]}
+        </span>
+
+        {/* Category name */}
+        <span className="text-xs font-semibold flex-1 truncate" style={{ color: 'var(--text-primary)' }}>
+          {cat.label}
+        </span>
+
+        {/* Score bar */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="w-24 h-1.5 rounded-full" style={{ background: 'var(--bg-surface)' }}>
+            <div
+              className="h-1.5 rounded-full"
+              style={{ width: `${cat.rawScore}%`, background: bandStyle.text }}
+            />
+          </div>
+          <span className="text-[10px] font-bold w-8 text-right" style={{ color: bandStyle.text }}>
+            {cat.rawScore}
+          </span>
+        </div>
+
+        {/* Weight */}
+        <span className="text-[9px] w-12 text-right shrink-0" style={{ color: 'var(--text-dim)' }}>
+          ×{(cat.weight * 100).toFixed(0)}%
+        </span>
+
+        {hasDetail && (
+          <span className="text-[10px] shrink-0" style={{ color: 'var(--text-dim)' }}>
+            {expanded ? '▲' : '▼'}
+          </span>
+        )}
+      </button>
+
+      {expanded && hasDetail && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.15 }}
+          className="px-4 pb-4 space-y-2"
+          style={{ borderTop: '1px solid var(--border-subtle)' }}
+        >
+          {cat.evidence.map((e, i) => (
+            <p key={`e-${i}`} className="text-xs leading-relaxed pt-2" style={{ color: 'var(--text-secondary)' }}>
+              <span style={{ color: '#10b981' }}>✓ </span>{e}
+            </p>
+          ))}
+          {cat.gaps.map((g, i) => (
+            <p key={`g-${i}`} className="text-xs leading-relaxed pt-2" style={{ color: 'var(--text-secondary)' }}>
+              <span style={{ color: bandStyle.text }}>▸ </span>{g}
+            </p>
+          ))}
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+function CorrectivePriorityRow({ priority }: { priority: CorrectivePriority }) {
+  const rankColors: Record<number, string> = { 1: 'rgb(244,63,94)', 2: '#f59e0b', 3: 'var(--gold-accent)' };
+  const color = rankColors[priority.rank] ?? 'var(--text-muted)';
+  return (
+    <div className="flex gap-3 items-start px-4 py-3 rounded-lg" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+      <span className="text-xs font-black w-5 shrink-0 text-center mt-0.5" style={{ color }}>{priority.rank}</span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap mb-1">
+          <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{priority.categoryLabel}</span>
+          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-elevated)', color: 'var(--text-dim)' }}>Owner: {priority.ownerFunction}</span>
+        </div>
+        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{priority.action}</p>
+      </div>
+    </div>
+  );
+}
+
+function RecommendationColumn({ label, accentColor, items }: { label: string; accentColor: string; items: string[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="rounded-xl p-4" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
+      <p className="text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: accentColor }}>{label}</p>
+      <div className="space-y-2">
+        {items.map((item, i) => (
+          <p key={i} className="text-[11px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            <span style={{ color: accentColor }}>›</span> {item}
+          </p>
+        ))}
+      </div>
     </div>
   );
 }

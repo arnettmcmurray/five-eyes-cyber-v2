@@ -10,12 +10,12 @@ import { ThemeToggle } from './ThemeToggle';
 
 function useTheme() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    try { return (localStorage.getItem('theme') as 'light' | 'dark') ?? 'dark'; } catch { return 'dark'; }
+    try { return (localStorage.getItem('five-eyes-theme') as 'light' | 'dark') ?? 'dark'; } catch { return 'dark'; }
   });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    try { localStorage.setItem('theme', theme); } catch { /* ignore */ }
+    try { localStorage.setItem('five-eyes-theme', theme); } catch { /* ignore */ }
   }, [theme]);
 
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
@@ -70,7 +70,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
       <NeuralBackground />
 
       {/* ── Nav ── */}
-      <nav className="sticky top-0 z-50">
+      <nav className="public-nav sticky top-0 z-50">
         <div
           className="mx-auto max-w-7xl px-4 md:px-6 h-16 md:h-18 flex items-center justify-between"
           style={{

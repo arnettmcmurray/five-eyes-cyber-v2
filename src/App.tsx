@@ -5,6 +5,7 @@ import { NeuralBackground } from './components/NeuralBackground';
 import FreeTierGate from './components/FreeTierGate';
 import { useLearnerTier } from './hooks/useLearnerTier';
 import { getAdminToken } from './lib/adminSession';
+import { getSessionToken } from './lib/session';
 
 // Public pages
 import LandingPage from './pages/public/LandingPage';
@@ -151,6 +152,7 @@ function AdminGuard() {
 }
 
 function NavWrapper() {
+  if (!getSessionToken()) return <Navigate to="/login" replace />;
   const { tier, loading, refresh } = useLearnerTier();
 
   if (loading) {

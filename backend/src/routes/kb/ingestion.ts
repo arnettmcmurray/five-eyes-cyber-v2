@@ -1,11 +1,13 @@
 import { Router, type Request } from 'express';
+import multer from 'multer';
 import { KBIngestionService } from '../../services/kb/ingestion.service.js';
 import { validateBody } from '../../validation/middleware.js';
-import { ingestManualSchema, ingestFileSchema, ingestUrlSchema } from '../../validation/kb.schemas.js';
+import { ingestManualSchema, ingestUrlSchema } from '../../validation/kb.schemas.js';
 
 type AdminReq = Request & { adminUsername: string };
 const router = Router();
 const svc = new KBIngestionService();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 router.post('/manual', validateBody(ingestManualSchema), async (req, res) => {
   const adminUsername = (req as unknown as AdminReq).adminUsername;
@@ -17,11 +19,17 @@ router.post('/manual', validateBody(ingestManualSchema), async (req, res) => {
   }
 });
 
-router.post('/file', validateBody(ingestFileSchema), async (req, res) => {
+router.post('/file', upload.single('file'), async (req, res) => {
   const adminUsername = (req as unknown as AdminReq).adminUsername;
+  if (!req.file) {
+    res.status(400).json({ error: 'No file uploaded. Send a multipart/form-data request with a "file" field.' });
+    return;
+  }
+  const uploadedBy = (req.body as Record<string, string>).uploadedBy || adminUsername;
   try {
-    const { rawContent, filename, mimeType } = req.body;
-    res.status(201).json(await svc.ingestFile(rawContent, filename, mimeType, adminUsername));
+    res.status(201).json(
+      await svc.ingestFile(req.file.buffer, req.file.originalname, req.file.mimetype, uploadedBy),
+    );
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }

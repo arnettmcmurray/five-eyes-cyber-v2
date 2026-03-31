@@ -25,8 +25,8 @@ if (!process.env['CORS_ORIGIN']) {
 if (!process.env['ADMIN_PASSWORD']) {
   console.warn('[WARN] ADMIN_PASSWORD is not set — admin accounts will not be seeded on startup.');
 }
-if (!process.env['ANTHROPIC_API_KEY']) {
-  console.warn('[WARN] ANTHROPIC_API_KEY is not set — TTX AI assist endpoints will return 500.');
+if (!process.env['OPENAI_API_KEY']) {
+  console.warn('[WARN] OPENAI_API_KEY is not set — KB chat and TTX AI assist endpoints will return 503.');
 }
 if (!process.env['SES_FROM_ADDRESS']) {
   console.warn('[WARN] SES_FROM_ADDRESS is not set — OTP and assessment emails will be printed to stdout only (dev mode).');
@@ -97,7 +97,26 @@ async function start() {
   }
 
   app.listen(PORT, () => {
-    console.log(`[START] five-eyes-v2 backend listening on port ${PORT}`);
+    const smtpHost = process.env['SMTP_HOST'];
+    const sesFrom  = process.env['SES_FROM_ADDRESS'];
+    const emailMode = smtpHost
+      ? `SMTP → ${smtpHost}:${process.env['SMTP_PORT'] ?? 1025}  (Mailpit UI: http://localhost:8025)`
+      : sesFrom
+        ? `SES   (from: ${sesFrom})`
+        : 'stdout (set SMTP_HOST=localhost or SES_FROM_ADDRESS to deliver email)';
+
+    console.log('');
+    console.log('┌─────────────────────────────────────────────────────────────┐');
+    console.log('│  Five Eyes Backend — dev startup summary                    │');
+    console.log('├─────────────────────────────────────────────────────────────┤');
+    console.log(`│  API      http://localhost:${PORT}`);
+    console.log(`│  Health   http://localhost:${PORT}/health`);
+    console.log(`│  DB       ${process.env['DATABASE_URL'] ? 'postgresql://localhost:5433/five_eyes_v2' : '⚠  DATABASE_URL not set'}`);
+    console.log(`│  Email    ${emailMode}`);
+    console.log(`│  AI       ${process.env['OPENAI_API_KEY'] ? 'OPENAI_API_KEY set ✓' : '⚠  OPENAI_API_KEY not set — KB chat + TTX AI assist disabled'}`);
+    console.log(`│  CORS     ${process.env['CORS_ORIGIN'] ?? 'http://localhost:5173 (default)'}`);
+    console.log('└─────────────────────────────────────────────────────────────┘');
+    console.log('');
   });
 }
 

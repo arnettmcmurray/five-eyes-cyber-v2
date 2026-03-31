@@ -152,8 +152,9 @@ export default function ModuleManager() {
                       className={`px-2 py-0.5 rounded text-xs font-medium border ${
                         m.published
                           ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200'
-                          : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+                          : 'border-transparent hover:opacity-80'
                       } disabled:opacity-50`}
+                      style={!m.published ? { background: 'var(--bg-elevated)', color: 'var(--text-muted)' } : undefined}
                     >
                       {acting === m.id + ':pub' ? '…' : m.published ? 'Published' : 'Draft'}
                     </button>
@@ -300,7 +301,6 @@ const ROLES = ['primary', 'prerequisite-reading', 'supplementary'] as const;
 type LinkRole = typeof ROLES[number];
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-600',
   'under-review': 'bg-yellow-100 text-yellow-800',
   published: 'bg-green-100 text-green-800',
   archived: 'bg-red-100 text-red-700',
@@ -488,7 +488,10 @@ function ContentPanel({ module, onClose }: { module: LearningModule; onClose: ()
                   </td>
                   <td className="py-1 pr-3 text-xs" style={{ color: 'var(--text-muted)' }}>{item.type}</td>
                   <td className="py-1 pr-3">
-                    <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[item.status] ?? 'bg-gray-100'}`}>
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[item.status] ?? ''}`}
+                      style={!STATUS_COLORS[item.status] ? { background: 'var(--bg-elevated)', color: 'var(--text-muted)' } : undefined}
+                    >
                       {item.status}
                     </span>
                   </td>

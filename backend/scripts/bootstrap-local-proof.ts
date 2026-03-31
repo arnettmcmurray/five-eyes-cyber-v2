@@ -73,7 +73,7 @@ const IDS = {
   t2BecK7Rev:   'ab000007-0000-4000-0000-000000000007',
   t2BecK8Rev:   'ab000008-0000-4000-0000-000000000008',
 
-  // T2 BEC quiz questions (12)
+  // T2 BEC quiz questions (22)
   t2BecQ1:   'ac000001-0000-4000-0000-000000000001',
   t2BecQ2:   'ac000002-0000-4000-0000-000000000002',
   t2BecQ3:   'ac000003-0000-4000-0000-000000000003',
@@ -86,6 +86,16 @@ const IDS = {
   t2BecQ10:  'ac000010-0000-4000-0000-000000000010',
   t2BecQ11:  'ac000011-0000-4000-0000-000000000011',
   t2BecQ12:  'ac000012-0000-4000-0000-000000000012',
+  t2BecQ13:  'ac000013-0000-4000-0000-000000000013',
+  t2BecQ14:  'ac000014-0000-4000-0000-000000000014',
+  t2BecQ15:  'ac000015-0000-4000-0000-000000000015',
+  t2BecQ16:  'ac000016-0000-4000-0000-000000000016',
+  t2BecQ17:  'ac000017-0000-4000-0000-000000000017',
+  t2BecQ18:  'ac000018-0000-4000-0000-000000000018',
+  t2BecQ19:  'ac000019-0000-4000-0000-000000000019',
+  t2BecQ20:  'ac000020-0000-4000-0000-000000000020',
+  t2BecQ21:  'ac000021-0000-4000-0000-000000000021',
+  t2BecQ22:  'ac000022-0000-4000-0000-000000000022',
 
   // T3 KB items (3 training-content primary + 4 reference)
   t3K1Item:  'ae000001-0000-4000-0000-000000000001', // kb-02: password-guidance (training-content)
@@ -105,7 +115,7 @@ const IDS = {
   t3K6Rev:   'af000006-0000-4000-0000-000000000006',
   t3K7Rev:   'af000007-0000-4000-0000-000000000007',
 
-  // T3 quiz questions (12)
+  // T3 quiz questions (22)
   t3Q1:   'ag000001-0000-4000-0000-000000000001',
   t3Q2:   'ag000002-0000-4000-0000-000000000002',
   t3Q3:   'ag000003-0000-4000-0000-000000000003',
@@ -118,6 +128,16 @@ const IDS = {
   t3Q10:  'ag000010-0000-4000-0000-000000000010',
   t3Q11:  'ag000011-0000-4000-0000-000000000011',
   t3Q12:  'ag000012-0000-4000-0000-000000000012',
+  t3Q13:  'ag000013-0000-4000-0000-000000000013',
+  t3Q14:  'ag000014-0000-4000-0000-000000000014',
+  t3Q15:  'ag000015-0000-4000-0000-000000000015',
+  t3Q16:  'ag000016-0000-4000-0000-000000000016',
+  t3Q17:  'ag000017-0000-4000-0000-000000000017',
+  t3Q18:  'ag000018-0000-4000-0000-000000000018',
+  t3Q19:  'ag000019-0000-4000-0000-000000000019',
+  t3Q20:  'ag000020-0000-4000-0000-000000000020',
+  t3Q21:  'ag000021-0000-4000-0000-000000000021',
+  t3Q22:  'ag000022-0000-4000-0000-000000000022',
 
   // Learners
   evaLearner:  '11111111-1111-4111-a111-111111111111',
@@ -259,6 +279,98 @@ const IDS = {
   becKbRef1:     'jj000004-0000-4000-0000-000000000004', // → t2BecK1Item (freight-bec-map)
   becKbRef2:     'jj000005-0000-4000-0000-000000000005', // → t2BecK2Item (bec-indicator-library)
   becKbRef3:     'jj000006-0000-4000-0000-000000000006', // → t2BecK5Item (bec-in-freight)
+  becSection2:   'jj000007-0000-4000-0000-000000000007',
+  becStep2:      'jj000008-0000-4000-0000-000000000008',
+  becStep3:      'jj000009-0000-4000-0000-000000000009',
+  becSection3:   'jj000010-0000-4000-0000-000000000010',
+  becStep4:      'jj000011-0000-4000-0000-000000000011',
+  // Ransomware scenario
+  ransomScenario:  'kk000001-0000-4000-0000-000000000001',
+  ransomSection1:  'kk000002-0000-4000-0000-000000000002',
+  ransomStep1:     'kk000003-0000-4000-0000-000000000003',
+  ransomStep2:     'kk000004-0000-4000-0000-000000000004',
+  ransomSection2:  'kk000005-0000-4000-0000-000000000005',
+  ransomStep3:     'kk000006-0000-4000-0000-000000000006',
+  ransomSection3:  'kk000007-0000-4000-0000-000000000007',
+  ransomStep4:     'kk000008-0000-4000-0000-000000000008',
+  ransomKbRef1:    'kk000009-0000-4000-0000-000000000009',
+  ransomKbRef2:    'kk000010-0000-4000-0000-000000000010',
+  // Executive Impersonation scenario
+  execScenario:    'll000001-0000-4000-0000-000000000001',
+  execSection1:    'll000002-0000-4000-0000-000000000002',
+  execStep1:       'll000003-0000-4000-0000-000000000003',
+  execStep2:       'll000004-0000-4000-0000-000000000004',
+  execSection2:    'll000005-0000-4000-0000-000000000005',
+  execStep3:       'll000006-0000-4000-0000-000000000006',
+  execStep4:       'll000007-0000-4000-0000-000000000007',
+  execSection3:    'll000008-0000-4000-0000-000000000008',
+  execStep5:       'll000009-0000-4000-0000-000000000009',
+
+  // Cargo Diversion — Fraudulent Carrier Substitution
+  cargoScenario:   'mm000001-0000-4000-0000-000000000001',
+  cargoSection1:   'mm000002-0000-4000-0000-000000000002',
+  cargoStep1:      'mm000003-0000-4000-0000-000000000003',
+  cargoStep2:      'mm000004-0000-4000-0000-000000000004',
+  cargoSection2:   'mm000005-0000-4000-0000-000000000005',
+  cargoStep3:      'mm000006-0000-4000-0000-000000000006',
+  cargoStep4:      'mm000007-0000-4000-0000-000000000007',
+  cargoSection3:   'mm000008-0000-4000-0000-000000000008',
+  cargoStep5:      'mm000009-0000-4000-0000-000000000009',
+
+  // SaaS / TMS Data Breach — Third-Party Logistics Platform Compromise
+  tmsScenario:     'nn000001-0000-4000-0000-000000000001',
+  tmsSection1:     'nn000002-0000-4000-0000-000000000002',
+  tmsStep1:        'nn000003-0000-4000-0000-000000000003',
+  tmsStep2:        'nn000004-0000-4000-0000-000000000004',
+  tmsSection2:     'nn000005-0000-4000-0000-000000000005',
+  tmsStep3:        'nn000006-0000-4000-0000-000000000006',
+  tmsStep4:        'nn000007-0000-4000-0000-000000000007',
+  tmsSection3:     'nn000008-0000-4000-0000-000000000008',
+  tmsStep5:        'nn000009-0000-4000-0000-000000000009',
+
+  // Phishing-to-Credential Compromise — Load Board Account Takeover
+  phishScenario:   'oo000001-0000-4000-0000-000000000001',
+  phishSection1:   'oo000002-0000-4000-0000-000000000002',
+  phishStep1:      'oo000003-0000-4000-0000-000000000003',
+  phishStep2:      'oo000004-0000-4000-0000-000000000004',
+  phishSection2:   'oo000005-0000-4000-0000-000000000005',
+  phishStep3:      'oo000006-0000-4000-0000-000000000006',
+  phishStep4:      'oo000007-0000-4000-0000-000000000007',
+  phishSection3:   'oo000008-0000-4000-0000-000000000008',
+  phishStep5:      'oo000009-0000-4000-0000-000000000009',
+
+  // Double-Brokering Fraud — Identity Theft of a Legitimate Carrier
+  brokerScenario:  'pp000001-0000-4000-0000-000000000001',
+  brokerSection1:  'pp000002-0000-4000-0000-000000000002',
+  brokerStep1:     'pp000003-0000-4000-0000-000000000003',
+  brokerStep2:     'pp000004-0000-4000-0000-000000000004',
+  brokerSection2:  'pp000005-0000-4000-0000-000000000005',
+  brokerStep3:     'pp000006-0000-4000-0000-000000000006',
+  brokerStep4:     'pp000007-0000-4000-0000-000000000007',
+  brokerSection3:  'pp000008-0000-4000-0000-000000000008',
+  brokerStep5:     'pp000009-0000-4000-0000-000000000009',
+
+  // Insider Threat — Rogue Employee Data Exfiltration Before Departure
+  insiderScenario: 'qq000001-0000-4000-0000-000000000001',
+  insiderSection1: 'qq000002-0000-4000-0000-000000000002',
+  insiderStep1:    'qq000003-0000-4000-0000-000000000003',
+  insiderStep2:    'qq000004-0000-4000-0000-000000000004',
+  insiderSection2: 'qq000005-0000-4000-0000-000000000005',
+  insiderStep3:    'qq000006-0000-4000-0000-000000000006',
+  insiderStep4:    'qq000007-0000-4000-0000-000000000007',
+  insiderSection3: 'qq000008-0000-4000-0000-000000000008',
+  insiderStep5:    'qq000009-0000-4000-0000-000000000009',
+
+  // Supply Chain Impersonation — Fake Vendor Onboarding
+  fakeVendorScenario:  'rr000001-0000-4000-0000-000000000001',
+  fakeVendorSection1:  'rr000002-0000-4000-0000-000000000002',
+  fakeVendorStep1:     'rr000003-0000-4000-0000-000000000003',
+  fakeVendorStep2:     'rr000004-0000-4000-0000-000000000004',
+  fakeVendorSection2:  'rr000005-0000-4000-0000-000000000005',
+  fakeVendorStep3:     'rr000006-0000-4000-0000-000000000006',
+  fakeVendorStep4:     'rr000007-0000-4000-0000-000000000007',
+  fakeVendorSection3:  'rr000008-0000-4000-0000-000000000008',
+  fakeVendorStep5:     'rr000009-0000-4000-0000-000000000009',
 };
 
 // ── KB Content ─────────────────────────────────────────────────────────────
@@ -1971,9 +2083,180 @@ async function main() {
       confidence: 0.96,
       promotedToModuleId: IDS.t2Module,
     },
+    // ── T2 Extended Questions (13–22) ─────────────────────────────────────────
+    {
+      id: IDS.t2BecQ13,
+      kbItemId: IDS.t2BecK1Item,
+      revisionId: IDS.t2BecK1Rev,
+      questionText: 'A carrier emails to say they have changed banks and need you to update their payment details before the next remittance. The email domain matches the carrier you know. What is the safest approach?',
+      options: [
+        'Update the payment details immediately since the domain is correct.',
+        'Reply to confirm the request and update after they respond.',
+        'Call the carrier at a phone number from your own records (not the email) to verify the change is genuine before updating anything.',
+        'Ask a colleague to check if the email looks legitimate before acting.',
+      ],
+      suggestedCorrectIndex: 2,
+      explanation: 'A correct email domain does not mean the email is genuine. Attackers compromise email accounts and send fraud from legitimate domains. The only reliable verification is an out-of-band phone call to a number from your records — one that predates the suspicious email. Reply-to verification is not safe, as replies often go to attacker-controlled addresses.',
+      status: 'promoted',
+      confidence: 0.97,
+      promotedToModuleId: IDS.t2Module,
+    },
+    {
+      id: IDS.t2BecQ14,
+      kbItemId: IDS.t2BecK2Item,
+      revisionId: IDS.t2BecK2Rev,
+      questionText: 'Which of the following is NOT a reliable indicator that a payment-change email is legitimate?',
+      options: [
+        'The sender\'s email address exactly matches the vendor domain on file.',
+        'The email references a real invoice number you recognize.',
+        'The email includes a phone number to call for questions.',
+        'The new banking details have been independently verified by phone to a pre-registered contact.',
+      ],
+      suggestedCorrectIndex: 2,
+      explanation: 'Phone numbers provided within the suspicious email may be attacker-controlled — calling them completes the fraud. Matching sender domains can indicate a compromised legitimate account. Invoice numbers can be harvested from prior emails. The only reliable indicator is independent verification through a channel you established before the suspicious communication arrived.',
+      status: 'promoted',
+      confidence: 0.96,
+      promotedToModuleId: IDS.t2Module,
+    },
+    {
+      id: IDS.t2BecQ15,
+      kbItemId: IDS.t2BecK5Item,
+      revisionId: IDS.t2BecK5Rev,
+      questionText: 'In freight BEC, what distinguishes "vendor impersonation" from "executive impersonation"?',
+      options: [
+        'Vendor impersonation targets accounts payable by impersonating suppliers or carriers. Executive impersonation targets employees by faking messages from senior leadership.',
+        'Vendor impersonation always involves domain spoofing. Executive impersonation uses forwarding rules.',
+        'Vendor impersonation is more common. Executive impersonation is always detected first.',
+        'There is no practical difference — both use the same tactics.',
+      ],
+      suggestedCorrectIndex: 0,
+      explanation: 'Vendor impersonation specifically exploits the trust in supplier/carrier payment relationships — the attacker mimics a real vendor to redirect payments. Executive impersonation exploits internal authority — "the CEO needs this wire transfer done immediately." Both are BEC, but they target different relationships and require different verification controls. Freight operations face both, but vendor impersonation is particularly prevalent due to high transaction volumes.',
+      status: 'promoted',
+      confidence: 0.95,
+      promotedToModuleId: IDS.t2Module,
+    },
+    {
+      id: IDS.t2BecQ16,
+      kbItemId: IDS.t2BecK4Item,
+      revisionId: IDS.t2BecK4Rev,
+      questionText: 'Your payment change policy requires a callback to a pre-registered number before updating vendor banking details. A vendor says "our registered number is wrong — please call this new number to verify." What do you do?',
+      options: [
+        'Call the new number they provided, since they explained why the registered number is wrong.',
+        'Do not call any unverified number. Tell the vendor you will only use the contact number in your existing records, and ask them to submit a formal change of contact details through your vendor management process.',
+        'Email the vendor to confirm the new contact number before calling.',
+        'Update the contact number in the system first, then proceed with the payment change verification.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'This is a sophisticated BEC technique: asking to change the verification contact before the payment change. Once you call an attacker-controlled number for "verification," the fraud is complete. Policies exist precisely for this scenario. The answer is to maintain the process: only use pre-registered, independently verified contacts — and require formal channel changes before any payment or contact detail changes.',
+      status: 'promoted',
+      confidence: 0.98,
+      promotedToModuleId: IDS.t2Module,
+    },
+    {
+      id: IDS.t2BecQ17,
+      kbItemId: IDS.t2BecK6Item,
+      revisionId: IDS.t2BecK6Rev,
+      questionText: 'What is the correct escalation path when an accounts payable employee suspects a payment request may be fraudulent but cannot immediately verify it?',
+      options: [
+        'Process the payment to avoid delaying the vendor relationship, but flag it internally afterward.',
+        'Hold the payment, escalate to the finance director immediately, and document the request. Do not notify the requestor until the verification outcome is known.',
+        'Forward the suspicious email to IT security and wait for their response before taking any action.',
+        'Reply to the suspicious email asking for more information.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'When in doubt, hold. Delaying a legitimate payment is recoverable. An approved fraudulent wire transfer is often unrecoverable within hours. The escalation path should be: hold the payment, escalate to the finance director or security lead, document the request without notifying the requestor (who may be the attacker and would destroy evidence or switch tactics if alerted). Replying to a suspected fraudulent email should never be the first action.',
+      status: 'promoted',
+      confidence: 0.97,
+      promotedToModuleId: IDS.t2Module,
+    },
+    {
+      id: IDS.t2BecQ18,
+      kbItemId: IDS.t2BecK7Item,
+      revisionId: IDS.t2BecK7Rev,
+      questionText: 'A wire transfer has been sent based on fraudulent BEC instructions. It has been 45 minutes since the transfer was initiated. What is the most critical first action?',
+      options: [
+        'Email the receiving bank to request a reversal.',
+        'Contact your bank\'s wire department by phone immediately to request a wire recall or hold. Do not wait for internal approval before making this call.',
+        'File a police report before contacting your bank.',
+        'Notify your cyber insurance carrier first to ensure coverage before any other action.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'Wire recall is time-critical. Domestic wire recalls have the highest success rate within the first 60–90 minutes. International transfers become significantly harder to recall once funds are released by the receiving bank, often within hours. The bank call must happen immediately — before insurance, before police, before internal approval processes. Speed is the only variable you can control. Call the wire department directly at the number on the bank\'s official website.',
+      status: 'promoted',
+      confidence: 0.98,
+      promotedToModuleId: IDS.t2Module,
+    },
+    {
+      id: IDS.t2BecQ19,
+      kbItemId: IDS.t2BecK8Item,
+      revisionId: IDS.t2BecK8Rev,
+      questionText: 'After a BEC incident is confirmed, which of the following actions would DESTROY evidence needed for law enforcement and insurance?',
+      options: [
+        'Exporting the full contents of the compromised email inbox before changing the password.',
+        'Deleting the suspicious emails and resetting the compromised email account before IT security or law enforcement has imaged the mailbox.',
+        'Screenshotting the fraudulent email thread and payment instructions.',
+        'Preserving server logs from the period of suspected compromise.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'Deleting emails or resetting accounts before forensic imaging destroys critical evidence. Law enforcement needs email headers, forwarding rules, login history, and the full email thread to trace the attack. Insurance claims require documentation of the incident. The correct order: preserve evidence first (export mailbox, screenshot forwarding rules, preserve logs), then remediate (change passwords, close compromised accounts).',
+      status: 'promoted',
+      confidence: 0.97,
+      promotedToModuleId: IDS.t2Module,
+    },
+    {
+      id: IDS.t2BecQ20,
+      kbItemId: IDS.t2BecK1Item,
+      revisionId: IDS.t2BecK1Rev,
+      questionText: 'A freight broker receives a rate confirmation from what appears to be a regular carrier, but the reply-to address is different from the sender. What does this most likely indicate?',
+      options: [
+        'This is normal — many carriers use separate sending and reply addresses for billing purposes.',
+        'This could indicate a Business Email Compromise attempt, where the attacker wants replies to go to their address rather than the legitimate carrier.',
+        'The carrier\'s email system is misconfigured and IT should be notified.',
+        'The email was forwarded from another account and reply-to discrepancies are expected.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'A mismatched reply-to address is a standard BEC indicator. The attacker sends from a spoofed or compromised legitimate address but sets the reply-to to an address they control. This means responses (including payment confirmations and banking details) go to the attacker, while the appearance of legitimate communication is maintained. Always check the reply-to field, not just the sender display name.',
+      status: 'promoted',
+      confidence: 0.96,
+      promotedToModuleId: IDS.t2Module,
+    },
+    {
+      id: IDS.t2BecQ21,
+      kbItemId: IDS.t2BecK3Item,
+      revisionId: IDS.t2BecK3Rev,
+      questionText: 'Your company implements a dual-approval requirement for all payments over $25,000. A manager tells an AP employee "I already approved this — just process it." What is the correct response?',
+      options: [
+        'Process the payment since the manager has the authority to approve it.',
+        'Process the payment and document that the manager approved it.',
+        'Decline to process the payment without a second, independent approval as required by policy. The dual-approval requirement cannot be overridden by a single manager.',
+        'Ask a second colleague whether they think it is acceptable to proceed.',
+      ],
+      suggestedCorrectIndex: 2,
+      explanation: 'Dual approval controls only work if they cannot be bypassed by individual managers. BEC often involves compromised email accounts of managers who then "approve" fraudulent payments. The policy is specifically designed to prevent single points of failure — including at the manager level. Employees should be empowered to decline even manager-level pressure when it bypasses a security control.',
+      status: 'promoted',
+      confidence: 0.97,
+      promotedToModuleId: IDS.t2Module,
+    },
+    {
+      id: IDS.t2BecQ22,
+      kbItemId: IDS.t2BecK2Item,
+      revisionId: IDS.t2BecK2Rev,
+      questionText: 'Which domain is most likely a fraudulent lookalike of "pacificfreight.com" used in a BEC attack?',
+      options: [
+        'pacific-freight.com',
+        'pacificfreightlogistics.net',
+        'pacificfreiqht.com (with the letters "g" and "h" transposed in "freight")',
+        'All of the above are commonly used in BEC attacks.',
+      ],
+      suggestedCorrectIndex: 3,
+      explanation: 'All three are used. Hyphen insertion (pacific-freight.com), extended domain names (adding "logistics"), and typosquatting (transposing or substituting characters) are all documented BEC domain lookalike techniques. Attackers register domains that pass casual inspection. Defence: always hover over links to reveal the actual URL, and verify vendor email domains against your on-file contact information.',
+      status: 'promoted',
+      confidence: 0.95,
+      promotedToModuleId: IDS.t2Module,
+    },
   ]).onConflictDoNothing();
 
-  console.log('[bootstrap] ✓ T2 BEC practice questions (12)');
+  console.log('[bootstrap] ✓ T2 BEC practice questions (22)');
 
   // ── 19. T3 KB items, revisions, and lesson content links ──────────────────
 
@@ -2248,9 +2531,180 @@ async function main() {
       confidence: 0.95,
       promotedToModuleId: IDS.t3Module,
     },
+    // ── T3 Extended Questions (13–22) ─────────────────────────────────────────
+    {
+      id: IDS.t3Q13,
+      kbItemId: IDS.t3K1Item,
+      revisionId: IDS.t3K1Rev,
+      questionText: 'A driver uses a single password across their ELD app, personal email, and a load board. Their personal email is compromised in a data breach. What is the likely consequence for their freight operations?',
+      options: [
+        'No consequence — the ELD and load board have separate databases.',
+        'The attacker can now attempt to log in to the ELD app and load board using the same password, potentially accessing freight data, load assignments, and driver information.',
+        'The driver should change their personal email password and no other action is needed.',
+        'Data breaches of personal email do not affect business accounts.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'Password reuse is the primary vector for credential stuffing attacks. When a password is exposed in a breach, attackers automatically test it across dozens of other services — including TMS platforms, load boards, and ELD apps. The correct response to any data breach notification is to change the exposed password AND identify every other account using the same password and change those too.',
+      status: 'promoted',
+      confidence: 0.97,
+      promotedToModuleId: IDS.t3Module,
+    },
+    {
+      id: IDS.t3Q14,
+      kbItemId: IDS.t3K1Item,
+      revisionId: IDS.t3K1Rev,
+      questionText: 'What is the most secure way for a freight brokerage AP team to manage the 20+ vendor portal passwords they use regularly?',
+      options: [
+        'A shared spreadsheet in the team Google Drive with all passwords listed.',
+        'Each employee memorizes their own set of passwords.',
+        'A business password manager that generates and stores unique passwords for each site, accessible to authorized team members only.',
+        'Post-it notes kept at the workstation for quick access during busy periods.',
+      ],
+      suggestedCorrectIndex: 2,
+      explanation: 'Business password managers solve the security-usability problem: they generate long, unique, random passwords for every service and securely store them. A shared spreadsheet is vulnerable (anyone with link access can read all passwords). Memorization leads to reuse and weak passwords. Physical notes are insecure. A business password manager is the only scalable, secure approach for team credentials.',
+      status: 'promoted',
+      confidence: 0.97,
+      promotedToModuleId: IDS.t3Module,
+    },
+    {
+      id: IDS.t3Q15,
+      kbItemId: IDS.t3K2Item,
+      revisionId: IDS.t3K2Rev,
+      questionText: 'Which of the following employees should be the FIRST priority for MFA enrollment in a freight company?',
+      options: [
+        'Drivers who use an ELD mobile app.',
+        'Accounts payable staff, financial approvers, and email administrators — anyone with access to payment systems or the ability to change email security settings.',
+        'The IT team only — others don\'t need it.',
+        'Senior executives, but not operational staff.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'MFA enrollment should be prioritized by risk. Accounts payable and financial approvers can authorize large transfers — compromise of these accounts has immediate, high-value impact. Email administrators can change forwarding rules and disable security settings. These roles are highest-value targets for attackers and should be enrolled first. Then extend to all staff, since every compromised account can be used for lateral movement or social engineering.',
+      status: 'promoted',
+      confidence: 0.96,
+      promotedToModuleId: IDS.t3Module,
+    },
+    {
+      id: IDS.t3Q16,
+      kbItemId: IDS.t3K2Item,
+      revisionId: IDS.t3K2Rev,
+      questionText: 'An employee\'s authenticator app device is lost. What must they have in order to recover access to their MFA-protected accounts?',
+      options: [
+        'Their username and password are sufficient for recovery.',
+        'Recovery codes that were generated and saved when MFA was first set up.',
+        'They need to contact each service and wait for manual identity verification.',
+        'MFA recovery is handled automatically by the service after a 24-hour waiting period.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'Recovery codes are one-time backup codes generated when MFA is set up. They are the only guaranteed way to recover account access if the MFA device is lost. They must be saved securely when generated — a common failure point is not saving them at all. Best practice: store recovery codes in a secure offline location (printed and locked, or in a password manager). Services vary in their recovery options, so having recovery codes removes dependency on uncertain manual processes.',
+      status: 'promoted',
+      confidence: 0.96,
+      promotedToModuleId: IDS.t3Module,
+    },
+    {
+      id: IDS.t3Q17,
+      kbItemId: IDS.t3K3Item,
+      revisionId: IDS.t3K3Rev,
+      questionText: 'A logistics company gives all employees the same admin login for their TMS to "keep things simple." What is the primary risk of this practice?',
+      options: [
+        'The shared password will be too complex for some employees to remember.',
+        'No individual is accountable for actions taken with the shared account, unauthorized access cannot be attributed, and a single compromise exposes admin access to all users.',
+        'This violates TMS vendor licensing terms but has no security impact.',
+        'Only one person can be logged in at a time, creating operational inefficiency.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'Shared admin accounts eliminate accountability (you cannot determine who made a change), prevent detection (login anomalies are invisible when everyone uses the same account), and create a single high-value target (one compromised password gives attacker full admin access). Every user should have an individual account with appropriate permissions — admin access should be a separate, separately monitored account used only when needed.',
+      status: 'promoted',
+      confidence: 0.97,
+      promotedToModuleId: IDS.t3Module,
+    },
+    {
+      id: IDS.t3Q18,
+      kbItemId: IDS.t3K3Item,
+      revisionId: IDS.t3K3Rev,
+      questionText: 'A warehouse manager leaves the company. Their accounts are not disabled for two weeks while HR processes the departure. What specific risk does this create?',
+      options: [
+        'Minimal risk — they no longer have a reason to access systems.',
+        'The former employee (or someone using their credentials) can access systems, data, and communications for two weeks after departure — a window for data theft, sabotage, or use of their accounts in further attacks.',
+        'The company may face HR audit issues but no security impact.',
+        'The risk is limited to physical security, not cyber.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'Offboarding account deactivation must happen on or before the last day of employment — not weeks later. This is not a theoretical risk: insider threats and credential abuse by former employees are well-documented. Even if the individual has no malicious intent, unused active accounts are a security liability (forgotten passwords, potential account takeover by third parties). The process gap is the risk — not just the individual.',
+      status: 'promoted',
+      confidence: 0.97,
+      promotedToModuleId: IDS.t3Module,
+    },
+    {
+      id: IDS.t3Q19,
+      kbItemId: IDS.t3K1Item,
+      revisionId: IDS.t3K1Rev,
+      questionText: 'What makes a passphrase (four random words) more secure than a complex 8-character password like "P@ssw0rd1"?',
+      options: [
+        'Passphrases are more secure only when they include numbers.',
+        'A four-word passphrase is typically 20–30 characters long, giving it far more entropy than an 8-character complex password, making it vastly harder to crack by brute force.',
+        'Passphrases are equally secure to complex short passwords.',
+        'Complex passwords with special characters are always more secure than passphrases.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'Password strength comes from entropy — the number of possible combinations. "P@ssw0rd1" substitutes are predictable patterns that attackers include in their cracking dictionaries. A 20-character passphrase of four random words has astronomically more possible combinations than an 8-character complex password, even with special characters. NIST guidance recommends length over complexity because length wins the math.',
+      status: 'promoted',
+      confidence: 0.96,
+      promotedToModuleId: IDS.t3Module,
+    },
+    {
+      id: IDS.t3Q20,
+      kbItemId: IDS.t3K2Item,
+      revisionId: IDS.t3K2Rev,
+      questionText: 'A freight broker enables SMS MFA on their TMS login. A colleague says "SMS MFA is vulnerable to SIM swap attacks — you should use an authenticator app instead." Is this advice correct?',
+      options: [
+        'No — SMS MFA is the most secure option available.',
+        'Yes — SMS MFA is better than no MFA, but authenticator apps are more secure because they are not vulnerable to SIM swap attacks, where an attacker redirects your phone number to their control.',
+        'No — SIM swap attacks only target personal phones, not business accounts.',
+        'The choice between SMS and authenticator app makes no practical difference for most users.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'SMS MFA is significantly better than no MFA, but it has a known weakness: SIM swap. Attackers convince mobile carriers to transfer a victim\'s phone number to a SIM the attacker controls, then receive all SMS codes. Authenticator apps generate time-based codes on the device itself — they are not transmitted over the phone network and cannot be intercepted via SIM swap. For any high-value account (payment systems, email admin), authenticator apps or hardware keys are the recommended standard.',
+      status: 'promoted',
+      confidence: 0.96,
+      promotedToModuleId: IDS.t3Module,
+    },
+    {
+      id: IDS.t3Q21,
+      kbItemId: IDS.t3K3Item,
+      revisionId: IDS.t3K3Rev,
+      questionText: 'Under the principle of least privilege, which of the following correctly describes how a fleet dispatcher\'s TMS account should be configured?',
+      options: [
+        'Full admin access so they can fix any issue independently without needing IT help.',
+        'Access only to the functions needed for dispatch operations — load assignment, status updates, driver communication — without access to payment settings, user administration, or system configurations.',
+        'Read-only access to all modules so they can view but not change anything.',
+        'Access should be based on seniority, with senior dispatchers having broader access.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: 'Least privilege means each account has exactly the access needed for its role and no more. A dispatcher does not need to manage payment settings or add users — those permissions create unnecessary risk if the account is compromised. Scoped access means a compromised dispatcher account causes limited damage, rather than full system compromise. Access decisions should be based on job function, not seniority.',
+      status: 'promoted',
+      confidence: 0.97,
+      promotedToModuleId: IDS.t3Module,
+    },
+    {
+      id: IDS.t3Q22,
+      kbItemId: IDS.t3K1Item,
+      revisionId: IDS.t3K1Rev,
+      questionText: 'An employee creates the password "Summer2024!" for their work TMS account. What is the main security problem with this password?',
+      options: [
+        'It is not long enough — passwords must be at least 20 characters.',
+        'It follows a predictable pattern (word + year + punctuation) that appears in attacker password dictionaries and is easy to crack.',
+        'It contains a special character, which reduces compatibility with some systems.',
+        'Seasonal words are prohibited by most security policies.',
+      ],
+      suggestedCorrectIndex: 1,
+      explanation: '"Summer2024!" follows a pattern that is well-known to password crackers: capitalized common word + year + special character. Attacker wordlists include seasonal words, years, and common punctuation combinations. Despite appearing complex, it has low entropy because it follows a predictable formula. A stronger alternative: a random passphrase ("correct horse battery staple") or a password manager-generated string like "kX9$mP2@vN7".',
+      status: 'promoted',
+      confidence: 0.96,
+      promotedToModuleId: IDS.t3Module,
+    },
   ]).onConflictDoNothing();
 
-  console.log('[bootstrap] ✓ T3 practice questions (12)');
+  console.log('[bootstrap] ✓ T3 practice questions (22)');
 
   // ── TTX — BEC scenario seed ──────────────────────────────────────────────
 
@@ -2297,7 +2751,1086 @@ async function main() {
     { id: IDS.becKbRef3, scenarioId: IDS.becScenario, kbItemId: IDS.t2BecK5Item, addedBy: BOOTSTRAP_BY },
   ]).onConflictDoNothing();
 
-  console.log('[bootstrap] ✓ TTX BEC scenario (1 scenario, 1 section, 1 step, 3 KB refs)');
+  // BEC Section 2: Escalation and Containment
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.becSection2,
+    scenarioId: IDS.becScenario,
+    title: 'Escalation and Containment',
+    background: 'The payment has been held — but the team discovers the vendor\'s email account was compromised. The attacker may have also accessed historical invoice data and forwarding rules have been found on the vendor contact\'s account.',
+    order: 1,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.becStep2,
+      sectionId: IDS.becSection2,
+      title: 'Scope the Compromise',
+      facilitatorNarrative: 'Inform the group: IT has confirmed that James Hartley\'s email account at Ocean Freight Partners has an active forwarding rule sending copies of all emails to a Gmail address. The rule was added 19 days ago. James was not aware of it.',
+      participantSituationRoom: 'UPDATED: The vendor email account was compromised 19 days ago. An attacker has been monitoring payment communications. Unknown how many other brokers or partners may have received fraudulent redirect requests.',
+      prompts: [
+        'What is the scope of this compromise beyond your organisation?',
+        'Do you have an obligation to notify the vendor or other affected parties?',
+        'What internal systems or accounts may have been affected by the 19-day monitoring window?',
+      ],
+      whatGoodLooksLike: 'Notification to the vendor IT team. Review of all payment change requests received from vendor domain in last 30 days. Legal review of notification obligations.',
+      consequenceNote: 'If notification is delayed, advance scenario: another broker in the network has wired $180,000 to the fraudulent account.',
+      order: 0,
+    },
+    {
+      id: IDS.becStep3,
+      sectionId: IDS.becSection2,
+      title: 'Evidence Preservation',
+      facilitatorNarrative: 'Finance director asks: "Should we delete the fraudulent emails and update our email security settings right now?" A team member suggests immediately changing all payment-related email passwords.',
+      participantSituationRoom: 'DECISION POINT: Your team wants to act quickly to close the vulnerability. However, forensic evidence may be needed for law enforcement and insurance.',
+      prompts: [
+        'What evidence must be preserved before any remediation steps?',
+        'In what order should you take action — evidence preservation, password reset, law enforcement, or insurance notification?',
+        'Who authorises forensic preservation on behalf of the organisation?',
+      ],
+      whatGoodLooksLike: 'Evidence preserved (email exports, forwarding rule screenshots, server logs) before any account remediation. IT security lead or external IR firm engaged before systems are changed.',
+      consequenceNote: undefined,
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  // BEC Section 3: Recovery and Hardening
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.becSection3,
+    scenarioId: IDS.becScenario,
+    title: 'Recovery and Process Hardening',
+    background: 'The immediate threat is contained. The payment was held successfully. Law enforcement has been notified. The team now needs to assess systemic vulnerability and put controls in place to prevent recurrence.',
+    order: 2,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values({
+    id: IDS.becStep4,
+    sectionId: IDS.becSection3,
+    title: 'After-Action: Process Gap Analysis',
+    facilitatorNarrative: 'Open debrief: "We caught this one. But the existing process allowed a payment change request to get to the verification stage with no prior callback requirement. Walk me through what changes you are making to the payment change procedure."',
+    participantSituationRoom: 'AFTER-ACTION: The BEC attempt was detected. But your current payment change procedure allowed this email to reach your AP team and nearly result in a transfer. What process gaps did this exercise reveal?',
+    prompts: [
+      'What specific procedure change would have stopped this attack at the first email?',
+      'Who is accountable for implementing the new dual-approval and callback procedure?',
+      'How will you test whether the new procedure is followed — and what happens when someone bypasses it?',
+    ],
+    whatGoodLooksLike: 'Documented procedure requiring out-of-band phone callback to pre-registered number before any payment destination change. Dual approval requirement for any change over $50,000. Scheduled test of the procedure within 30 days.',
+    consequenceNote: undefined,
+    order: 0,
+  }).onConflictDoNothing();
+
+  console.log('[bootstrap] ✓ TTX BEC scenario (1 scenario, 3 sections, 4 steps, 3 KB refs)');
+
+  // ── TTX — Ransomware Response scenario ─────────────────────────────────────
+
+  await db.insert(ttxScenarios).values({
+    id: IDS.ransomScenario,
+    slug: 'ransomware-warehouse-response',
+    title: 'Ransomware: Warehouse Operations Under Attack',
+    executiveSummary: 'Ransomware has encrypted your WMS and is spreading to adjacent systems. Your team must isolate, assess, and activate your response plan in real time.',
+    description: 'A ransomware deployment has been triggered during a peak shipping window. Your Warehouse Management System is encrypted, dock operations have stopped, and your IT team has just confirmed the malware is still active on the network.',
+    objective: 'Practice the critical first-hour ransomware response: isolation, decision-making under pressure, communication, and recovery prioritisation.',
+    goals: [
+      'Execute network isolation without exceeding downtime tolerance',
+      'Establish clean command and control communications',
+      'Make the ransom payment decision with appropriate governance',
+      'Prioritise recovery sequencing for operational continuity',
+    ],
+    targetAudience: ['IT Security', 'Operations', 'Executive Leadership', 'Finance'],
+    signatureTheme: 'ransomware',
+    createdBy: BOOTSTRAP_BY,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.ransomSection1,
+    scenarioId: IDS.ransomScenario,
+    title: 'Initial Detection',
+    background: 'It\'s 06:45 on a Monday. The warehouse morning shift starts at 07:00. Your WMS operator calls to report the WMS is showing a red screen with a ransom note. The dock management screens are also affected. Four hundred orders are queued for today\'s dispatch.',
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.ransomStep1,
+      sectionId: IDS.ransomSection1,
+      title: 'First Three Minutes',
+      facilitatorNarrative: 'Read aloud: It is 06:47. The warehouse supervisor is on the phone. The WMS is showing a ransom demand for 15 Bitcoin (~$850,000 USD). The screen shows a 72-hour countdown timer before files are "permanently deleted." Shift workers are arriving. Dock doors will open in 13 minutes.',
+      participantSituationRoom: 'ACTIVE INCIDENT — 06:47: WMS encrypted. Ransom demand: 15 BTC. 72-hour timer visible on all affected screens. Dock operations start in 13 minutes. 400 orders queued. IT is on the phone asking for direction.',
+      prompts: [
+        'What is your very first action in the next 60 seconds?',
+        'Do you delay the shift start, halt dock operations, or attempt to operate manually?',
+        'Who do you call first — IT, your CEO, cyber insurance, or law enforcement?',
+      ],
+      whatGoodLooksLike: 'Immediate: physically disconnect affected systems from network (unplug Ethernet — do not power off). Do not attempt to use or reboot infected systems. Delay dock opening by 30 minutes. Establish manual operations fallback. Incident commander designated.',
+      consequenceNote: 'If team powers off systems, flag that forensic evidence (in RAM) has been destroyed. Note this as a training gap for post-debrief.',
+      order: 0,
+    },
+    {
+      id: IDS.ransomStep2,
+      sectionId: IDS.ransomSection1,
+      title: 'Scope Assessment',
+      facilitatorNarrative: 'IT reports: WMS server encrypted. Two workstations on the dock floor encrypted. Email server is responding but flagged as potentially affected. Backups: last verified backup was taken 11 days ago (backup job failed for 11 days — nobody noticed). ERP system appears clean.',
+      participantSituationRoom: 'SCOPE UPDATE: WMS encrypted. 2 dock workstations encrypted. Email server status uncertain. Last verified backup: 11 days old. ERP is clean. Estimated 400 customer shipments affected today. Senior leadership are now calling.',
+      prompts: [
+        'Given the 11-day backup gap — how does this change your response and recovery options?',
+        'Do you continue to use email for incident communications? Why or why not?',
+        'What do you tell customer-facing teams about shipment delays?',
+      ],
+      whatGoodLooksLike: 'Email communications suspended for internal incident response — switch to personal devices and Signal/WhatsApp. ERP isolated as precaution. External IR firm engaged. Customers notified of delay without disclosing ransomware (pending legal review).',
+      consequenceNote: undefined,
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.ransomSection2,
+    scenarioId: IDS.ransomScenario,
+    title: 'Decision Point: Ransom Payment',
+    background: 'It is now hour 4. The IR firm has confirmed the attacker is a known ransomware-as-a-service group. They have exfiltrated data (customer PII, vendor contracts). Backups are unrecoverable beyond 11 days. Manual operations are failing under load. The CEO is asking whether to pay.',
+    order: 1,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values({
+    id: IDS.ransomStep3,
+    sectionId: IDS.ransomSection2,
+    title: 'The Payment Decision',
+    facilitatorNarrative: 'CFO states: "We are losing $180,000 per day in operations. The ransom is $850,000. If we are down for 6 more days we have spent the ransom in losses and have nothing. We are recommending we pay." Legal counsel has not yet responded. Cyber insurance adjuster is on the line.',
+    participantSituationRoom: 'DECISION: Operational losses at $180K/day. Ransom demand $850K. Attacker group has been identified. Legal and insurance not yet confirmed position. CEO wants a decision in 30 minutes.',
+    prompts: [
+      'What information do you need before making a payment decision?',
+      'What are the legal risks of paying, and who needs to sign off?',
+      'What does your cyber insurance policy require you to do before authorising payment?',
+    ],
+    whatGoodLooksLike: 'No payment without: (1) legal counsel OFAC sanctions check, (2) cyber insurance pre-authorisation, (3) law enforcement liaison. CEO briefed that payment is a business continuity decision requiring legal and insurance clearance — not an IT decision. Payment decision deferred pending these inputs.',
+    consequenceNote: 'If group decides to pay without legal/insurance clearance, advance the scenario: OFAC subsequently investigates the payment for potential sanctions violation.',
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.ransomSection3,
+    scenarioId: IDS.ransomScenario,
+    title: 'Recovery Sequencing and After-Action',
+    background: 'Day 3. The decision has been made to restore from backup (accepting the 11-day gap) rather than pay. Manual operations have held. The IR firm has confirmed the attacker\'s entry point: RDP exposed to the internet with a weak password, no MFA.',
+    order: 2,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values({
+    id: IDS.ransomStep4,
+    sectionId: IDS.ransomSection3,
+    title: 'Recovery Prioritisation and Hardening',
+    facilitatorNarrative: 'Open debrief: "The IR firm has given you a clean bill of health on the ERP and email systems. You have a decision on recovery sequencing. You also now know the entry point. Walk the group through what gets restored first and what controls go in before the next shift."',
+    participantSituationRoom: 'RECOVERY PHASE: Entry point confirmed as exposed RDP with weak credentials. Systems available for restoration: WMS, dock management, email server. One IT engineer available. What is your restoration sequence?',
+    prompts: [
+      'In what sequence do you restore systems — and what is your reasoning?',
+      'Before the RDP port is reopened, what three controls must be in place?',
+      'What is your backup verification cadence going forward — and who owns it?',
+    ],
+    whatGoodLooksLike: 'WMS restored first (operational priority). RDP access gated behind MFA and VPN before re-enabling. Automated backup monitoring with daily health check alert implemented. Post-incident review scheduled for within 14 days. Lessons learned documented and distributed to leadership.',
+    consequenceNote: undefined,
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioKbRefs).values([
+    { id: IDS.ransomKbRef1, scenarioId: IDS.ransomScenario, kbItemId: IDS.t2BecK1Item, addedBy: BOOTSTRAP_BY },
+    { id: IDS.ransomKbRef2, scenarioId: IDS.ransomScenario, kbItemId: IDS.t2BecK3Item, addedBy: BOOTSTRAP_BY },
+  ]).onConflictDoNothing();
+
+  console.log('[bootstrap] ✓ TTX Ransomware scenario (1 scenario, 3 sections, 4 steps, 2 KB refs)');
+
+  // ── TTX — Executive Impersonation / CEO Fraud scenario ──────────────────────
+
+  await db.insert(ttxScenarios).values({
+    id: IDS.execScenario,
+    slug: 'ceo-fraud-executive-impersonation',
+    title: 'CEO Fraud: Executive Impersonation and Emergency Wire',
+    executiveSummary: 'A convincing impersonation of your CEO has bypassed normal approval controls and a £320,000 wire transfer is pending. Your team must identify the fraud, halt the payment, and contain the breach before close of business.',
+    description: 'During a period when your CEO is travelling overseas, the finance team receives an urgent, confidential wire instruction that appears to come directly from the CEO. The communication bypasses the company email system. The wire is for £320,000 described as a "confidential acquisition deposit." Dual approval has been waived by the apparent CEO. The CFO is on holiday.',
+    objective: 'Practice recognising executive impersonation fraud, applying out-of-band verification under pressure, and executing the first-hour response when a fraudulent payment has been authorised.',
+    goals: [
+      'Identify the indicators of CEO fraud vs legitimate out-of-channel instructions',
+      'Apply the correct verification protocol despite apparent authority pressure',
+      'Execute the golden-hour bank recall procedure for an approved wire',
+      'Contain and document the incident for law enforcement and insurance',
+    ],
+    targetAudience: ['Finance', 'Executive Leadership', 'Operations'],
+    signatureTheme: 'bec',
+    createdBy: BOOTSTRAP_BY,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.execSection1,
+    scenarioId: IDS.execScenario,
+    title: 'The Request Arrives',
+    background: 'It is Tuesday at 14:30. Your CEO, Marcus Webb, is in Singapore at a logistics conference. Your CFO, Diana Marsh, is on annual leave until Thursday. The AP Manager, Kate, receives a WhatsApp message from what appears to be Marcus Webb\'s personal number. The message says: "Kate — I need you to handle a confidential transaction urgently. Cannot use company email — this is a sensitive acquisition. I need £320,000 sent to a new account by 16:00 today. Do not discuss with anyone yet — NDA applies. I\'ll explain when back. Use reference: ACQ-2024-CONF. I am relying on you."',
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.execStep1,
+      sectionId: IDS.execSection1,
+      title: 'First Reaction: Recognise the Pressure Pattern',
+      facilitatorNarrative: 'Read aloud: Kate has shown you the WhatsApp message. The sender\'s display name says "Marcus Webb - CEO" and the number matches a number Marcus has used to send a group company message once before. The 16:00 deadline is in 90 minutes. Kate says "Should I get this moving?"',
+      participantSituationRoom: 'URGENT REQUEST — 14:30: AP Manager has received an apparent WhatsApp from CEO Marcus Webb requesting £320,000 wire to a new account by 16:00. No company email involved. NDA cited. CFO on leave. CEO overseas.',
+      prompts: [
+        'What are the specific red flags in this message — list them.',
+        'Does the instruction come from a position of apparent authority? How does that affect your team\'s response?',
+        'At this point, what is the single most important thing Kate should NOT do?',
+      ],
+      whatGoodLooksLike: 'Red flags identified: no company email, urgency + deadline, secrecy/"NDA" instruction, new account, CFO absent. Kate is told: do NOT initiate any payment. Do NOT respond to the WhatsApp confirming receipt of the request. Contact CEO via the company\'s verified phone number — not the WhatsApp number.',
+      consequenceNote: 'If team suggests replying to the WhatsApp to ask for more details — note that this confirms to the attacker that Kate has received and is considering the instruction.',
+      order: 0,
+    },
+    {
+      id: IDS.execStep2,
+      sectionId: IDS.execSection1,
+      title: 'Verification Call — Out of Band',
+      facilitatorNarrative: 'Kate calls Marcus\'s company mobile number (from the employee directory). Marcus answers. He has no idea what Kate is talking about — he has not sent any payment instruction. He confirms he did not send the WhatsApp. He asks: "How much was it for?"',
+      participantSituationRoom: 'CONFIRMED: CEO Marcus Webb has been reached via company mobile and confirms he did NOT send the payment instruction. He is asking what the amount was and what account it was for.',
+      prompts: [
+        'What do you tell Marcus about what just happened?',
+        'What do you do with the WhatsApp message and the account details provided?',
+        'Who else needs to be notified immediately, and in what order?',
+      ],
+      whatGoodLooksLike: 'Marcus briefed on full details — amount, reference, account. WhatsApp message and account details preserved as evidence (screenshot). Finance director and security lead notified. No response to attacker WhatsApp. IT notified to check for email compromise (attacker may have been monitoring).',
+      consequenceNote: undefined,
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.execSection2,
+    scenarioId: IDS.execScenario,
+    title: 'Escalation: The Payment Was Sent',
+    background: 'TWIST: While the above conversation was happening, a second AP team member — James — processed the wire. He saw Kate\'s conversation with the apparent CEO on her screen and assumed it was legitimate. James processed £320,000 to the account provided, using Kate\'s system access. The payment has just been confirmed as sent.',
+    order: 1,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.execStep3,
+      sectionId: IDS.execSection2,
+      title: 'Golden-Hour Bank Recall',
+      facilitatorNarrative: 'It is now 14:52. The payment confirmation has just appeared in the system. James says "I thought it was authorised — Marcus said so on Kate\'s screen." You have approximately 15-60 minutes before funds are moved from the receiving account.',
+      participantSituationRoom: 'PAYMENT SENT — 14:52: £320,000 wire confirmed sent by James to the account in the fraudulent WhatsApp instruction. CEO has confirmed fraud. You have minutes to act before funds are forwarded.',
+      prompts: [
+        'What is your very first call, and what exactly do you say to the bank?',
+        'What information does the bank need from you immediately?',
+        'What evidence do you preserve right now, before anything is deleted or changed?',
+      ],
+      whatGoodLooksLike: 'Bank fraud line called immediately — "We believe a wire of £320,000 sent at approximately 14:50 is fraudulent. We need an emergency recall. Reference: ACQ-2024-CONF." Provide: sending account, receiving sort code and account number, amount, timestamp. Bank will attempt to freeze the receiving account. Screenshot of James\'s action captured. No system changes until IT forensics complete.',
+      consequenceNote: 'If team delays bank call by more than 5 minutes in discussion — flag that every minute reduces recovery probability. The bank recall call takes precedence over internal discussion.',
+      order: 0,
+    },
+    {
+      id: IDS.execStep4,
+      sectionId: IDS.execSection2,
+      title: 'Reporting and Containment',
+      facilitatorNarrative: 'Bank has acknowledged the recall request and is investigating. They cannot confirm whether the funds have already been moved on. It is now 15:10. What do you do in the next 45 minutes?',
+      participantSituationRoom: 'RECALL IN PROGRESS — 15:10: Bank has acknowledged recall request. Outcome unknown. You have 45 minutes before close of business. Law enforcement not yet notified. IT has not yet investigated. Directors need briefing. Two staff members are distressed.',
+      prompts: [
+        'Who do you report this to externally — and in what order? (Action Fraud, IC3, insurers?)',
+        'What do you tell staff — especially James, who processed the payment?',
+        'How do you prevent this from happening again in the next 24 hours?',
+      ],
+      whatGoodLooksLike: 'Action Fraud reported online (reference number obtained). Cyber insurer notified (policy condition). IT investigating for email/WhatsApp compromise. Staff briefed: no blame, process gap identified. Emergency procedure: all wire payments above £10,000 to new accounts require director voice confirmation for next 30 days.',
+      consequenceNote: undefined,
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.execSection3,
+    scenarioId: IDS.execScenario,
+    title: 'After-Action: Process Hardening',
+    background: 'The bank has confirmed that £280,000 of the £320,000 has been recovered — the receiving account was frozen before full withdrawal. £40,000 remains unrecovered. The entry point appears to have been a data broker selling executive contact details, not an email compromise.',
+    order: 2,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values({
+    id: IDS.execStep5,
+    sectionId: IDS.execSection3,
+    title: 'Debrief: What Controls Failed and What to Build',
+    facilitatorNarrative: 'Open debrief: "You recovered £280,000 of £320,000 — a partial win. But the attack succeeded in getting a payment initiated. Walk through: what specific control gap allowed this? What three things do you change in your payment authorisation process before next week?"',
+    participantSituationRoom: 'DEBRIEF: £280,000 recovered, £40,000 lost. Attack entry: purchased executive contact list, not email compromise. Two control gaps exploited: (1) dual approval bypassed by apparent authority, (2) no out-of-band CEO verification procedure existed for out-of-channel payment requests.',
+    prompts: [
+      'What is the specific policy change that would have prevented this payment from being processed?',
+      'How do you handle legitimate urgent out-of-channel requests from executives in future?',
+      'What does your staff communications plan say about payment requests that "cannot go through normal channels"?',
+    ],
+    whatGoodLooksLike: 'Policy change: any payment instruction from non-company-email channel (WhatsApp, personal phone, SMS) requires mandatory company-email confirmation AND director voice verification before processing — regardless of apparent source authority. Staff briefing: "If you are ever told a payment cannot go through normal channels — that is the control we are protecting. Any legitimate executive will understand why the verification call is required."',
+    consequenceNote: undefined,
+    order: 0,
+  }).onConflictDoNothing();
+
+  console.log('[bootstrap] ✓ TTX Executive Impersonation scenario (1 scenario, 3 sections, 5 steps)');
+
+  // ── TTX — Cargo Diversion: Fraudulent Carrier Substitution ─────────────────
+
+  await db.insert(ttxScenarios).values({
+    id: IDS.cargoScenario,
+    slug: 'cargo-diversion-fraudulent-carrier',
+    title: 'Cargo Diversion: Fraudulent Carrier Substitution',
+    executiveSummary: 'A threat actor impersonates a legitimate carrier, contacts your shipper with fraudulent re-dispatch instructions, and diverts a high-value load in transit. Discovery occurs when the real carrier arrives for pickup and the load is gone. Your team must establish what happened, notify all parties, and manage the financial and legal exposure.',
+    description: 'A £180,000 electronics shipment en route from your distribution centre has been redirected. A caller identifying as your regional carrier account manager rang dispatch yesterday afternoon and provided new "drop zone" coordinates due to an apparent vehicle breakdown. The dispatcher followed the instruction. The real carrier has now arrived and the load is not there.',
+    objective: 'Test the team\'s ability to respond to a confirmed cargo theft event: establish the fraud, engage law enforcement and insurers, manage carrier and customer communications, and identify the process gap that allowed verbal re-dispatch without verification.',
+    goals: [
+      'Identify the fraud mechanism and establish a timeline',
+      'Engage law enforcement, insurer, and carrier correctly and in the right order',
+      'Manage customer notification: when, what, and by whom',
+      'Close the verification gap in dispatch procedures that enabled the diversion',
+    ],
+    targetAudience: ['Operations Director', 'Dispatch / Fleet Manager', 'Finance', 'Customer Service Lead'],
+    signatureTheme: 'cargo-theft',
+    createdBy: BOOTSTRAP_BY,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.cargoSection1,
+    scenarioId: IDS.cargoScenario,
+    title: 'Discovery and Immediate Response',
+    background: 'It is 08:45 on Wednesday. Your carrier, Redline Logistics, has called to say their driver has arrived at the scheduled collection point in Coventry and the load is not there. Your dispatcher, Craig, confirms he re-routed the vehicle yesterday at 15:20 following a call from someone identifying as "Simon Webb, Redline regional account manager." Craig did not log the caller\'s direct number — he took the call on the main line. The shipment contained 240 units of commercial networking hardware bound for a B2B customer.',
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.cargoStep1,
+      sectionId: IDS.cargoSection1,
+      title: 'Establish What Happened',
+      facilitatorNarrative: 'Craig is visibly shaken. He says the caller sounded authoritative and used the right account name and load reference number. The load reference was on a publicly visible delivery note. No written confirmation was requested or provided. The re-dispatch was made verbally, instructions relayed to the driver by text.',
+      participantSituationRoom: 'CONFIRMED CARGO LOSS — 08:45: Carrier has arrived at the scheduled collection point. Load not present. Dispatcher confirms verbal re-dispatch instruction received yesterday at 15:20 from an unverified caller. Load reference: CMH-2024-7731. Estimated value: £180,000.',
+      prompts: [
+        'What are your first three actions in the next 15 minutes?',
+        'Who do you call first — the carrier, the police, or your insurer? Justify the order.',
+        'What information do you need to preserve right now before it is lost?',
+      ],
+      whatGoodLooksLike: 'Immediate actions: (1) Freeze all further communication with the attacker\'s number. (2) Preserve Craig\'s call log and the driver\'s text messages as evidence. (3) Contact the real Redline account manager to confirm "Simon Webb" does not exist or did not make that call. Law enforcement (Action Fraud + local police for cargo theft) contacted before insurer — insurer will want a crime reference number. Evidence preserved: call time, number used, load reference, driver\'s forwarded text.',
+      consequenceNote: 'If team calls the insurer first without a police reference — note this will delay the claim.',
+      order: 0,
+    },
+    {
+      id: IDS.cargoStep2,
+      sectionId: IDS.cargoSection1,
+      title: 'Customer Notification Decision',
+      facilitatorNarrative: 'The customer, Halcyon Systems, has a delivery window of 10:00 today. It is now 09:10. They have not yet called. Your operations director must decide: do you call them now and disclose, wait until you have more information, or issue a delay notice without disclosing the theft?',
+      participantSituationRoom: 'CUSTOMER WINDOW APPROACHING — 09:10: Halcyon Systems expects delivery by 10:00. They have not yet been notified. Decision required: disclose now, issue delay notice, or wait for more information before contacting.',
+      prompts: [
+        'What do you tell Halcyon Systems — and how much detail do you give at this stage?',
+        'Who makes that call, and what is the key message?',
+        'What are the contractual and reputational risks of delaying disclosure vs disclosing early?',
+      ],
+      whatGoodLooksLike: 'Call Halcyon now. Do not wait. The message: delivery will not arrive as scheduled, a serious logistics incident is under investigation, you will update them within two hours with full details. Do not disclose "cargo theft" until you have confirmed it with law enforcement. Operations director makes the call — not customer service. Early disclosure protects the relationship; late disclosure looks like a cover-up.',
+      consequenceNote: undefined,
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.cargoSection2,
+    scenarioId: IDS.cargoScenario,
+    title: 'Investigation and Escalation',
+    background: 'Police have taken the report and issued a crime reference number. Redline Logistics confirms "Simon Webb" is not employed there. IT has traced the incoming call to a VoIP number registered to a burner account. The attacker had the correct load reference — you are now establishing how they obtained it.',
+    order: 1,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.cargoStep3,
+      sectionId: IDS.cargoSection2,
+      title: 'How Did They Know the Load Reference?',
+      facilitatorNarrative: 'Inject: your IT team has found that CMH-2024-7731 was included in an email chain that went outside the company six days ago — a forwarded delivery confirmation was sent to a third-party logistics broker, Skygate Freight, who are not on your approved vendor list. The email was sent by a junior coordinator who used their personal Gmail account to forward it "so I could check it on my phone."',
+      participantSituationRoom: 'INTELLIGENCE UPDATE: Load reference CMH-2024-7731 was included in a forwarded email sent to an external broker six days ago via a personal email account. This is the likely source of the attacker\'s prior knowledge. Police have been updated.',
+      prompts: [
+        'How do you handle the employee who forwarded the email — what is the right response in this moment?',
+        'Does this change your legal position on the insurance claim?',
+        'What immediate data handling policy do you need to invoke or create?',
+      ],
+      whatGoodLooksLike: 'The employee is interviewed, not blamed publicly. The question is process failure, not individual malice. The forwarded email does not typically void an insurance claim but must be disclosed. IT audit required: has any other load data been forwarded externally? Policy response: all load references and delivery confirmations are internal-only documents. Personal email use for work data is prohibited. Written acknowledgement required from all operations staff within 48 hours.',
+      consequenceNote: undefined,
+      order: 0,
+    },
+    {
+      id: IDS.cargoStep4,
+      sectionId: IDS.cargoSection2,
+      title: 'Financial Exposure and Insurer Communication',
+      facilitatorNarrative: 'The insurer has acknowledged the claim. They are asking whether the re-dispatch was authorised by a written change order, whether the load was GPS-tracked, and whether your dispatch procedures require verbal instruction verification. The answer to all three is "no." The insurer has flagged the claim for detailed review.',
+      participantSituationRoom: 'INSURANCE REVIEW FLAGGED: Insurer is asking for documentation of dispatch authorisation, GPS tracking records, and proof of verbal verification procedures. Current answer to all three is negative. Claim is under detailed review.',
+      prompts: [
+        'How do you respond to the insurer — what is your position?',
+        'What does this tell you about your cargo insurance coverage and where the gaps are?',
+        'What three process controls, if they had been in place, would have prevented this loss?',
+      ],
+      whatGoodLooksLike: 'Respond fully and factually to the insurer — do not embellish or omit. Disclose the forwarded email. The three controls: (1) Written change order required for any in-transit re-dispatch — no verbal re-routes. (2) Caller identity verified against a named account manager list before any instruction is acted upon. (3) GPS tracking mandatory on all shipments over £50,000 in value.',
+      consequenceNote: 'If the team tries to minimise the forwarded email disclosure to the insurer — flag that non-disclosure on a material fact voids the policy.',
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.cargoSection3,
+    scenarioId: IDS.cargoScenario,
+    title: 'Recovery and Process Hardening',
+    background: 'The load has not been recovered. The insurer has confirmed the claim will proceed subject to a £12,000 excess and a likely premium increase at renewal. Halcyon Systems is requesting a written root-cause analysis and is reconsidering their contract terms. Your operations board has requested an urgent presentation on what happened and what changes are being made.',
+    order: 2,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values({
+    id: IDS.cargoStep5,
+    sectionId: IDS.cargoSection3,
+    title: 'Board Briefing and Control Changes',
+    facilitatorNarrative: 'Open debrief: "You have lost £180,000 of cargo, your customer is reconsidering the relationship, and your insurer has flagged your dispatch controls as inadequate. What do you present to the board — and what three specific control changes are you committing to before the end of this week?"',
+    participantSituationRoom: 'BOARD BRIEFING REQUIRED: The board wants a factual account of the incident, the financial and contractual impact, and a concrete action plan. What do you present and what do you commit to?',
+    prompts: [
+      'What is the one-paragraph executive summary of what happened and why?',
+      'What are the three specific control changes and who owns each one?',
+      'How do you rebuild the Halcyon Systems relationship?',
+    ],
+    whatGoodLooksLike: 'Factual briefing: attacker obtained load reference via data leak, impersonated carrier account manager, dispatcher had no verification procedure to rely on. Financial impact quantified. Three control changes owned by named individuals with completion dates. Halcyon: written root-cause provided, acknowledgement of process gap, offer of service credit or enhanced SLA terms.',
+    consequenceNote: undefined,
+    order: 0,
+  }).onConflictDoNothing();
+
+  console.log('[bootstrap] ✓ TTX Cargo Diversion scenario (1 scenario, 3 sections, 5 steps)');
+
+  // ── TTX — SaaS Breach: Logistics Platform Compromise ───────────────────────
+
+  await db.insert(ttxScenarios).values({
+    id: IDS.tmsScenario,
+    slug: 'saas-breach-logistics-platform',
+    title: 'SaaS Breach: Logistics Platform Compromise',
+    executiveSummary: 'Your transport management system (TMS) provider has suffered a confirmed data breach. Customer data, live route information, driver details, and carrier contract rates have been exposed. The vendor notified you at 17:45 on a Friday. Your team must assess the impact, meet your own notification obligations, and manage operations continuity while the platform is taken offline.',
+    description: 'RouteCore, your cloud-based TMS provider, has sent a breach notification email at 17:45 on Friday. The email states that a ransomware attack on their infrastructure has resulted in unauthorised access to customer data. They are taking all systems offline at 18:00. Your operations team runs all dispatch and routing through RouteCore. Monday morning load planning has not yet been completed.',
+    objective: 'Test the team\'s response to a third-party SaaS breach: assess what data has been exposed and what obligations that creates, manage operational continuity without your primary platform, and execute customer and regulatory notification correctly.',
+    goals: [
+      'Assess the data exposure scope and identify which regulatory obligations are triggered',
+      'Execute operational continuity without TMS access over the weekend',
+      'Notify affected customers and data subjects correctly and on time',
+      'Evaluate the vendor relationship and contractual response options',
+    ],
+    targetAudience: ['Operations Director', 'IT Security Lead', 'Compliance / DPO', 'Finance', 'Customer Service Lead'],
+    signatureTheme: 'data-breach',
+    createdBy: BOOTSTRAP_BY,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.tmsSection1,
+    scenarioId: IDS.tmsScenario,
+    title: 'Breach Notification Received',
+    background: 'It is 17:45 on a Friday. Your operations director has forwarded a breach notification email from RouteCore TMS. The email states: "We have identified a ransomware attack that resulted in unauthorised access to data held on our platform between 14 and 22 November. This includes customer records, shipment data, and operational configuration files. We are taking all services offline at 18:00 today while we contain the incident. We anticipate restoration within 72 hours." Your RouteCore instance holds: all live and historical shipment data, customer names and delivery addresses, driver names and mobile numbers, carrier rate cards, and API integrations with three clients who pull live tracking data.',
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.tmsStep1,
+      sectionId: IDS.tmsSection1,
+      title: 'Immediate Impact Assessment',
+      facilitatorNarrative: 'The platform goes offline at 18:00 as stated. Your Monday morning run includes 47 loads. Driver briefings, route sheets, and customer delivery windows all live in RouteCore. Your IT lead confirms there is no recent offline export. Three enterprise clients use RouteCore\'s API to pull live tracking data — they will lose visibility at 18:00.',
+      participantSituationRoom: 'TMS OFFLINE — 18:00: RouteCore has confirmed ransomware attack and taken all systems offline. Your platform holds: live shipment data for 47 Monday loads, customer delivery data, driver contacts, carrier rates, and live API feeds for 3 enterprise clients. Platform restoration ETA: 72 hours.',
+      prompts: [
+        'What do you do in the next two hours to maintain operational continuity over the weekend?',
+        'Which three clients do you call tonight — and what do you tell them?',
+        'What data did RouteCore hold that now needs to be treated as compromised?',
+      ],
+      whatGoodLooksLike: 'Operational continuity: pull whatever data exists in email history, driver WhatsApp groups, and spreadsheet backups. Assign a manual coordinator for Monday morning. Contact the three API clients tonight — do not wait until Monday. Message: "Our TMS provider has suffered an incident, your live tracking feed is offline, we are managing operations manually and will update you with an ETA for restoration." Data scope: all customer addresses, driver contacts, and carrier rates must be treated as potentially exposed.',
+      consequenceNote: undefined,
+      order: 0,
+    },
+    {
+      id: IDS.tmsStep2,
+      sectionId: IDS.tmsSection1,
+      title: 'Regulatory Obligations — What Does GDPR Require?',
+      facilitatorNarrative: 'Your DPO has been reached by phone. She confirms that the breach involves personal data — customer names and addresses, driver names and phone numbers. She asks: "Has this been reported to the ICO? We have 72 hours from when we knew about it." It is now 19:00 Friday. The 72-hour clock started when the RouteCore email arrived at 17:45.',
+      participantSituationRoom: 'GDPR CLOCK RUNNING — 19:00: Breach involves personal data. ICO notification window: 72 hours from 17:45 today. DPO has been contacted. Decision required on whether and when to notify the ICO and whether affected individuals must be notified.',
+      prompts: [
+        'Does this breach require ICO notification? What is your threshold test?',
+        'Do you need to notify individual data subjects — drivers and customers whose data was exposed?',
+        'Who makes the ICO report — and what information do you need from RouteCore to complete it?',
+      ],
+      whatGoodLooksLike: 'ICO notification is required if the breach is likely to result in risk to individuals\' rights and freedoms. Names + addresses + mobile numbers of drivers and customers: notification is required. DPO files with ICO by Monday 17:45 at latest — do not wait for RouteCore\'s full investigation. Individual notification required where risk to individuals is high (e.g. driver location data exposed). Request from RouteCore: exact data fields accessed, scope of access, and confirmation of whether data was exfiltrated or only accessed.',
+      consequenceNote: 'If team decides to wait for RouteCore\'s investigation before notifying ICO — flag that the 72-hour clock does not pause for third-party investigations.',
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.tmsSection2,
+    scenarioId: IDS.tmsScenario,
+    title: 'Operational Continuity and Vendor Management',
+    background: 'It is Saturday morning. Manual operations are running. Monday\'s loads have been partially reconstructed from email history and driver contacts. RouteCore has sent a second update: the attack was more extensive than initially disclosed — attacker access began on 8 November, two weeks earlier than stated. Carrier rate cards and client contract terms stored in RouteCore were also accessed.',
+    order: 1,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.tmsStep3,
+      sectionId: IDS.tmsSection2,
+      title: 'Vendor Disclosure Has Changed — Scope is Wider',
+      facilitatorNarrative: 'RouteCore\'s updated notification states the breach window was 8–22 November, not 14–22 as originally stated. This means six additional days of data are compromised, including a carrier rate negotiation that was conducted entirely through the RouteCore document module. Your legal counsel notes this may constitute a breach of commercial confidentiality with two carriers.',
+      participantSituationRoom: 'REVISED BREACH SCOPE: RouteCore has updated their disclosure — attack began 8 November, not 14 November. Additional data confirmed compromised: carrier rate negotiation documents and commercial contract terms stored in the document module.',
+      prompts: [
+        'How does the expanded scope change your ICO notification — do you update the submission?',
+        'Do you have a legal obligation to notify the carriers whose rate data was exposed?',
+        'What does this tell you about how RouteCore managed their initial disclosure to you?',
+      ],
+      whatGoodLooksLike: 'Update the ICO notification with the revised scope — this is required. Carrier notification: yes, commercial confidentiality obligations apply even if there is no personal data involved. Contracts should be reviewed for data handling and breach notification clauses. RouteCore\'s revised disclosure raises serious questions about their incident response quality — this is a vendor relationship decision point.',
+      consequenceNote: undefined,
+      order: 0,
+    },
+    {
+      id: IDS.tmsStep4,
+      sectionId: IDS.tmsSection2,
+      title: 'Client Relationship and Commercial Exposure',
+      facilitatorNarrative: 'One of your enterprise clients, Vantage Distribution, has sent an email at 09:30 Saturday. Their procurement director writes: "We are aware of the RouteCore incident from industry contacts. We have not received any notification from you. Our SLA requires notification of any data incident affecting our shipment data within 24 hours. Please advise immediately."',
+      participantSituationRoom: 'CLIENT SLA BREACH RISK — 09:30 Saturday: Vantage Distribution has contacted you proactively. Their SLA contains a 24-hour data incident notification clause. You have not yet formally notified them. The 24-hour window from your knowledge of the breach expired at 17:45 Saturday.',
+      prompts: [
+        'What do you say to Vantage Distribution now — and who makes that call?',
+        'Are you in breach of the SLA, and what are the consequences if you are?',
+        'What is your communications strategy for all affected clients this weekend?',
+      ],
+      whatGoodLooksLike: 'Call Vantage now — do not respond only by email. Acknowledge the breach, provide full disclosure of what data was exposed, confirm what you are doing. On the SLA: you are in breach of the 24-hour clause. Own it, do not argue the clock. The consequence may be a service credit — it is better than the reputational cost of a client finding out from a competitor. All affected clients should receive a written briefing by Sunday evening.',
+      consequenceNote: 'If team argues the 24-hour SLA clock should start from when RouteCore notified you, not when the incident occurred — note that most SLA clauses start from discovery, which was 17:45 Friday.',
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.tmsSection3,
+    scenarioId: IDS.tmsScenario,
+    title: 'Recovery and Vendor Review',
+    background: 'It is Monday morning. RouteCore has partially restored service. ICO notification has been filed. Vantage Distribution has acknowledged your briefing and is reviewing their position. Two other clients have sent written queries. Your operations team has run a manual weekend successfully but the workaround is not sustainable beyond Wednesday.',
+    order: 2,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values({
+    id: IDS.tmsStep5,
+    sectionId: IDS.tmsSection3,
+    title: 'Vendor Decision and Platform Risk Review',
+    facilitatorNarrative: 'Open debrief: "RouteCore is back online but their incident response has been poor — delayed disclosure, revised scope, no named incident contact, no SLA on restoration. You are operationally dependent on them. What do you do about that dependency, and what contractual changes do you need before you reconnect all client API integrations?"',
+    participantSituationRoom: 'RECOVERY DECISION: RouteCore is partially restored. You must decide whether to restore full operations on their platform, what contractual protections to demand before doing so, and what your long-term vendor strategy is given their incident response performance.',
+    prompts: [
+      'What conditions do you set before restoring full API integrations for enterprise clients?',
+      'What contractual changes do you require from RouteCore — and what is your leverage?',
+      'What does this incident tell you about your dependency on a single cloud logistics platform?',
+    ],
+    whatGoodLooksLike: 'Conditions for API restoration: written confirmation of full remediation, independent penetration test report, and updated breach notification SLA with RouteCore. Contractual demands: 72-hour breach notification from RouteCore to you (mirroring GDPR), data residency confirmation, right to audit clause. Dependency review: identify which RouteCore functions can be partially replicated in-house or with a secondary vendor. The manual weekend proved it is survivable for 72 hours — build that into the continuity plan.',
+    consequenceNote: undefined,
+    order: 0,
+  }).onConflictDoNothing();
+
+  console.log('[bootstrap] ✓ TTX SaaS/TMS Breach scenario (1 scenario, 3 sections, 5 steps)');
+
+  // ── TTX — Phishing-to-Credential: Load Board Account Takeover ──────────────
+
+  await db.insert(ttxScenarios).values({
+    id: IDS.phishScenario,
+    slug: 'phishing-load-board-account-takeover',
+    title: 'Phishing to Credential Compromise: Load Board Account Takeover',
+    executiveSummary: 'A dispatcher clicks a convincing fake DAT load board alert email and enters their credentials on a spoofed login page. The attacker uses the stolen session to post fraudulent loads, harvest carrier contact data, and redirect two in-transit payments before the breach is detected. Your team must contain the account, assess the exposure, and prevent further financial loss.',
+    description: 'Your dispatcher, James, received what appeared to be a routine DAT load board security alert requiring immediate password re-entry. He complied. Within four hours, your DAT account has been used to post three phantom loads, your carrier contact list has been exported, and two carriers have contacted you to ask why your payment instructions have changed.',
+    objective: 'Test the team\'s ability to respond to a credential compromise stemming from a freight-specific phishing attack: contain the account takeover, identify the scope of downstream fraud, manage carrier communications, and close the phishing entry point.',
+    goals: [
+      'Contain the compromised load board account and prevent further fraudulent activity',
+      'Identify which carriers received fraudulent payment instructions and act before transfers are made',
+      'Assess what data was exported and what follow-on attacks it enables',
+      'Close the phishing entry point and establish what controls failed',
+    ],
+    targetAudience: ['Dispatch / Operations Manager', 'Finance', 'IT Security Lead', 'Carrier Relations'],
+    signatureTheme: 'phishing',
+    createdBy: BOOTSTRAP_BY,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.phishSection1,
+    scenarioId: IDS.phishScenario,
+    title: 'Credential Theft and Initial Discovery',
+    background: 'It is 14:00 on a Thursday. Your carrier relations manager, Diana, has received calls from two carriers — Summit Freight and Alpine Haulage — both asking to confirm that your banking details have changed. You have not changed your banking details. You check your DAT account and find three phantom loads posted under your MC number in the last three hours. James confirms he received a DAT security alert email at 10:00 and re-entered his password.',
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.phishStep1,
+      sectionId: IDS.phishSection1,
+      title: 'Lock Down the Compromised Account',
+      facilitatorNarrative: 'James shows you the email he received. It is visually identical to a real DAT alert — correct logo, formatting, and sender display name. The link went to "dat-secure-login.com" — not dat.com. James used the same password for both DAT and your TMS portal. IT confirms the TMS portal was accessed from an unfamiliar IP at 11:30.',
+      participantSituationRoom: 'ACCOUNT COMPROMISE CONFIRMED — 14:00: DAT load board account accessed by attacker since 10:30. Three phantom loads posted. Carrier contact list exported. Two carriers contacted with fraudulent payment instructions. TMS portal also accessed at 11:30 using same credentials.',
+      prompts: [
+        'What accounts do you lock or reset in the next 10 minutes — and in what order?',
+        'How do you notify DAT and what do you ask them to do?',
+        'What other systems used the same or similar password?',
+      ],
+      whatGoodLooksLike: 'Immediate resets: DAT account, TMS portal, email account — all simultaneously if possible. Contact DAT fraud line: request suspension of the three phantom loads, request an audit log of all actions taken on the account since 10:00. Password audit: identify any other systems where James used the same password. MFA enforced on all systems before accounts are restored.',
+      consequenceNote: 'If team resets DAT but not TMS — deliver inject: attacker uses TMS access to export Monday\'s full load manifest.',
+      order: 0,
+    },
+    {
+      id: IDS.phishStep2,
+      sectionId: IDS.phishSection1,
+      title: 'Carriers with Fraudulent Payment Instructions',
+      facilitatorNarrative: 'Summit Freight confirms they received an email from what appeared to be your accounts address at 12:15, instructing them to update your payment sort code and account number "due to a bank migration." They have not yet processed a payment. Alpine Haulage received the same email and has already initiated a £14,000 payment to the fraudulent account — the transfer was made 45 minutes ago.',
+      participantSituationRoom: 'PAYMENT FRAUD IN PROGRESS: Alpine Haulage initiated a £14,000 payment to fraudulent account 45 minutes ago. Summit Freight has not yet paid. Both received fraudulent payment instruction emails purportedly from your accounts team at 12:15.',
+      prompts: [
+        'What do you say to Alpine Haulage right now — and who makes that call?',
+        'How many other carriers may have received the same fraudulent email?',
+        'How do you communicate to all active carriers that your payment details have NOT changed?',
+      ],
+      whatGoodLooksLike: 'Call Alpine immediately — ask them to contact their bank\'s fraud line to attempt a recall. Provide the correct payment details in writing on official letterhead via a verified channel. Audit outbound emails from the attacker\'s access window: identify all carriers contacted. Broadcast to all active carriers via phone and official email: "Disregard any payment instruction received from us today — your existing payment details remain correct."',
+      consequenceNote: undefined,
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.phishSection2,
+    scenarioId: IDS.phishScenario,
+    title: 'Scope Assessment and Downstream Risk',
+    background: 'DAT has suspended the phantom loads. The exported carrier contact list contains 340 carrier records including names, mobile numbers, and rate history. IT has confirmed the attacker accessed the TMS portal for 22 minutes and exported the current week\'s load manifest — 31 active loads, driver names, and collection/delivery addresses.',
+    order: 1,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.phishStep3,
+      sectionId: IDS.phishSection2,
+      title: 'What Was Taken and What Can It Enable?',
+      facilitatorNarrative: 'Your IT lead has completed the initial access log review. Attacker access summary: (1) DAT carrier contact export — 340 records. (2) TMS load manifest — 31 loads, driver and address data. (3) Three phantom loads posted on your MC number. (4) Fraudulent payment emails to carriers. The attacker now has enough information to run cargo diversion attempts against your live loads.',
+      participantSituationRoom: 'DATA EXPORT CONFIRMED: Attacker exported 340 carrier contacts and current week\'s full load manifest. 31 active loads, driver identities, and collection/delivery addresses now in attacker hands. Cargo diversion risk on live loads.',
+      prompts: [
+        'Which of the 31 active loads are at highest risk of diversion attempt — how do you prioritise?',
+        'Do you notify the drivers on those loads? What do you tell them?',
+        'Does this data export trigger any GDPR notification obligations?',
+      ],
+      whatGoodLooksLike: 'Prioritise loads with: (1) high cargo value, (2) long-haul routes with scheduled handovers, (3) new or unverified carrier relationships. Alert those drivers directly by phone — do not use text: "If you receive any re-routing instruction today that does not come directly from your named dispatcher by voice, do not comply." Driver mobile numbers in the exported data constitute personal data — GDPR notification assessment required.',
+      consequenceNote: undefined,
+      order: 0,
+    },
+    {
+      id: IDS.phishStep4,
+      sectionId: IDS.phishSection2,
+      title: 'Internal Accountability and Process Failure',
+      facilitatorNarrative: 'Your operations director wants to understand how this happened. James is the fourth member of staff to click a phishing link this year. There is no MFA on any operational platform. The phishing awareness training was last conducted 18 months ago. The IT lead confirms there is no email filtering rule blocking lookalike freight industry domains.',
+      participantSituationRoom: 'PROCESS REVIEW: This is the fourth phishing click incident in 12 months. No MFA on operational platforms. Phishing training last completed 18 months ago. No domain lookalike filtering in place.',
+      prompts: [
+        'What immediate technical controls do you put in place today — not next quarter?',
+        'How do you handle the conversation with James without creating a blame culture that discourages future reporting?',
+        'What does leadership need to hear about the systemic risk, not just this incident?',
+      ],
+      whatGoodLooksLike: 'Immediate controls: MFA on all external platforms before end of day — no exceptions. Email gateway rule: flag or quarantine emails from domains registered within the last 90 days. Leadership message: "This incident is a process failure, not an individual failure. We have four phishing clicks in 12 months with no MFA and 18-month-old training. That is a governance gap, not bad luck."',
+      consequenceNote: 'If team proposes disciplining James as the primary response — flag that this creates a culture where future incidents are hidden rather than reported.',
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.phishSection3,
+    scenarioId: IDS.phishScenario,
+    title: 'Recovery and Control Implementation',
+    background: 'Alpine Haulage\'s bank has confirmed the £14,000 payment recall has been partially successful — £9,200 recovered, £4,800 unrecoverable. DAT has confirmed the three phantom loads have been removed. No confirmed cargo diversion has occurred on the 31 active loads. GDPR assessment is underway for the driver data export.',
+    order: 2,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values({
+    id: IDS.phishStep5,
+    sectionId: IDS.phishSection3,
+    title: 'Leadership Debrief and Security Uplift Commitment',
+    facilitatorNarrative: 'Open debrief: "You contained the incident with a £4,800 unrecovered loss and no cargo diversion. The same attack, executed without MFA and against a higher-value load week, could have cost significantly more. What are the three security controls you are implementing this week — and who owns each one?"',
+    participantSituationRoom: 'INCIDENT CONTAINED: £4,800 financial loss. No cargo diverted. Data export affecting 340 carriers and 31 load records is under review. Leadership wants a debrief and a concrete security uplift commitment.',
+    prompts: [
+      'What are the three controls you commit to implementing this week — with named owners and deadlines?',
+      'How do you communicate this incident to your carrier community without eroding their confidence?',
+      'What does your updated incident response procedure look like for credential compromise?',
+    ],
+    whatGoodLooksLike: 'Three controls: (1) MFA on all external platforms — IT lead, 48 hours. (2) Phishing simulation and refresher training — HR + IT, within 2 weeks. (3) Email gateway lookalike domain filtering — IT lead, 72 hours. Carrier communication: factual, not alarming. "We identified and contained a security incident affecting our load board account. No carrier data has been misused. Here is what we did and what we are changing." Credential compromise procedure: account lockdown checklist, downstream system audit, carrier alert protocol.',
+    consequenceNote: undefined,
+    order: 0,
+  }).onConflictDoNothing();
+
+  console.log('[bootstrap] ✓ TTX Phishing/Load Board scenario (1 scenario, 3 sections, 5 steps)');
+
+  // ── TTX — Double-Brokering Fraud: Identity Theft of a Legitimate Carrier ───
+
+  await db.insert(ttxScenarios).values({
+    id: IDS.brokerScenario,
+    slug: 'double-brokering-carrier-identity-theft',
+    title: 'Double-Brokering Fraud: Carrier Identity Theft',
+    executiveSummary: 'A freight broker has re-tendered one of your loads to a fraudulent entity that cloned the MC number and DOT authority of a legitimate carrier. The load is collected by an unverified driver and goes missing. Your customer is demanding answers, the real carrier is disputing liability, and your insurer needs a clear chain of custody. Your team must establish what happened, manage multiple stakeholder relationships simultaneously, and prevent recurrence.',
+    description: 'A £95,000 consumer electronics shipment tendered through your broker network has been collected by what appears to be Apex Transport Ltd — a legitimate carrier with an active MC number. Apex Transport Ltd has now called to say they never collected the load. Someone cloned their authority and collected the load using fabricated paperwork. The load has not arrived at the customer.',
+    objective: 'Test the team\'s response to a double-brokering fraud involving carrier identity theft: establish liability, manage the customer and insurance claim, assess the broker vetting failure, and implement carrier verification controls.',
+    goals: [
+      'Establish the chain of events and identify the point of vetting failure',
+      'Manage simultaneous stakeholder demands: customer, real carrier, insurer, and law enforcement',
+      'Assess broker accountability and contractual liability',
+      'Implement carrier identity verification controls before the next tender',
+    ],
+    targetAudience: ['Operations Director', 'Freight Broker / Procurement', 'Finance', 'Legal / Compliance', 'Customer Service Lead'],
+    signatureTheme: 'cargo-theft',
+    createdBy: BOOTSTRAP_BY,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.brokerSection1,
+    scenarioId: IDS.brokerScenario,
+    title: 'Discovery and Initial Response',
+    background: 'It is Tuesday at 09:00. Your customer, Harrington Retail Group, has called to ask where their delivery is — it was due at 07:00. You contact your broker, TransBridge. They confirm the load was collected Monday at 13:45 by "Apex Transport Ltd" — MC number 842901. You call Apex Transport Ltd directly. Their operations manager, Carl, confirms they have no record of this load and their MC number was used without their knowledge. Their authority has been cloned.',
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.brokerStep1,
+      sectionId: IDS.brokerSection1,
+      title: 'Establish the Fraud and Notify Law Enforcement',
+      facilitatorNarrative: 'The load is confirmed missing. The fraudulent operator had Apex Transport\'s MC number, a cloned insurance certificate, and a fabricated bill of lading. The driver who collected the load is uncontactable. TransBridge says they verified the MC number through a load board check but did not call the carrier directly or verify the driver\'s identity against Apex\'s fleet.',
+      participantSituationRoom: 'CARGO THEFT CONFIRMED — 09:15: £95,000 load collected by fraudulent entity using cloned MC number 842901 (Apex Transport Ltd). Real carrier confirmed non-involvement. Driver uncontactable. Load not at destination. Fraud mechanism: cloned authority and fabricated paperwork.',
+      prompts: [
+        'What do you tell Harrington Retail Group right now — and how much do you disclose?',
+        'Who do you notify: law enforcement, insurer, FMCSA? In what order?',
+        'What is TransBridge\'s liability here — and what do you say to them?',
+      ],
+      whatGoodLooksLike: 'Harrington Retail: call immediately, do not email. Confirm the load is missing and under investigation. Do not speculate. Confirm you will update them within two hours. Notification order: (1) law enforcement — NICB and local police for cargo theft, (2) insurer — to open the claim and get a crime reference requirement confirmed, (3) FMCSA — to report the MC number cloning. TransBridge: they are contractually liable as the party who tendered to an unverified carrier. Request their full vetting documentation immediately.',
+      consequenceNote: undefined,
+      order: 0,
+    },
+    {
+      id: IDS.brokerStep2,
+      sectionId: IDS.brokerSection1,
+      title: 'Customer Pressure and Liability Question',
+      facilitatorNarrative: 'Harrington Retail\'s procurement director has escalated. She says: "You are responsible for this load from collection to delivery. We need a replacement shipment today and a written explanation of how this happened. If this is not resolved by close of business, we are invoking the penalty clause in our SLA." Your legal counsel notes the replacement stock is not available until Thursday.',
+      participantSituationRoom: 'CUSTOMER ESCALATION: Harrington Retail is invoking SLA penalty clause and demanding same-day replacement. Replacement stock not available until Thursday. Legal counsel reviewing liability position.',
+      prompts: [
+        'How do you respond to the SLA penalty clause — do you concede or contest it?',
+        'What can you actually offer Harrington today that is both honest and commercially reasonable?',
+        'Who bears the cost of the replacement shipment — you, the broker, or the insurer?',
+      ],
+      whatGoodLooksLike: 'Do not concede the penalty clause without legal review — the fraud may constitute a force majeure event depending on contract terms. Offer Harrington: (1) dedicated account liaison for daily updates, (2) expedited Thursday delivery at no charge, (3) written root-cause report within 5 business days. Cost recovery: TransBridge\'s failure to verify the carrier is the proximate cause — put them on written notice of your intent to recover losses. Insurance claim running in parallel.',
+      consequenceNote: 'If team promises same-day replacement without checking stock availability — flag that this creates a second credibility failure with the customer.',
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.brokerSection2,
+    scenarioId: IDS.brokerScenario,
+    title: 'Broker Accountability and Vetting Failure',
+    background: 'TransBridge has provided their vetting documentation. Their carrier verification process consisted of: checking the MC number on FMCSA\'s website and downloading the carrier\'s certificate of insurance from the load board profile. No direct call to the carrier was made. No driver identity verification was performed at collection. The fraudulent entity had set up a convincing fake profile on two major load boards three weeks ago.',
+    order: 1,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.brokerStep3,
+      sectionId: IDS.brokerSection2,
+      title: 'Assessing the Vetting Gap',
+      facilitatorNarrative: 'Your legal counsel has reviewed the broker agreement. It contains a standard carrier vetting warranty — TransBridge warranted they would verify carrier identity before tendering. Their process demonstrably did not include direct carrier contact or driver verification. Counsel believes you have a strong claim for recovery against TransBridge.',
+      participantSituationRoom: 'LEGAL ASSESSMENT: Broker agreement contains carrier vetting warranty. TransBridge\'s process — MC lookup and downloaded insurance certificate only — did not meet the warranty standard. Legal counsel advises strong recovery claim against broker.',
+      prompts: [
+        'Do you pursue TransBridge formally while the insurance claim is open — or wait?',
+        'What standard should you now require of all brokers in your network?',
+        'How do you verify carrier identity at point of collection going forward?',
+      ],
+      whatGoodLooksLike: 'Pursue TransBridge in parallel with the insurance claim — delay increases recovery risk. New broker standard: direct voice verification with named carrier contact on record before any tender above £20,000. Collection verification: driver must present photo ID and a unique booking reference issued directly by you — not by the broker — before the load is released.',
+      consequenceNote: undefined,
+      order: 0,
+    },
+    {
+      id: IDS.brokerStep4,
+      sectionId: IDS.brokerSection2,
+      title: 'Industry Alert and Carrier Community',
+      facilitatorNarrative: 'Inject: the NICB has contacted you. They have identified four other brokerage victims of the same fraudulent entity in the past six weeks — all using the same cloned MC number. They are asking whether you are willing to provide your documentation to support a coordinated law enforcement action and whether you will share the incident details with a freight security alert network.',
+      participantSituationRoom: 'LAW ENFORCEMENT CONTACT: NICB has identified this as part of a six-week campaign using the same cloned authority. Four other victims confirmed. Request for documentation and participation in industry alert network.',
+      prompts: [
+        'Do you share your documentation with law enforcement and the industry alert — what are the legal considerations?',
+        'What do you communicate to your own carrier and broker network about this fraud pattern?',
+        'How does knowledge of a wider campaign change your internal risk assessment?',
+      ],
+      whatGoodLooksLike: 'Share with law enforcement — consult legal counsel on scope, but cooperation is strongly in your interest for recovery and future claims. Industry alert: yes, with redacted commercial details. Internal communication: brief all dispatch and procurement staff on the double-brokering pattern — MC cloning, fake load board profiles, fabricated paperwork — within 24 hours. Raise the verification standard on all tenders, not just high-value ones.',
+      consequenceNote: undefined,
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.brokerSection3,
+    scenarioId: IDS.brokerScenario,
+    title: 'Recovery and Process Change',
+    background: 'Insurance has confirmed the claim is likely to pay out, subject to the deductible. TransBridge has offered a partial settlement of £30,000 without admitting liability. Harrington Retail has received the replacement shipment and has stepped back from the SLA penalty clause pending the root-cause report. Law enforcement has made an arrest.',
+    order: 2,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values({
+    id: IDS.brokerStep5,
+    sectionId: IDS.brokerSection3,
+    title: 'Settlement Decision and Future Controls',
+    facilitatorNarrative: 'Open debrief: "The insurer will pay. TransBridge is offering £30,000 — your legal counsel thinks you could recover £55,000 through litigation but it would take 18 months. The Harrington relationship is intact but fragile. What do you do about the settlement — and what three controls are you putting in place before you tender another load through a broker?"',
+    participantSituationRoom: 'SETTLEMENT DECISION: TransBridge offering £30,000 settlement. Litigation estimate: £55,000 recovery in 18 months. Harrington relationship intact. Three control changes required before next broker tender.',
+    prompts: [
+      'Do you accept the £30,000 settlement or pursue litigation — what factors drive the decision?',
+      'What are the three controls you implement before your next brokered tender?',
+      'How do you re-qualify your existing broker network against the new standard?',
+    ],
+    whatGoodLooksLike: 'Settlement vs litigation: commercial decision — £25,000 gap over 18 months is a business judgement, not a legal one. Three controls: (1) Direct carrier voice verification before every tender — named contact, on record. (2) Driver ID and booking reference check at collection point — mandatory. (3) Annual broker re-qualification: documented vetting process review and warranted compliance. Broker re-qualification: written questionnaire + spot audit on two recent tenders before re-approval.',
+    consequenceNote: undefined,
+    order: 0,
+  }).onConflictDoNothing();
+
+  console.log('[bootstrap] ✓ TTX Double-Brokering scenario (1 scenario, 3 sections, 5 steps)');
+
+  // ── TTX — Insider Threat: Rogue Employee Data Exfiltration ─────────────────
+
+  await db.insert(ttxScenarios).values({
+    id: IDS.insiderScenario,
+    slug: 'insider-threat-employee-data-exfiltration',
+    title: 'Insider Threat: Employee Data Exfiltration Before Departure',
+    executiveSummary: 'A senior business development manager who resigned two weeks ago and is serving their notice period has been exfiltrating customer contract data, carrier rate cards, and pipeline prospect lists to a personal cloud storage account. IT has flagged unusual upload activity. The employee has accepted a position at a direct competitor. Your team must contain the exfiltration, assess the legal position, and manage the commercial exposure.',
+    description: 'Your IT monitoring system has flagged 4.2GB of data uploads from a company laptop to a personal Google Drive account over the past 11 days. The uploads came from the account of Marcus Reeves, senior BD manager, who resigned 14 days ago and is serving a 30-day notice period. His last day is in 16 days. The competitor he is joining is your largest account\'s incumbent shortlisted alternative.',
+    objective: 'Test the team\'s response to a confirmed insider data theft incident: contain the exfiltration, assess legal options including injunctive relief, manage the HR and operational response, and protect commercial relationships at risk.',
+    goals: [
+      'Contain the exfiltration and preserve forensic evidence without alerting Marcus prematurely',
+      'Assess the legal options: employment law, garden leave, injunctive relief',
+      'Identify which customers and commercial relationships are at risk from the data taken',
+      'Manage the HR response without creating a hostile workplace or legal liability',
+    ],
+    targetAudience: ['HR Director', 'Legal / General Counsel', 'IT Security Lead', 'Operations Director', 'Senior Leadership'],
+    signatureTheme: 'insider-threat',
+    createdBy: BOOTSTRAP_BY,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.insiderSection1,
+    scenarioId: IDS.insiderScenario,
+    title: 'Discovery and Containment Decision',
+    background: 'IT has produced a preliminary log. Over 11 days, Marcus has uploaded: the full customer contract database (PDF archive, 1.1GB), Q3 and Q4 pipeline prospect lists (340 named opportunities), carrier rate cards for all active lanes, and personal correspondence with his future employer about "transition planning." He is currently in the office and is due to attend a client handover meeting this afternoon.',
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.insiderStep1,
+      sectionId: IDS.insiderSection1,
+      title: 'Contain Without Alerting',
+      facilitatorNarrative: 'Your IT lead and HR director are in the room. The question: do you confront Marcus now, place him on garden leave, or continue monitoring while building the evidence case? Legal counsel is on the phone — she says confronting him without documented evidence and a prepared legal position risks him destroying evidence on personal devices. She recommends: (1) image his laptop now using a routine "IT maintenance" cover story, (2) revoke cloud access silently, (3) do not confront until the evidence package is complete.',
+      participantSituationRoom: 'INSIDER EXFILTRATION CONFIRMED — DECISION POINT: 4.2GB uploaded over 11 days. Marcus is in the office. Options: confront now, place on immediate garden leave, or continue controlled monitoring. Legal counsel advises against immediate confrontation without full evidence package.',
+      prompts: [
+        'Do you follow legal counsel\'s advice and delay confrontation — or act immediately? Justify your position.',
+        'What do you do about the client handover meeting this afternoon?',
+        'Who in the organisation is told right now, and who is kept out of the loop?',
+      ],
+      whatGoodLooksLike: 'Follow legal counsel: controlled evidence preservation before confrontation. Laptop imaging via cover story is legally defensible on company-owned equipment. Cancel the client meeting — use a plausible operational reason. Need-to-know: HR director, legal counsel, IT lead, CEO only. Do not tell Marcus\'s team lead yet — risk of tip-off. Cloud access revoked silently — Marcus may not notice immediately.',
+      consequenceNote: 'If team confronts Marcus immediately without legal guidance — deliver inject: Marcus wipes his personal devices and claims the uploads were personal files mistakenly synced.',
+      order: 0,
+    },
+    {
+      id: IDS.insiderStep2,
+      sectionId: IDS.insiderSection1,
+      title: 'Garden Leave and Legal Options',
+      facilitatorNarrative: 'IT has completed the laptop image. Legal counsel has reviewed the employment contract. It contains a 6-month post-termination non-compete, a confidentiality clause covering client data, and a "return of company property" clause. She advises placing Marcus on immediate garden leave, revoking all system access, and sending a legal letter before action requiring him to confirm destruction of all company data on personal devices.',
+      participantSituationRoom: 'LEGAL POSITION ESTABLISHED: Contract contains 6-month non-compete, confidentiality clause, and property return requirement. Recommendation: immediate garden leave, full access revocation, and letter before action requiring destruction of exfiltrated data.',
+      prompts: [
+        'How do you handle the garden leave conversation with Marcus — who is in the room and what is the script?',
+        'What legal remedies are available if he refuses to confirm data destruction or joins the competitor within the non-compete window?',
+        'What do you tell Marcus\'s team and clients about his sudden departure?',
+      ],
+      whatGoodLooksLike: 'Garden leave meeting: HR director + legal counsel + line manager. Script: factual, non-accusatory. "We are placing you on garden leave effective today for the remainder of your notice period. All system access has been suspended. You will receive a letter today setting out your obligations under your contract." If he refuses to cooperate: injunctive relief in the Employment Tribunal is available for breach of confidentiality and non-compete. Team communication: "Marcus has moved to a non-working notice arrangement — handovers will be managed by [named person]."',
+      consequenceNote: undefined,
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.insiderSection2,
+    scenarioId: IDS.insiderScenario,
+    title: 'Commercial Exposure and Client Risk',
+    background: 'Marcus has been placed on garden leave. He has acknowledged receipt of the letter before action but has not confirmed data destruction. Your IT team has confirmed the competitor he is joining — Meridian Freight Solutions — is currently in a procurement review with your largest account, Castellan Retail, whose full contract and renewal terms are in the exfiltrated data. Castellan\'s contract is up for renewal in 8 weeks.',
+    order: 1,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.insiderStep3,
+      sectionId: IDS.insiderSection2,
+      title: 'Protecting the Castellan Account',
+      facilitatorNarrative: 'Your CEO has been briefed. She asks: "Does Castellan know? Should we tell them? And if Meridian uses our contract data to undercut our renewal bid, what recourse do we have?" Legal counsel notes that disclosing the breach to Castellan is not legally required unless their personal data was involved — but the commercial data exposure could be used against you if Castellan discovers it independently.',
+      participantSituationRoom: 'COMMERCIAL EXPOSURE: Castellan Retail\'s full contract terms, renewal pricing, and service SLAs are in the exfiltrated data. Meridian Freight Solutions is a competing bidder for their contract renewal in 8 weeks. CEO is asking whether to disclose to Castellan.',
+      prompts: [
+        'Do you disclose the data incident to Castellan — proactively, reactively, or not at all?',
+        'How do you protect your renewal position given the competitor now has your pricing data?',
+        'What legal action can you take against Meridian if they use the exfiltrated data in their bid?',
+      ],
+      whatGoodLooksLike: 'Disclose proactively to Castellan — it is the right commercial decision even if not legally required. The message: "We identified a data security incident involving a departing employee. Your commercial information may have been accessed. We are taking legal action and wanted to inform you directly." This protects the relationship. Renewal strategy: restructure the pricing proposal — Meridian has your old numbers, not your new position. Legal action against Meridian: if they use the data, it is tortious interference and breach of confidence. Document any suspicious similarity in their bid.',
+      consequenceNote: 'If team decides not to disclose to Castellan and Castellan finds out independently — deliver inject: Castellan\'s legal team contacts you asking why you didn\'t inform them.',
+      order: 0,
+    },
+    {
+      id: IDS.insiderStep4,
+      sectionId: IDS.insiderSection2,
+      title: 'Internal Security Review',
+      facilitatorNarrative: 'Your IT lead has completed a broader audit. Findings: (1) No DLP (data loss prevention) controls on cloud storage uploads. (2) All BD staff have read access to the full customer database — not just their own accounts. (3) No offboarding procedure includes revoking personal cloud sync on company devices. (4) Three other staff members who left in the past year had similar upload activity that was never reviewed.',
+      participantSituationRoom: 'SECURITY AUDIT FINDINGS: No DLP controls. BD team has full customer database read access. No offboarding cloud-sync revocation procedure. Three prior departures with unreviewed upload activity.',
+      prompts: [
+        'Which of these four findings is the highest priority to fix — and why?',
+        'What do you do about the three prior departures with unreviewed upload activity?',
+        'How do you change the offboarding procedure so this cannot happen again?',
+      ],
+      whatGoodLooksLike: 'Highest priority: DLP controls — this is the gap that allowed 4.2GB to leave undetected over 11 days. Prior departures: legal counsel reviews whether the upload activity warrants action; data is likely stale but the exposure should be documented. Offboarding procedure: on resignation acceptance, immediately revoke personal cloud sync and restrict database access to current accounts only. Exit interview includes return-of-data declaration with legal consequence warning.',
+      consequenceNote: undefined,
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.insiderSection3,
+    scenarioId: IDS.insiderScenario,
+    title: 'Resolution and Policy Change',
+    background: 'Marcus has confirmed data deletion in writing under legal caution. Castellan Retail has appreciated the disclosure and has confirmed the renewal process will continue — they have noted the incident but value the transparency. Legal counsel has filed a precautionary injunction preventing Marcus from using exfiltrated data in any commercial context for 6 months.',
+    order: 2,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values({
+    id: IDS.insiderStep5,
+    sectionId: IDS.insiderSection3,
+    title: 'Policy Hardening and Board Debrief',
+    facilitatorNarrative: 'Open debrief: "You contained the incident. Castellan is intact. Marcus is legally restrained. But the same scenario could repeat — you have other BD staff, other contracts, and no DLP. What do you present to the board, and what three policy changes do you commit to before any BD staff member submits a resignation in future?"',
+    participantSituationRoom: 'INCIDENT RESOLVED: Data deletion confirmed. Castellan retained. Injunction in place. Board debrief required. Three policy changes needed before next BD resignation.',
+    prompts: [
+      'What is the board-level message — risk, cost, and what has changed?',
+      'What are the three policy changes with named owners and deadlines?',
+      'How do you build a culture where data protection is understood as a commercial obligation, not just a compliance checkbox?',
+    ],
+    whatGoodLooksLike: 'Board message: "An insider data incident exposed our largest account\'s commercial data. We contained it. The cost was £X in legal fees and significant management time. The root cause was no DLP and role-based access that was too broad." Three changes: (1) DLP controls on all cloud upload paths — IT, 2 weeks. (2) Role-based data access — BD staff see only their accounts — IT + HR, 4 weeks. (3) Offboarding protocol: access restriction on day of resignation notice, full revocation before last day — HR, 1 week. Culture: data protection is framed as protecting competitive advantage, not compliance.',
+    consequenceNote: undefined,
+    order: 0,
+  }).onConflictDoNothing();
+
+  console.log('[bootstrap] ✓ TTX Insider Threat scenario (1 scenario, 3 sections, 5 steps)');
+
+  // ── TTX — Supply Chain Impersonation: Fake Vendor Onboarding ───────────────
+
+  await db.insert(ttxScenarios).values({
+    id: IDS.fakeVendorScenario,
+    slug: 'supply-chain-fake-vendor-onboarding',
+    title: 'Supply Chain Impersonation: Fake Vendor Onboarding',
+    executiveSummary: 'A threat actor has successfully onboarded as a new subcontractor using fabricated company documents, a cloned insurance certificate, and a lookalike domain. They have been paid £67,000 across three invoices before a routine compliance check flags inconsistencies. Your team must stop further payments, assess how the fraud passed your vetting process, and manage the financial and reputational exposure.',
+    description: 'Your procurement team onboarded "Halstead Warehousing Solutions Ltd" six weeks ago as a subcontract warehouse partner for northern England overflow capacity. Three invoices totalling £67,000 have been paid. A routine quarterly compliance review has found that Halstead Warehousing Solutions Ltd does not exist on Companies House, the insurance certificate is a forgery, and the director named on the onboarding form has a fraud conviction.',
+    objective: 'Test the team\'s ability to respond to a completed vendor fraud: halt further financial exposure, conduct a root-cause review of the onboarding failure, manage the financial recovery process, and implement vendor verification controls that prevent recurrence.',
+    goals: [
+      'Stop all further payments and commercial activity with the fraudulent vendor immediately',
+      'Conduct a forensic review of the onboarding process and identify every control that failed',
+      'Pursue financial recovery through law enforcement and civil channels',
+      'Implement vendor verification standards that prevent re-occurrence',
+    ],
+    targetAudience: ['Procurement Director', 'Finance Controller', 'Legal / Compliance', 'Operations Director', 'HR / Risk'],
+    signatureTheme: 'vendor-fraud',
+    createdBy: BOOTSTRAP_BY,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.fakeVendorSection1,
+    scenarioId: IDS.fakeVendorScenario,
+    title: 'Discovery and Immediate Financial Exposure',
+    background: 'The compliance review was triggered by a fourth invoice for £28,000 submitted this week. The reviewer, Sarah, ran a standard Companies House check and found nothing. She escalated. IT has confirmed the domain "halstead-warehousing.co.uk" was registered 8 weeks ago — two weeks before onboarding. The legitimate Halstead Warehousing Solutions (a different company in the south of England) has no connection to the entity you onboarded. A fourth payment of £28,000 is scheduled to run in your Friday payment batch — in 36 hours.',
+    order: 0,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.fakeVendorStep1,
+      sectionId: IDS.fakeVendorSection1,
+      title: 'Stop the Friday Payment and Secure Evidence',
+      facilitatorNarrative: 'Your finance controller confirms the £28,000 invoice is in the Friday batch. The batch runs automatically at 06:00. It is currently Wednesday 17:00. The payment can be pulled from the batch manually until 05:30 Friday. The bank requires written authorisation to recall the three previous payments — they cannot guarantee recovery but will try. The "vendor" has a mobile contact number and an email on the fraudulent domain — attempting contact may alert them.',
+      participantSituationRoom: 'URGENT — PAYMENT WINDOW: £28,000 fourth payment scheduled Friday 06:00. Can be stopped until 05:30 Friday. Three previous payments totalling £67,000: bank recall possible but not guaranteed. Contacting the fraudulent vendor may trigger evidence destruction.',
+      prompts: [
+        'Do you pull the Friday payment now — what is the process and who authorises it?',
+        'Do you attempt to contact "Halstead" before Friday — what are the risks?',
+        'What evidence do you preserve before taking any overt action?',
+      ],
+      whatGoodLooksLike: 'Pull the Friday payment immediately — do not wait. Finance controller and director dual-authorise the removal from batch. Do not contact the fraudulent vendor yet — tip-off risk is high. Evidence first: screenshot all invoice records, email correspondence, onboarding documents, and bank payment confirmations. Request bank to attempt recall on the three previous payments simultaneously with a fraud declaration.',
+      consequenceNote: 'If team debates the Friday payment for more than 10 minutes without pulling it — deliver inject: it is now Thursday morning and the payment window has narrowed to 24 hours.',
+      order: 0,
+    },
+    {
+      id: IDS.fakeVendorStep2,
+      sectionId: IDS.fakeVendorSection1,
+      title: 'Onboarding Failure Review',
+      facilitatorNarrative: 'Your procurement team has pulled the onboarding file. The checks completed at onboarding: (1) email confirmation of company details — sent to the fraudulent domain and confirmed. (2) Insurance certificate — accepted at face value, not verified with the insurer. (3) Companies House check — not performed, as your process only requires it for contracts above £100,000. (4) Bank details — accepted as provided, no confirmation call to the bank.',
+      participantSituationRoom: 'ONBOARDING REVIEW: Four control failures identified. Companies House check threshold was £100,000 — this contract was £95,000 annualised. Insurance certificate not verified. No bank details confirmation call. Email confirmation sent to fraudulent domain only.',
+      prompts: [
+        'Which single control failure, if it had worked, would have stopped this fraud entirely?',
+        'Who in your procurement team is accountable for this — and how do you handle that conversation?',
+        'What threshold should trigger mandatory Companies House and insurance verification?',
+      ],
+      whatGoodLooksLike: 'Single control: Companies House check — the entity simply does not exist. The threshold of £100,000 is too high and was nearly gamed by design (£95,000 annualised contract). Accountability: process failure, not individual. The person who onboarded followed the documented procedure — the procedure is the problem. New threshold: Companies House check required for all new vendors regardless of contract value. Insurance: direct call to the insurer to verify certificate validity, not document acceptance.',
+      consequenceNote: undefined,
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.fakeVendorSection2,
+    scenarioId: IDS.fakeVendorScenario,
+    title: 'Law Enforcement and Recovery',
+    background: 'The Friday payment has been stopped. The bank has opened a fraud recovery case on the three previous payments — early indications are that the receiving account has been partially emptied. Police have been contacted and a fraud reference number has been obtained. The legitimate Halstead Warehousing Solutions (the real company whose name was used) has been informed and is also speaking with police.',
+    order: 1,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values([
+    {
+      id: IDS.fakeVendorStep3,
+      sectionId: IDS.fakeVendorSection2,
+      title: 'Coordinating with Law Enforcement',
+      facilitatorNarrative: 'The fraud detective has asked: (1) Can you provide all onboarding documentation, invoice records, and email correspondence? (2) Have you identified any IP addresses or other technical data from the fraudulent email communications? (3) Are you aware of any other companies that may have been targeted by the same entity? Your IT lead has pulled the email headers from the fraudulent domain — they show an IP address originating in Eastern Europe routed through a UK VPN service.',
+      participantSituationRoom: 'POLICE LIAISON: Detective requesting full documentation package, technical data from email headers, and any knowledge of other victims. Email headers show Eastern European origin via UK VPN.',
+      prompts: [
+        'What documentation do you provide to police — and do you redact any commercial information?',
+        'What do you do with the technical IP data — does it change your risk assessment?',
+        'Do you proactively warn your industry network about this fraud pattern?',
+      ],
+      whatGoodLooksLike: 'Provide all documentation unredacted to police under the investigation framework — commercial sensitivity is secondary to supporting the fraud case. IP data: share with police and your IT lead. Eastern European origin via VPN is consistent with organised fraud — this is likely not an opportunistic one-off. Industry warning: yes — contact your trade association and freight security network. The fake domain pattern and fabricated documents are a replicable playbook.',
+      consequenceNote: undefined,
+      order: 0,
+    },
+    {
+      id: IDS.fakeVendorStep4,
+      sectionId: IDS.fakeVendorSection2,
+      title: 'Operational Gap — Was Any Work Actually Performed?',
+      facilitatorNarrative: 'Inject: your operations team has reviewed the three invoices. Two of the three invoices were for "warehouse overflow services" in November. Your operations log shows no overflow volumes were actually routed to any external facility in November — the warehouse was at 62% capacity. The third invoice was for a "specialist handling surcharge" on a load that your own team handled internally. It appears no services were rendered.',
+      participantSituationRoom: 'OPERATIONAL REVIEW: Internal records show no overflow volumes were routed externally in November. Specialist surcharge invoice corresponds to a load handled internally. All three invoices may have been entirely fictitious — no services rendered.',
+      prompts: [
+        'Does "no services rendered" strengthen your fraud case — and how?',
+        'Who approved these invoices for payment — and was there a purchase order raised for each?',
+        'What does this tell you about your invoice approval process?',
+      ],
+      whatGoodLooksLike: 'No services rendered strengthens the fraud case significantly — it removes any "legitimate business" defence. Invoice approval audit: who signed off each payment, was a PO raised, was the work verified before payment? If invoices were approved without PO matching or service confirmation — the payment process failed twice, not once. The fix: three-way matching (PO + delivery confirmation + invoice) required for all subcontractor payments.',
+      consequenceNote: undefined,
+      order: 1,
+    },
+  ]).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSections).values({
+    id: IDS.fakeVendorSection3,
+    scenarioId: IDS.fakeVendorScenario,
+    title: 'Recovery Outcome and Vendor Controls',
+    background: 'Bank has recovered £31,000 of the £67,000 — the remaining £36,000 has been withdrawn and is unlikely to be recovered. Police investigation is ongoing. No arrest yet. The legitimate Halstead Warehousing Solutions is not pursuing civil action against you — they were a victim of the same fraud. Your board has asked for an emergency procurement review.',
+    order: 2,
+  }).onConflictDoNothing();
+
+  await db.insert(ttxScenarioSteps).values({
+    id: IDS.fakeVendorStep5,
+    sectionId: IDS.fakeVendorSection3,
+    title: 'Board Debrief and Vendor Controls Overhaul',
+    facilitatorNarrative: 'Open debrief: "You lost £36,000 net of recovery. The fraud ran for six weeks and passed every control in your current onboarding process. The board wants to know: what does your vendor onboarding process look like after today — and can you give them confidence that this cannot happen again at any contract value?"',
+    participantSituationRoom: 'BOARD DEBRIEF: £36,000 net loss. Six-week fraud undetected by current controls. Board requires a rebuilt vendor onboarding process with confidence that all contract values are protected.',
+    prompts: [
+      'What are the five mandatory checks in your new vendor onboarding process — for every new vendor, regardless of value?',
+      'How do you handle the reputational aspect — customers, staff, and industry contacts who ask what happened?',
+      'What ongoing vendor monitoring do you implement so that a change in vendor status is flagged automatically?',
+    ],
+    whatGoodLooksLike: 'Five mandatory checks: (1) Companies House registration verification — director names, incorporation date, registered address. (2) Insurance certificate direct verification with the insurer by phone. (3) Bank account confirmation letter from the vendor\'s bank — not self-declared. (4) Domain registration check — any domain registered within 12 months flags for enhanced review. (5) Three-way invoice matching: PO raised before work, delivery confirmation, then payment. Ongoing monitoring: annual re-verification of all active vendors, automated Companies House status alert on all registered vendor entities.',
+    consequenceNote: undefined,
+    order: 0,
+  }).onConflictDoNothing();
+
+  console.log('[bootstrap] ✓ TTX Fake Vendor Onboarding scenario (1 scenario, 3 sections, 5 steps)');
 
   // ── Summary ───────────────────────────────────────────────────────────────
 
@@ -2306,8 +3839,8 @@ async function main() {
   console.log('');
   console.log('  Modules:');
   console.log('    t1-phishing-email-security  (5 tasks, 15 questions)');
-  console.log('    t2-bec-payment-protection   (3 primary tasks + 5 reference items, 12 questions)');
-  console.log('    t3-account-security-mfa     (3 primary tasks + 4 reference items, 12 questions)');
+  console.log('    t2-bec-payment-protection   (3 primary tasks + 5 reference items, 22 questions)');
+  console.log('    t3-account-security-mfa     (3 primary tasks + 4 reference items, 22 questions)');
   console.log('');
   console.log('  Learner accounts:');
   console.log('    eva.restricted@fiveeyes.dev   — no package (hits access gate)');
@@ -2318,7 +3851,7 @@ async function main() {
   console.log('    transport-ops (Eva + Alex)');
   console.log('    freight-security (Sam)');
   console.log('');
-  console.log('  TTX: 1 BEC scenario (bec-freight-payment-hijack), 1 section, 1 step, 3 KB refs');
+  console.log('  TTX: 9 scenarios — BEC + Ransomware + CEO Fraud + Cargo Diversion + SaaS Breach + Phishing/Load Board + Double-Brokering + Insider Threat + Fake Vendor Onboarding');
   console.log('');
   console.log('  Admin login: arnettmcmurray@gmail.com / $ADMIN_PASSWORD (changeme locally)');
   console.log('  Learner OTP: request OTP at /login, check Mailpit at http://localhost:8025');

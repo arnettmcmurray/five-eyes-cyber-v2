@@ -55,72 +55,13 @@ export default function LearnLibrary() {
         </p>
       </div>
 
-      {/* Chapter sections */}
-      <div className="space-y-8">
-        {STUDY_CHAPTERS.map((chapter, ci) => (
-          <motion.div
-            key={chapter.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: ci * 0.06 }}
-          >
-            {/* Chapter header */}
-            <div className="flex items-start gap-3 mb-3">
-              <span
-                className="mt-0.5 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shrink-0"
-                style={{ background: 'var(--gold-muted)', color: 'var(--gold-accent)' }}
-              >
-                Ch. {chapter.number}
-              </span>
-              <div>
-                <h2 className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>
-                  {chapter.label}
-                </h2>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                  {chapter.description}
-                </p>
-              </div>
-            </div>
-
-            {/* Topic rows */}
-            <div className="space-y-1.5 pl-0">
-              {chapter.topics.map(topic => (
-                <button
-                  key={topic.id}
-                  onClick={() => navigate(`/learn/library/${topic.id}`)}
-                  className="w-full rounded-xl flex items-center justify-between px-5 py-3.5 text-left transition-all group"
-                  style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-gold)')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                      {topic.label}
-                    </p>
-                    <p className="text-xs mt-0.5 leading-snug line-clamp-1" style={{ color: 'var(--text-muted)' }}>
-                      {topic.tagline}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3 ml-4 shrink-0">
-                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>
-                      {topic.sections.length} sections
-                    </span>
-                    <span className="text-xs" style={{ color: 'var(--gold-accent)' }}>→</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Search */}
+      {/* Search — top of content for discoverability */}
       <div
         className="rounded-xl p-5"
         style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
       >
         <p className="text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
-          Search across all material
+          Search all chapters
         </p>
         <div className="relative">
           <input
@@ -170,6 +111,75 @@ export default function LearnLibrary() {
             )}
           </div>
         )}
+      </div>
+
+      {/* Chapter sections */}
+      <div className="space-y-8">
+        {STUDY_CHAPTERS.map((chapter, ci) => {
+          const isFoundations = chapter.id === 'cyber-foundations';
+          return (
+            <motion.div
+              key={chapter.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: ci * 0.04 }}
+            >
+              {/* Chapter header */}
+              <div className="flex items-start gap-3 mb-3">
+                <span
+                  className="mt-0.5 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shrink-0"
+                  style={{ background: isFoundations ? 'var(--gold-muted)' : 'var(--bg-elevated)', color: isFoundations ? 'var(--gold-accent)' : 'var(--text-muted)', border: isFoundations ? '1px solid var(--border-gold)' : '1px solid var(--border-subtle)' }}
+                >
+                  Ch. {chapter.number}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>
+                      {chapter.label}
+                    </h2>
+                    {isFoundations && (
+                      <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full" style={{ background: 'var(--gold-muted)', color: 'var(--gold-accent)', border: '1px solid var(--border-gold)' }}>
+                        Foundations
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                    {chapter.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Topic rows */}
+              <div className="space-y-1.5">
+                {chapter.topics.map(topic => (
+                  <button
+                    key={topic.id}
+                    onClick={() => navigate(`/learn/library/${topic.id}`)}
+                    className="w-full rounded-xl flex items-center justify-between px-5 py-3.5 text-left transition-all group"
+                    style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-gold)')}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        {topic.label}
+                      </p>
+                      <p className="text-xs mt-0.5 leading-snug line-clamp-1" style={{ color: 'var(--text-muted)' }}>
+                        {topic.tagline}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 ml-4 shrink-0">
+                      <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'var(--text-dim)' }}>
+                        {topic.sections.length} sections
+                      </span>
+                      <span className="text-xs" style={{ color: 'var(--gold-accent)' }}>→</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
       <div className="text-center pb-4">

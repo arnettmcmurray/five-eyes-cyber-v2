@@ -155,11 +155,30 @@ export class KBIngestionService {
   }
 
   async ingestFile(
-    rawContent: string,
+    buffer: Buffer,
     filename: string,
     mimeType: string,
     uploadedBy: string,
   ): Promise<IngestionJob> {
+    let rawContent: string;
+
+    if (mimeType === 'application/pdf') {
+      const pdfParse = (await import('pdf-parse')).default;
+      const result = await pdfParse(buffer);
+      rawContent = result.text;
+    } else if (
+      mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      filename.endsWith('.docx')
+    ) {
+      const mammoth = await import('mammoth');
+      const result = await mammoth.extractRawText({ buffer });
+      rawContent = result.value;
+    } else {
+      rawContent = buffer.toString('utf8');
+    }
+
+    if (!rawContent.trim()) throw new Error('File appears to be empty or could not be extracted.');
+
     const { source, job } = await createSourceAndJob(
       'file-upload', filename, filename, rawContent,
       mimeType as RawSource['mimeType'], uploadedBy,

@@ -1,13 +1,8 @@
 import { Router } from 'express';
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import type { Request } from 'express';
 
 function extractError(e: unknown): string {
-  if (e instanceof Anthropic.APIError) {
-    // Pull inner message from Anthropic error body if available
-    const body = e.error as { error?: { message?: string } } | undefined;
-    return body?.error?.message ?? e.message;
-  }
   return e instanceof Error ? e.message : String(e);
 }
 
@@ -20,9 +15,9 @@ function logAssist(adminUsername: string, endpoint: string, input: Record<string
 const router = Router();
 
 function getClient() {
-  const key = process.env['ANTHROPIC_API_KEY'];
-  if (!key) throw new Error('ANTHROPIC_API_KEY is not set in backend/.env');
-  return new Anthropic({ apiKey: key });
+  const key = process.env['OPENAI_API_KEY'];
+  if (!key) throw new Error('OPENAI_API_KEY is not set in backend/.env');
+  return new OpenAI({ apiKey: key });
 }
 
 // POST /ttx/assist/scenario
@@ -85,13 +80,13 @@ Rules:
 
   try {
     const client = getClient();
-    const message = await client.messages.create({
-      model: 'claude-opus-4-6',
+    const message = await client.chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 4096,
       messages: [{ role: 'user', content: prompt }],
     });
 
-    const text = message.content.find(b => b.type === 'text')?.text ?? '';
+    const text = message.choices[0]?.message?.content ?? '';
     // Strip markdown code fences if present
     const json = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
     let draft: unknown;
@@ -149,13 +144,13 @@ Rules:
 
   try {
     const client = getClient();
-    const message = await client.messages.create({
-      model: 'claude-opus-4-6',
+    const message = await client.chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 1024,
       messages: [{ role: 'user', content: prompt }],
     });
 
-    const text = message.content.find(b => b.type === 'text')?.text ?? '';
+    const text = message.choices[0]?.message?.content ?? '';
     const json = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
     let draft: unknown;
     try {

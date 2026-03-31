@@ -17,8 +17,8 @@ const TACTICAL_CARDS = [
     icon: BookOpen,
   },
   {
-    title: 'Simulations',
-    desc: 'Live breach simulation and tabletop exercise terminal.',
+    title: 'Tabletop Exercises',
+    desc: 'Scenario-based tabletop exercises — test your team\'s decision-making under pressure.',
     img: '/assets/ttx/port-operations-center.png',
     path: '/ttx/sessions',
     btn: 'Run Exercise',
@@ -57,8 +57,8 @@ const CAPABILITIES = [
   },
   {
     icon: Zap,
-    title: 'Rapid Incident Response',
-    desc: 'On-call expertise to guide your executive team through the critical first 72 hours of a major cyber or physical breach.',
+    title: 'Incident Response Support',
+    desc: 'Analyst-led guidance to support your executive team through the critical first 72 hours of a cyber or physical breach.',
     image: '/assets/dashboard/data_breach.png',
   },
 ];
@@ -66,9 +66,9 @@ const CAPABILITIES = [
 // ── Hero proof cluster ────────────────────────────────────────────────────────
 
 const STATS = [
-  { value: '3', label: 'Training Modules', sub: 'Phishing · BEC · MFA' },
-  { value: 'KB', label: 'Knowledge-Grounded', sub: 'No hallucinated guidance' },
-  { value: 'TTX', label: 'Tabletop Exercises', sub: 'Professional tier included' },
+  { value: '5', label: 'Training Modules', sub: 'Phishing · BEC · MFA · Invoice Fraud · Ransomware' },
+  { value: 'KB', label: 'Knowledge-Grounded', sub: 'Answers grounded in source material' },
+  { value: 'TTX', label: 'Tabletop Exercises', sub: 'Facilitated team simulations — Pro tier' },
 ];
 
 // ── Magnetic CTA button ───────────────────────────────────────────────────────

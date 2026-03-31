@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getAdminUsername, clearAdminSession } from '../../lib/adminSession';
 import { getStoredHandle, clearSession } from '../../lib/session';
+import { clearTierCache } from '../../hooks/useLearnerTier';
 
 function useTheme() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -67,7 +68,7 @@ export default function NavShell({ children }: NavShellProps) {
 
   const handleLogout = () => {
     if (isAdmin) { clearAdminSession(); navigate('/admin/login'); }
-    else { clearSession(); navigate('/learn'); }
+    else { clearSession(); clearTierCache(); navigate('/login'); }
   };
 
   const closeMobile = () => setMobileOpen(false);
@@ -172,7 +173,7 @@ export default function NavShell({ children }: NavShellProps) {
                 }}
                 onMouseEnter={e => {
                   if (!active) {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                    e.currentTarget.style.background = 'var(--bg-elevated)';
                     e.currentTarget.style.color = 'var(--text-primary)';
                   }
                 }}
@@ -206,14 +207,15 @@ export default function NavShell({ children }: NavShellProps) {
 
           <Link
             to="/"
-            title={collapsed ? 'Public site' : undefined}
+            title="Public site"
             className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-xs font-semibold mb-2 transition-colors"
             style={{ color: 'var(--text-dim)' }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'var(--bg-elevated)'; }}
             onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-dim)'; e.currentTarget.style.background = 'transparent'; }}
           >
+            {/* Globe icon — not an arrow, clearly a site link not a back button */}
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 0c-1.657 3-2 7-2 10s.343 7 2 10m0-20c1.657 3 2 7 2 10s-.343 7-2 10M2 12h20" />
             </svg>
             {!collapsed && <span>Public site</span>}
           </Link>
@@ -255,7 +257,7 @@ export default function NavShell({ children }: NavShellProps) {
             }}
             className="p-1.5 rounded-md transition-colors"
             style={{ color: 'var(--text-muted)' }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--bg-elevated)'; }}
             onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'transparent'; }}
           >
             <Icon d={collapsed ? ICONS.menu : ICONS.chevronLeft} className="w-5 h-5" />

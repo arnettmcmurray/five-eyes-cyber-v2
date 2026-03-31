@@ -58,6 +58,9 @@
   --radius-xl: 18px;
   --radius-2xl: 26px;
 
+  /* Color scheme for native form controls (select dropdowns, inputs) */
+  color-scheme: dark;
+
   /* Neural canvas particle colours (read by JS) */
   --neural-rgb: 245,158,11;
   --neural-node-alpha: 0.75;
@@ -99,6 +102,9 @@
   --status-progress: #d97706;
   --status-error: #e11d48;
   --status-idle: rgba(15, 23, 42, 0.35);
+
+  /* Color scheme for native form controls in light mode */
+  color-scheme: light;
 
   /* Neural canvas — darker, more visible on light bg */
   --neural-rgb: 160,100,0;
@@ -183,8 +189,8 @@ body {
   --surface-card:  rgba(255,255,255,0.60);
 }
 
-/* ── Nav is always dark bg — force light text regardless of theme ── */
-nav {
+/* ── Public nav only — always dark bg, force light text regardless of theme ── */
+.public-nav {
   --text-primary: #ffffff;
   --text-muted: rgba(255,255,255,0.55);
   --text-secondary: rgba(255,255,255,0.70);

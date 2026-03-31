@@ -367,6 +367,22 @@ export default function TtxParticipate() {
       <div className="flex-1 flex overflow-hidden">
         {/* Main Situation Room Feed */}
         <main className="flex-1 overflow-y-auto bg-gray-950 p-8 space-y-12 pb-40">
+
+          {/* Current Step Discussion Prompts — visible when a step is active */}
+          {currentStep && isActive && currentStep.prompts && currentStep.prompts.length > 0 && (
+            <div className="max-w-3xl mx-auto p-6 rounded-xl border border-blue-800/40 bg-blue-950/20">
+              <div className="text-[10px] uppercase tracking-widest text-blue-400 font-bold mb-4">Active Discussion Prompts — {currentStep.title}</div>
+              <ul className="space-y-3">
+                {currentStep.prompts.map((p: string, i: number) => (
+                  <li key={i} className="flex gap-3 text-sm text-blue-100 leading-relaxed">
+                    <span className="font-mono font-bold text-blue-500 shrink-0">0{i + 1}</span>
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {feedEvents.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-gray-600 text-center opacity-40">
                <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

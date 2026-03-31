@@ -26,7 +26,45 @@ router.get('/', async (_req, res) => {
     .select()
     .from(ttxScenarios)
     .orderBy(asc(ttxScenarios.createdAt));
-  res.json(rows);
+
+  // Enrich with section and step counts
+  const scenarioIds = rows.map(r => r.id);
+  if (scenarioIds.length === 0) { res.json([]); return; }
+
+  const sectionCounts = await db
+    .select({ scenarioId: ttxScenarioSections.scenarioId, count: sql<number>`count(*)::int` })
+    .from(ttxScenarioSections)
+    .where(inArray(ttxScenarioSections.scenarioId, scenarioIds))
+    .groupBy(ttxScenarioSections.scenarioId);
+
+  const sections = await db
+    .select({ id: ttxScenarioSections.id, scenarioId: ttxScenarioSections.scenarioId })
+    .from(ttxScenarioSections)
+    .where(inArray(ttxScenarioSections.scenarioId, scenarioIds));
+
+  const sectionIds = sections.map(s => s.id);
+  const stepCounts = sectionIds.length > 0
+    ? await db
+      .select({ sectionId: ttxScenarioSteps.sectionId, count: sql<number>`count(*)::int` })
+      .from(ttxScenarioSteps)
+      .where(inArray(ttxScenarioSteps.sectionId, sectionIds))
+      .groupBy(ttxScenarioSteps.sectionId)
+    : [];
+
+  // Build lookup maps
+  const secCountMap = Object.fromEntries(sectionCounts.map(r => [r.scenarioId, r.count]));
+  const secToScenario = Object.fromEntries(sections.map(s => [s.id, s.scenarioId]));
+  const stepsByScenario: Record<string, number> = {};
+  for (const sc of stepCounts) {
+    const scenId = secToScenario[sc.sectionId];
+    if (scenId) stepsByScenario[scenId] = (stepsByScenario[scenId] ?? 0) + sc.count;
+  }
+
+  res.json(rows.map(r => ({
+    ...r,
+    sectionCount: secCountMap[r.id] ?? 0,
+    stepCount: stepsByScenario[r.id] ?? 0,
+  })));
 });
 
 // POST /ttx/scenarios
