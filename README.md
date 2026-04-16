@@ -1,196 +1,263 @@
-# Five Eyes Staging Operator README
+# Five Eyes Staging Handoff
 
 ## What this app is
 
-This is the staging build of the Five Eyes training platform. It provides learner training modules, KB-backed help and search, governance-controlled knowledge management, and an admin control center. This is not a full production launch.
+This is the Five Eyes staging app for learner training, KB-backed search/help, governance review, and admin control. It is a staging handoff, not a full production launch.
 
-## System breakdown
+## Stack
 
-- Frontend: Vite + React single-page app in `src/`
-- Backend: Express + TypeScript API in `backend/src/`
-- Database: PostgreSQL 16 with Drizzle migrations in `backend/drizzle/`
-- Auth:
-  - Admin: password-only, backed by `admin_users`
-  - Learner: OTP-only, backed by `auth_users`, `otp_requests`, and `learner_sessions`
-- KB / governance:
-  - Learner help/search only returns published, learner-visible KB content
-  - Admin KB/governance routes are protected by admin auth
-- AWS staging pieces:
-  - Frontend build served separately from backend
-  - Backend container runs on ECS/Fargate
-  - PostgreSQL runs on RDS
-  - OTP and assessment email use SES in staging, SMTP/Mailpit locally
-  - Runtime secrets come from AWS Secrets Manager
+- Frontend: Vite + React in `src/`
+- Backend: Express + TypeScript in `backend/src/`
+- Database: PostgreSQL 16 with Drizzle SQL migrations in `backend/drizzle/`
+- Email:
+  - local: Mailpit over SMTP
+  - AWS staging: SES
+- AI provider: OpenAI only
 
-## How to run locally
+## Auth
 
-1. Start local services:
+- Admin auth is password-only
+- Learner auth is OTP-only
+- Admin and learner sessions are separate
+- Admin accounts are blocked from learner OTP flow
+
+## Canonical admin accounts
+
+- Top admin: `darren`
+- Emergency admin account: `platform-recovery`
+
+Both are seeded as normal admin accounts. `platform-recovery` is the break-glass account and should have its password changed immediately after handoff.
+
+## Local setup
+
+1. Copy env files:
+```bash
+cp backend/.env.example backend/.env
+cp .env.example .env
+```
+2. Start local services:
 ```bash
 docker compose up -d db mailpit
 ```
-2. Backend env:
+3. Build backend once:
 ```bash
-cp backend/.env.example backend/.env
+cd backend && npm run build
 ```
-3. Frontend env:
-```bash
-cp .env.example .env
-```
-4. Run backend migrations:
+4. Run migrations:
 ```bash
 cd backend && npm run db:migrate
 ```
-5. Seed/bootstrap:
+5. Run bootstrap:
 ```bash
 cd backend && npm run bootstrap
 ```
-6. Start the backend:
+6. Start backend:
 ```bash
 cd backend && npm run dev
 ```
-7. Start the frontend:
+7. Start frontend:
 ```bash
-npm run dev
+npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-Frontend runs on `http://localhost:5173`. Backend runs on `http://localhost:3001`. Mailpit runs on `http://localhost:8025`.
+Local URLs:
 
-## Required environment variables
+- frontend: `http://127.0.0.1:5173`
+- backend: `http://127.0.0.1:3001`
+- Mailpit: `http://127.0.0.1:8025`
 
-### Backend required
+## Local environment variables
+
+### Frontend `.env`
+
+```env
+VITE_API_BASE=http://localhost:3001
+VITE_API_KEY=dev-local-key
+```
+
+### Backend `backend/.env`
+
+```env
+DATABASE_URL=postgresql://five_eyes_user:five_eyes_dev@localhost:5433/five_eyes_v2
+API_KEY=dev-local-key
+ADMIN_PASSWORD=changeme
+OPENAI_API_KEY=
+PORT=3001
+CORS_ORIGIN=http://localhost:5173
+APP_BASE_URL=http://localhost:5173
+TRUST_PROXY=1
+SMTP_HOST=localhost
+SMTP_PORT=1025
+SES_FROM_ADDRESS=
+AWS_REGION=us-east-1
+DB_SSL=false
+```
+
+## AWS staging setup
+
+### Required AWS pieces
+
+- ECR repository for the backend image
+- ECS Fargate service for the backend
+- RDS PostgreSQL 16
+- ALB in front of ECS
+- S3 + CloudFront for the frontend
+- Secrets Manager for runtime secrets
+- SES for OTP and outbound app email
+
+### Required backend secrets in AWS Secrets Manager
 
 - `DATABASE_URL`
 - `API_KEY`
-- `ADMIN_PASSWORD` for first run or whenever seeded admin accounts need to be created
+- `ADMIN_PASSWORD`
+- `OPENAI_API_KEY`
+- `SES_FROM_ADDRESS`
 
-### Backend optional but important
+### Required backend non-secret env vars in ECS
 
-- `OPENAI_API_KEY` for learner chat and TTX AI assist
-- `SES_FROM_ADDRESS` for AWS SES
-- `AWS_REGION` for SES
-- `SMTP_HOST` and `SMTP_PORT` for local Mailpit
-- `CORS_ORIGIN`
-- `APP_BASE_URL`
-- `TRUST_PROXY`
-- `DB_SSL=true` for RDS / AWS staging
+- `PORT=3001`
+- `AWS_REGION=us-east-1`
+- `TRUST_PROXY=1`
+- `DB_SSL=true`
+- `CORS_ORIGIN=<frontend staging url>`
+- `APP_BASE_URL=<frontend staging url>`
 
-### Frontend required
+### Required frontend build vars for staging
 
-- `VITE_API_BASE`
-- `VITE_API_KEY`
+```env
+VITE_API_BASE=https://<backend-domain>
+VITE_API_KEY=<same value as backend API_KEY>
+```
 
-## How auth works
+### AWS deploy order
 
-### Admin
+1. Build backend image:
+```bash
+docker build -t five-eyes-backend ./backend
+```
+2. Push image to ECR
+3. Register ECS task definition using:
+   - `deploy-ecs.sh`
+   - `task-def.json`
+4. Run backend migrations against the staging database:
+```bash
+cd backend
+npm run build
+DB_SSL=true DATABASE_URL=<rds-url> npm run db:migrate
+```
+5. Start or update the ECS service
+6. Build the frontend with staging `VITE_API_BASE` and `VITE_API_KEY`
+7. Upload frontend build output to S3 / refresh CloudFront
+8. Test health and auth before handoff
 
-- Admins use `/admin/login`
-- Admin auth is password-only
-- Admin sessions are stored in `admin_sessions`
-- Admin routes require a valid admin bearer token
-- Admin accounts are blocked from learner OTP flow by database lookup, not by a hard-coded personal email list
+## Migrations
 
-### Learner
-
-- Learners use `/login`
-- Learners register or request OTP by email
-- Learners verify the OTP to get a learner session
-- Learner routes require a valid learner bearer token
-- Learners never use password auth
-
-## How to run migrations
-
+Run locally:
 ```bash
 cd backend
 npm run build
 npm run db:migrate
 ```
 
-For AWS staging, run migrations before or during deployment as a controlled release step. Do not assume container startup applies schema automatically.
+Run for AWS staging:
+```bash
+cd backend
+npm run build
+DB_SSL=true DATABASE_URL=<rds-url> npm run db:migrate
+```
 
-## How seeding / bootstrap works
+The migration command now restores the old Drizzle baseline automatically if the schema already exists but the migration journal is empty.
+
+## Seeding and bootstrap
 
 - Startup seeding:
-  - When `ADMIN_PASSWORD` is set, backend startup reconciles seeded admin accounts in `admin_users`
-  - This enforces one canonical top admin and one neutral break-glass admin
-- Bootstrap script:
-  - `cd backend && npm run bootstrap`
-  - Seeds local-proof learner data, modules, KB content links, progress data, TTX demo data, and reconciles seeded admin accounts when `ADMIN_PASSWORD` is present
-- Bootstrap is idempotent and does not wipe the database
+  - if `ADMIN_PASSWORD` is set, backend startup reconciles the seeded admin accounts
+- Bootstrap:
+```bash
+cd backend && npm run bootstrap
+```
 
-## How AWS staging works
+Bootstrap is idempotent. It seeds:
 
-- Build backend image from `backend/Dockerfile`
-- Push image to ECR
-- Register ECS task definition using secret ARNs for:
-  - `DATABASE_URL`
-  - `API_KEY`
-  - `ADMIN_PASSWORD`
-  - `OPENAI_API_KEY`
-  - `SES_FROM_ADDRESS`
-- Set non-secret task env vars:
-  - `PORT=3001`
-  - `AWS_REGION`
-  - `TRUST_PROXY=1`
-  - `DB_SSL=true`
-  - `CORS_ORIGIN`
-  - `APP_BASE_URL`
-- Run migrations against the staging database
-- Start ECS service behind ALB
-- Build frontend with staging `VITE_API_BASE` and `VITE_API_KEY`
+- Darren as canonical top admin
+- `platform-recovery` as emergency admin
+- local learner accounts
+- published modules
+- KB content and links
+- learner progress
+- TTX scenarios
+
+## OpenAI setup
+
+- Local:
+  - set `OPENAI_API_KEY` in `backend/.env`
+- AWS:
+  - store `OPENAI_API_KEY` in Secrets Manager
+  - inject it into the ECS task
+
+If `OPENAI_API_KEY` is empty, the app still runs. Learner KB chat and TTX AI assist will be unavailable.
 
 ## What not to break
 
-- Admin auth must stay password-only
-- Learner auth must stay OTP-only
-- Admin and learner routes must stay separate
-- Learner KB access must stay limited to published, learner-visible content
-- Governance routes must remain admin-only
-- KB-first remains the primary behavior; AI is support only
-- Do not add bypass logins or hidden recovery logic
+- Do not change admin auth to OTP
+- Do not change learner auth to password
+- Do not merge admin and learner routes
+- Do not expose non-learner-visible KB content to learners
+- Do not add hidden login bypasses
+- Do not add a second AI provider without changing the code intentionally
 
-## Common mistakes
+## Common issues
 
-- Forgetting `DB_SSL=true` in AWS staging
-- Starting the backend against a fresh database before running migrations
-- Forgetting to set `CORS_ORIGIN` to the frontend domain in staging
-- Forgetting that `VITE_API_KEY` is public browser config, not a secret
-- Trying to use an admin username in the learner OTP flow
-- Committing real API keys or real database credentials
+- `db:migrate` fails:
+  - run `cd backend && npm run build && npm run db:migrate`
+- OTP email does not show locally:
+  - confirm Mailpit is running on `http://localhost:8025`
+- Backend starts but frontend cannot connect:
+  - check `VITE_API_BASE`
+  - check `CORS_ORIGIN`
+- AWS backend cannot reach the DB:
+  - check `DATABASE_URL`
+  - check `DB_SSL=true`
+  - check ECS to RDS network rules
+- OTP email fails in AWS:
+  - check `SES_FROM_ADDRESS`
+  - check SES identity verification
+  - check ECS task role permissions
 
 ## Smoke test checklist
 
-- `GET /health` returns `status=ok` and `db=ok`
-- Admin login works at `/admin/login`
-- Learner OTP request and verify work at `/login`
-- Admin routes reject unauthenticated learner access
-- Learner routes reject missing or invalid learner sessions
-- `/admin`, `/kb`, and `/ttx` do not redirect-loop
-- Learner dashboard loads modules
-- Learner KB search/help returns published learner-visible content only
-- Governance admin routes load under admin auth
-- Darren exists in `admin_users` with `is_top_admin=true`
-- `platform-recovery` exists in `admin_users` with `is_break_glass=true`
-- No `arnettmcmurray` dependency remains in runtime auth or startup logic
-- No stale second-provider env or secret dependency remains
+- `GET /health` returns `status=ok`
+- admin login works for `darren`
+- admin login works for `platform-recovery`
+- admin OTP request is blocked
+- learner OTP request and verify work
+- learner modules load
+- a learner module opens
+- learner KB search works
+- governance summary loads for admin
+- learner token cannot access admin routes
+- admin token cannot access learner routes
 
-## Where admin truth is defined
+## Verified local truth
 
-- Schema: `backend/src/db/schema/admin-auth.ts`
-- Migration: `backend/drizzle/0002_admin_truth_flags.sql`
-- Seeded account list: `backend/src/config/admin-accounts.ts`
-- Startup reconciliation: `backend/src/server.ts`
-- Bootstrap reconciliation: `backend/scripts/bootstrap-local-proof.ts`
+This repo was smoke-tested locally on the dev stack with:
 
-## How to add your own OpenAI API key
+- Docker Postgres
+- Mailpit
+- backend running on `127.0.0.1:3001`
+- frontend running on `127.0.0.1:5173`
 
-- Local:
-  - Set `OPENAI_API_KEY` in `backend/.env`
-- AWS staging:
-  - Store the key in AWS Secrets Manager
-  - Inject it into the ECS task as `OPENAI_API_KEY`
+Verified:
 
-The app only uses OpenAI. Do not add a second AI provider unless the code is deliberately changed to support it.
+- backend health
+- Darren admin login
+- break-glass login
+- learner OTP request/verify
+- learner modules
+- learner KB search
+- governance summary
+- route separation
 
 ## Warning
 
-Never commit real API keys, database passwords, or AWS secret values into code, env examples, docs, or task definitions.
+Never commit real API keys, real database passwords, or real AWS secret values.

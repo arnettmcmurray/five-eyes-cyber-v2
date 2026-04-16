@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(PGPASSWORD=five_eyes_dev psql -h localhost -p 5433 -U five_eyes_user -d five_eyes_v2 -c \"\\\\d learners\")",
-      "Bash(PGPASSWORD=five_eyes_dev psql -h localhost -p 5433 -U five_eyes_user -d five_eyes_v2 -c \":*)"
-    ]
-  }
-}
