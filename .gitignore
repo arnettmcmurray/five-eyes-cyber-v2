@@ -6,6 +6,7 @@ backend/.env
 reference/
 **/.DS_Store
 out/
+docs/
 .playwright-mcp/
 *.log
 demo_base_plan_details.md
