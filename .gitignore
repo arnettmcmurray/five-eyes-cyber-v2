@@ -1,8 +1,11 @@
 node_modules/
 dist/
 .env
+backend/.env
 *.bak
 reference/
-.DS_Store
-docs/
+**/.DS_Store
 out/
+.playwright-mcp/
+*.log
+demo_base_plan_details.md
