@@ -44,13 +44,13 @@ for SECRET in \
   "five-eyes/prod/database-url:postgresql://five_eyes_user:PASS@RDS_ENDPOINT:5432/five_eyes_v2" \
   "five-eyes/prod/api-key:$(openssl rand -hex 32)" \
   "five-eyes/prod/admin-password:CHOOSE_STRONG_PASSWORD" \
+  "five-eyes/prod/openai-api-key:OPENAI_API_KEY_VALUE" \
   "five-eyes/prod/ses-from-address:noreply@fiveeyesltd.com"
 do
   NAME="${SECRET%%:*}"
   VALUE="${SECRET#*:}"
   aws secretsmanager create-secret --name "$NAME" --secret-string "$VALUE"
 done
-# ANTHROPIC_API_KEY optional — add if TTX AI assist needed
 ```
 ✓ Check: `aws secretsmanager get-secret-value --secret-id five-eyes/prod/api-key`
 
@@ -203,12 +203,11 @@ aws ecs create-service \
 ```
 ✓ Check: `aws ecs describe-services --cluster five-eyes-prod --services five-eyes-backend` → `runningCount: 1`
 
-### 15. Run DB schema push
+### 15. Run DB migrations
 ```bash
-# One-time: exec into running task or run a one-off task with DATABASE_URL set
-# From dev machine with direct RDS access (via bastion or VPN):
-DATABASE_URL="postgresql://..." npm run db:push
-# Or run the drizzle-kit push command directly
+cd backend
+npm run build
+DATABASE_URL="postgresql://..." DB_SSL=true npm run db:migrate
 ```
 ✓ Check: `GET /health` → `{ "status": "ok", "db": "ok" }`
 
@@ -277,7 +276,7 @@ curl -H "x-api-key: $KEY" "$API/admin/access"
 # Admin login
 TOKEN=$(curl -s -X POST "$API/auth/admin/login" \
   -H "x-api-key: $KEY" -H "Content-Type: application/json" \
-  -d '{"username":"arnettmcmurray@gmail.com","password":"<seed-password>"}' | jq -r .token)
+  -d '{"username":"darren","password":"<seed-password>"}' | jq -r .token)
 echo "Admin token: ${TOKEN:0:10}..."
 
 # Security headers

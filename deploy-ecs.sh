@@ -1,54 +1,65 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-echo "Getting OpenAI Key from .env..."
-OPENAI_KEY=$(grep '^OPENAI_API_KEY=' backend/.env | cut -d '=' -f2-)
+: "${AWS_REGION:=us-east-1}"
+: "${ECS_EXECUTION_ROLE_ARN:?Set ECS_EXECUTION_ROLE_ARN}"
+: "${ECS_TASK_ROLE_ARN:?Set ECS_TASK_ROLE_ARN}"
+: "${ECR_IMAGE_URI:?Set ECR_IMAGE_URI}"
+: "${DATABASE_URL_SECRET_ARN:?Set DATABASE_URL_SECRET_ARN}"
+: "${API_KEY_SECRET_ARN:?Set API_KEY_SECRET_ARN}"
+: "${ADMIN_PASSWORD_SECRET_ARN:?Set ADMIN_PASSWORD_SECRET_ARN}"
+: "${OPENAI_API_KEY_SECRET_ARN:?Set OPENAI_API_KEY_SECRET_ARN}"
+: "${SES_FROM_ADDRESS_SECRET_ARN:?Set SES_FROM_ADDRESS_SECRET_ARN}"
+: "${CORS_ORIGIN:?Set CORS_ORIGIN}"
+: "${APP_BASE_URL:?Set APP_BASE_URL}"
 
-echo "Creating CloudWatch Log Group..."
-aws logs create-log-group --log-group-name /ecs/five-eyes-v2-backend --region us-east-1 || true
+aws logs create-log-group --log-group-name /five-eyes/backend --region "${AWS_REGION}" >/dev/null 2>&1 || true
 
-echo "Checking execution role..."
-ROLE_ARN=$(aws iam get-role --role-name ecsTaskExecutionRole --query 'Role.Arn' --output text 2>/dev/null || true)
-if [ -z "$ROLE_ARN" ]; then
-    echo "Creating ecsTaskExecutionRole..."
-    aws iam create-role --role-name ecsTaskExecutionRole --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Sid":"","Effect":"Allow","Principal":{"Service":"ecs-tasks.amazonaws.com"},"Action":"sts:AssumeRole"}]}' > /dev/null
-    aws iam attach-role-policy --role-name ecsTaskExecutionRole --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
-    sleep 5
-    ROLE_ARN=$(aws iam get-role --role-name ecsTaskExecutionRole --query 'Role.Arn' --output text)
-fi
-
-echo "Registering Task Definition..."
 cat <<JSON > task-def.json
 {
-  "family": "five-eyes-v2-backend-task",
-  "executionRoleArn": "${ROLE_ARN}",
+  "family": "five-eyes-backend",
+  "executionRoleArn": "${ECS_EXECUTION_ROLE_ARN}",
+  "taskRoleArn": "${ECS_TASK_ROLE_ARN}",
   "networkMode": "awsvpc",
   "containerDefinitions": [
     {
       "name": "backend",
-      "image": "125140433567.dkr.ecr.us-east-1.amazonaws.com/five-eyes-v2-backend:latest",
+      "image": "${ECR_IMAGE_URI}",
       "portMappings": [
         {
           "containerPort": 3001,
-          "hostPort": 3001,
           "protocol": "tcp"
         }
       ],
       "environment": [
-        {"name": "API_KEY", "value": "dev-local-key"},
         {"name": "PORT", "value": "3001"},
-        {"name": "DATABASE_URL", "value": "postgresql://postgres:five_eyes_staging_secure!@five-eyes-staging-db.ce7i0was6bvk.us-east-1.rds.amazonaws.com:5432/postgres?sslmode=require"},
-        {"name": "JWT_SECRET", "value": "five_eyes_jwt_staging_secret"},
+        {"name": "AWS_REGION", "value": "${AWS_REGION}"},
         {"name": "TRUST_PROXY", "value": "1"},
-        {"name": "OPENAI_API_KEY", "value": "${OPENAI_KEY}"}
+        {"name": "DB_SSL", "value": "true"},
+        {"name": "CORS_ORIGIN", "value": "${CORS_ORIGIN}"},
+        {"name": "APP_BASE_URL", "value": "${APP_BASE_URL}"}
+      ],
+      "secrets": [
+        {"name": "DATABASE_URL", "valueFrom": "${DATABASE_URL_SECRET_ARN}"},
+        {"name": "API_KEY", "valueFrom": "${API_KEY_SECRET_ARN}"},
+        {"name": "ADMIN_PASSWORD", "valueFrom": "${ADMIN_PASSWORD_SECRET_ARN}"},
+        {"name": "OPENAI_API_KEY", "valueFrom": "${OPENAI_API_KEY_SECRET_ARN}"},
+        {"name": "SES_FROM_ADDRESS", "valueFrom": "${SES_FROM_ADDRESS_SECRET_ARN}"}
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/five-eyes-v2-backend",
-          "awslogs-region": "us-east-1",
+          "awslogs-group": "/five-eyes/backend",
+          "awslogs-region": "${AWS_REGION}",
           "awslogs-stream-prefix": "ecs"
         }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "wget -qO- http://localhost:3001/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 15
       }
     }
   ],

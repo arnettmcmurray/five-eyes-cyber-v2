@@ -31,7 +31,7 @@ Internet
 | **S3** | Frontend static hosting | Vite build output (`dist/`) |
 | **CloudFront** | CDN for frontend | OAC on S3 bucket; HTTPS for app.* |
 | **SES** | Email delivery | OTP codes + assessment links; verify sender domain |
-| **Secrets Manager** | Runtime secrets | DATABASE_URL, API_KEY, ADMIN_PASSWORD, ANTHROPIC_API_KEY, SES_FROM_ADDRESS |
+| **Secrets Manager** | Runtime secrets | DATABASE_URL, API_KEY, ADMIN_PASSWORD, OPENAI_API_KEY, SES_FROM_ADDRESS |
 | **Parameter Store** | Non-secret config | CORS_ORIGIN, APP_BASE_URL, TRUST_PROXY, PORT, AWS_REGION |
 | **CloudWatch Logs** | Log aggregation | ECS `awslogs` driver → `/five-eyes/backend` log group |
 | **IAM** | Permissions | Task execution role (Secrets Manager read) + task role (SES send) |
@@ -83,7 +83,7 @@ Standard `AmazonECSTaskExecutionRolePolicy` plus:
 
 - Engine: PostgreSQL 16 (matches dev pgvector/pg16 image)
 - Extension: `pgvector` — must be enabled on RDS: `CREATE EXTENSION IF NOT EXISTS vector;`
-- Schema: applied via `bash backend/scripts/db-push.sh` on first deploy
+- Schema: applied via `npm run db:migrate` from `backend/`
 - Credentials: stored in Secrets Manager, injected into ECS task as `DATABASE_URL`
 
 ## Logging

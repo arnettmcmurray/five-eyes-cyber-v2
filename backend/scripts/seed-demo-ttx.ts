@@ -15,7 +15,7 @@
 
 import 'dotenv/config';
 import { v4 as uuid } from 'uuid';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, desc } from 'drizzle-orm';
 import { db } from '../src/db/client.js';
 import {
   ttxScenarios,
@@ -38,7 +38,11 @@ async function main() {
   console.log('▶  Five Eyes TTX demo seed');
 
   // 1. Get (or fail loudly) a facilitator admin account
-  const [admin] = await db.select().from(adminUsers).limit(1);
+  const [admin] = await db
+    .select()
+    .from(adminUsers)
+    .orderBy(desc(adminUsers.isTopAdmin), asc(adminUsers.username))
+    .limit(1);
   if (!admin) {
     console.error('✗  No admin user found. Run the bootstrap script first.');
     process.exit(1);

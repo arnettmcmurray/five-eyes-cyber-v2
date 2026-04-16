@@ -121,7 +121,7 @@ app.use('/ttx/scenarios', requireAdmin, ttxScenariosRouter);
 app.use('/ttx/sessions', requireAdmin, ttxSessionsRouter);
 // TTX — participant routes (learner Bearer auth, no admin required)
 app.use('/ttx/participate', participateRateLimit, ttxParticipateRouter);
-// TTX — AI assist (admin only, expensive Anthropic calls)
+// TTX — AI assist (admin only, expensive OpenAI calls)
 app.use('/ttx/assist', requireAdmin, assistRateLimit, ttxAssistRouter);
 
 app.use('/access', accessRouter);

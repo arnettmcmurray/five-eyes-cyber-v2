@@ -41,7 +41,7 @@ export const participateRateLimit = rateLimit({
   handler: rateLimitHandler,
 });
 
-/** TTX AI assist — expensive Anthropic API calls, admin only */
+/** TTX AI assist — expensive OpenAI API calls, admin only */
 export const assistRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,

@@ -30,12 +30,13 @@ URL: `http://localhost:5173/admin/login`
 
 | Username | Password |
 |----------|----------|
-| `arnettmcmurray@gmail.com` | `changeme` (value of `ADMIN_PASSWORD` in `backend/.env`) |
+| `darren` | `changeme` (value of `ADMIN_PASSWORD` in `backend/.env`) |
 
 Other valid admin usernames (same password):
 - `michaelm@fiveyesltd.com`
 - `dmott@fiveyesltd.com`
 - `support@fiveyesltd.com`
+- `platform-recovery`
 
 After login, lands at `/kb`. Navigate to `/admin` for the control center.
 
@@ -78,7 +79,7 @@ OTP flow:
 
 ## Pages to Inspect
 
-### Admin side (login as `arnettmcmurray@gmail.com`)
+### Admin side (login as `darren`)
 
 | Page | URL | What you should see |
 |------|-----|---------------------|

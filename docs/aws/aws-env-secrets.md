@@ -12,7 +12,7 @@ Store each as a plain-text secret (not JSON). Path prefix: `five-eyes/prod/`
 | `five-eyes/prod/database-url` | `DATABASE_URL` | `postgresql://user:pass@rds-host:5432/five_eyes_v2` |
 | `five-eyes/prod/api-key` | `API_KEY` | `openssl rand -hex 32` — global API gateway key |
 | `five-eyes/prod/admin-password` | `ADMIN_PASSWORD` | Seed password for admin accounts; change after first login |
-| `five-eyes/prod/anthropic-api-key` | `ANTHROPIC_API_KEY` | Required for TTX AI assist (optional) |
+| `five-eyes/prod/openai-api-key` | `OPENAI_API_KEY` | Required for learner chat and TTX AI assist (optional) |
 | `five-eyes/prod/ses-from-address` | `SES_FROM_ADDRESS` | Verified SES sender (e.g. `noreply@fiveeyesltd.com`) |
 
 ## Parameter Store (non-sensitive config)
@@ -36,6 +36,7 @@ In the task definition JSON (or CDK/Terraform), inject as follows:
   "environment": [
     { "name": "PORT",        "value": "3001" },
     { "name": "TRUST_PROXY", "value": "1" },
+    { "name": "DB_SSL",      "value": "true" },
     { "name": "AWS_REGION",  "value": "us-east-1" },
     { "name": "CORS_ORIGIN", "value": "https://app.fiveeyesltd.com" },
     { "name": "APP_BASE_URL","value": "https://app.fiveeyesltd.com" }
@@ -44,7 +45,7 @@ In the task definition JSON (or CDK/Terraform), inject as follows:
     { "name": "DATABASE_URL",      "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:five-eyes/prod/database-url" },
     { "name": "API_KEY",           "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:five-eyes/prod/api-key" },
     { "name": "ADMIN_PASSWORD",    "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:five-eyes/prod/admin-password" },
-    { "name": "ANTHROPIC_API_KEY", "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:five-eyes/prod/anthropic-api-key" },
+    { "name": "OPENAI_API_KEY",    "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:five-eyes/prod/openai-api-key" },
     { "name": "SES_FROM_ADDRESS",  "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:five-eyes/prod/ses-from-address" }
   ]
 }
@@ -66,7 +67,7 @@ Set in CI/CD pipeline before `npm run build`. These are bundled into the JS — 
 The server logs `[WARN]` at startup if any of these are unset:
 - `CORS_ORIGIN`
 - `TRUST_PROXY`
-- `ANTHROPIC_API_KEY`
+- `OPENAI_API_KEY`
 - `SES_FROM_ADDRESS`
 - `APP_BASE_URL`
 

@@ -16,6 +16,14 @@
  * Run from backend/:   npx tsx --env-file=.env scripts/bootstrap-local-proof.ts
  */
 
+import { AdminAuthService } from '../src/services/auth/admin-auth.service.js';
+import {
+  SEEDED_ADMIN_ACCOUNTS,
+  CANONICAL_TOP_ADMIN_USERNAME,
+  BREAK_GLASS_ADMIN_USERNAME,
+  LEGACY_ADMIN_USERNAMES_TO_REMOVE,
+} from '../src/config/admin-accounts.js';
+
 // ── Fixed IDs ──────────────────────────────────────────────────────────────
 // All IDs are fixed so re-runs are idempotent.
 
@@ -1285,11 +1293,24 @@ async function main() {
   const { ttxScenarios, ttxScenarioSections, ttxScenarioSteps, ttxScenarioKbRefs } =
     await import('../src/db/schema/ttx.js');
   const { eq, and, inArray, not, sql } = await import('drizzle-orm');
+  const { adminUsers } = await import('../src/db/schema/admin-auth.js');
 
   const BOOTSTRAP_BY = 'bootstrap-local-proof';
+  const adminPassword = process.env['ADMIN_PASSWORD'];
   const now = new Date();
 
   console.log('[bootstrap] Starting local-proof bootstrap...');
+
+  if (adminPassword) {
+    for (const username of LEGACY_ADMIN_USERNAMES_TO_REMOVE) {
+      await db.delete(adminUsers).where(eq(adminUsers.username, username));
+    }
+    const adminAuth = new AdminAuthService();
+    await adminAuth.seedAccounts(SEEDED_ADMIN_ACCOUNTS, adminPassword);
+    console.log(`[bootstrap] ✓ Admin accounts reconciled (${CANONICAL_TOP_ADMIN_USERNAME} top admin, ${BREAK_GLASS_ADMIN_USERNAME} break-glass)`);
+  } else {
+    console.log('[bootstrap] ! ADMIN_PASSWORD not set — admin account reconciliation skipped');
+  }
 
   // ── 1. Modules ────────────────────────────────────────────────────────────
 
@@ -3853,7 +3874,8 @@ async function main() {
   console.log('');
   console.log('  TTX: 9 scenarios — BEC + Ransomware + CEO Fraud + Cargo Diversion + SaaS Breach + Phishing/Load Board + Double-Brokering + Insider Threat + Fake Vendor Onboarding');
   console.log('');
-  console.log('  Admin login: arnettmcmurray@gmail.com / $ADMIN_PASSWORD (changeme locally)');
+  console.log(`  Admin login: ${CANONICAL_TOP_ADMIN_USERNAME} / $ADMIN_PASSWORD (changeme locally)`);
+  console.log(`  Break-glass admin: ${BREAK_GLASS_ADMIN_USERNAME} / $ADMIN_PASSWORD (rotate or remove after handoff)`);
   console.log('  Learner OTP: request OTP at /login, check Mailpit at http://localhost:8025');
 
   process.exit(0);

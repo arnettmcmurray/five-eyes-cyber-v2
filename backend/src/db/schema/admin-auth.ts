@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 /** Admin users — strictly separated from learner auth. */
 export const adminUsers = pgTable('admin_users', {
@@ -6,6 +6,8 @@ export const adminUsers = pgTable('admin_users', {
   username:     text('username').notNull().unique(),
   /** scrypt hash stored as salt:hash (hex). */
   passwordHash: text('password_hash').notNull(),
+  isTopAdmin:   boolean('is_top_admin').notNull().default(false),
+  isBreakGlass: boolean('is_break_glass').notNull().default(false),
   createdAt:    timestamp('created_at').notNull().defaultNow(),
   updatedAt:    timestamp('updated_at').notNull().defaultNow(),
 });

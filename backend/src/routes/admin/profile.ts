@@ -10,7 +10,9 @@ const adminAuthSvc = new AdminAuthService();
  */
 router.get('/', (req, res) => {
   const username = (req as unknown as Request & { adminUsername: string }).adminUsername;
-  res.json({ username });
+  adminAuthSvc.getAdminProfile(username)
+    .then((profile) => res.json(profile ?? { username, isTopAdmin: false, isBreakGlass: false }))
+    .catch(() => res.json({ username, isTopAdmin: false, isBreakGlass: false }));
 });
 
 /**

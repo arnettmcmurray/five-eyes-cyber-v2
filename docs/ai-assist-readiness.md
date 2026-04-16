@@ -6,8 +6,8 @@
 - `POST /ttx/assist/scenario` — given `{ title, objective }` → draft `{ sections[{ title, steps[{ prompt, facilitatorNotes, injects[] }] }] }`
 - `POST /ttx/assist/injects` — given `{ stepPrompt, scenarioContext?, count? }` → `{ injects[{ body, injectType, targetRoles, suggestedTimingMinutes }] }`
 - Both behind `requireAdmin` — participant access impossible
-- `getClient()` throws with clear message if `ANTHROPIC_API_KEY` missing
-- `extractError()` pulls inner Anthropic error message, not raw blob
+- `getClient()` throws with clear message if `OPENAI_API_KEY` missing
+- `extractError()` returns a clean OpenAI error message, not a raw blob
 - JSON parse failure → "AI returned unparseable response — try again"
 - Shape validation: missing `sections` / `injects` array → actionable 500
 - Request logging: `[ttx-assist] <iso> admin=<username> endpoint=<x> input=<json>`
@@ -27,7 +27,7 @@
 | No auth → 401 on both endpoints | ✓ |
 | Fake learner token → 401 | ✓ |
 | Missing required fields → 400 with clear message | ✓ |
-| Missing ANTHROPIC_API_KEY → 500 "not set in backend/.env" | ✓ |
+| Missing OPENAI_API_KEY → 500 "not set in backend/.env" | ✓ |
 | Provider error (no credits) → clean user-readable message | ✓ |
 | Manual controls unaffected by AI state | ✓ |
 | Nothing auto-saves or auto-publishes | ✓ |
@@ -46,7 +46,7 @@
 # 1. Get admin token
 TOKEN=$(curl -s -X POST http://localhost:3001/auth/admin/login \
   -H "Content-Type: application/json" -H "x-api-key: dev-local-key" \
-  -d '{"username":"arnettmcmurray@gmail.com","password":"arnett-five-eyes-2026"}' \
+  -d '{"username":"darren","password":"changeme"}' \
   | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
 
 # 2. Scenario draft

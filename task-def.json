@@ -1,33 +1,47 @@
 {
-  "family": "five-eyes-v2-backend-task",
-  "executionRoleArn": "arn:aws:iam::125140433567:role/ecsTaskExecutionRole",
+  "family": "five-eyes-backend",
+  "executionRoleArn": "<ecs-execution-role-arn>",
+  "taskRoleArn": "<ecs-task-role-arn>",
   "networkMode": "awsvpc",
   "containerDefinitions": [
     {
       "name": "backend",
-      "image": "125140433567.dkr.ecr.us-east-1.amazonaws.com/five-eyes-v2-backend:latest",
+      "image": "<account>.dkr.ecr.us-east-1.amazonaws.com/five-eyes-backend:latest",
       "portMappings": [
         {
           "containerPort": 3001,
-          "hostPort": 3001,
           "protocol": "tcp"
         }
       ],
       "environment": [
-        {"name": "API_KEY", "value": "dev-local-key"},
         {"name": "PORT", "value": "3001"},
-        {"name": "DATABASE_URL", "value": "postgresql://postgres:five_eyes_staging_secure!@five-eyes-staging-db.ce7i0was6bvk.us-east-1.rds.amazonaws.com:5432/postgres?sslmode=require"},
-        {"name": "JWT_SECRET", "value": "five_eyes_jwt_staging_secret"},
+        {"name": "AWS_REGION", "value": "us-east-1"},
         {"name": "TRUST_PROXY", "value": "1"},
-        {"name": "OPENAI_API_KEY", "value": "sk-REPLACEME"}
+        {"name": "DB_SSL", "value": "true"},
+        {"name": "CORS_ORIGIN", "value": "https://staging-app.example.com"},
+        {"name": "APP_BASE_URL", "value": "https://staging-app.example.com"}
+      ],
+      "secrets": [
+        {"name": "DATABASE_URL", "valueFrom": "<database-url-secret-arn>"},
+        {"name": "API_KEY", "valueFrom": "<api-key-secret-arn>"},
+        {"name": "ADMIN_PASSWORD", "valueFrom": "<admin-password-secret-arn>"},
+        {"name": "OPENAI_API_KEY", "valueFrom": "<openai-api-key-secret-arn>"},
+        {"name": "SES_FROM_ADDRESS", "valueFrom": "<ses-from-address-secret-arn>"}
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/five-eyes-v2-backend",
+          "awslogs-group": "/five-eyes/backend",
           "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs"
         }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "wget -qO- http://localhost:3001/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 15
       }
     }
   ],

@@ -4,6 +4,12 @@ import { AdminAuthService } from './services/auth/admin-auth.service.js';
 import { db } from './db/client.js';
 import { adminUsers } from './db/schema/admin-auth.js';
 import { sourceTrustLevels } from './db/schema/source-trust-levels.js';
+import {
+  SEEDED_ADMIN_ACCOUNTS,
+  CANONICAL_TOP_ADMIN_USERNAME,
+  BREAK_GLASS_ADMIN_USERNAME,
+  LEGACY_ADMIN_USERNAMES_TO_REMOVE,
+} from './config/admin-accounts.js';
 import { v4 as uuidv4 } from 'uuid';
 import { eq } from 'drizzle-orm';
 
@@ -53,26 +59,21 @@ if (trustProxy) {
 
 const PORT = parseInt(process.env['PORT'] ?? '3001', 10);
 
-const ADMIN_ACCOUNTS = [
-  'arnettmcmurray@gmail.com',
-  'michaelm@fiveyesltd.com',
-  'dmott@fiveyesltd.com',
-  'support@fiveyesltd.com',
-];
-
 async function start() {
   const adminPassword = process.env['ADMIN_PASSWORD'];
 
   if (adminPassword) {
     // Remove stale generic 'admin' user if it exists (leftover from earlier dev seed)
     await db.delete(adminUsers).where(eq(adminUsers.username, 'admin')).catch(() => {});
+    for (const username of LEGACY_ADMIN_USERNAMES_TO_REMOVE) {
+      await db.delete(adminUsers).where(eq(adminUsers.username, username)).catch(() => {});
+    }
 
     const adminAuth = new AdminAuthService();
-    for (const username of ADMIN_ACCOUNTS) {
-      await adminAuth.seedDefault(username, adminPassword).catch(err => {
-        console.error(`[AdminAuth] Seed failed for ${username}:`, err instanceof Error ? err.message : String(err));
-      });
-    }
+    await adminAuth.seedAccounts(SEEDED_ADMIN_ACCOUNTS, adminPassword).catch(err => {
+      console.error('[AdminAuth] Seed reconciliation failed:', err instanceof Error ? err.message : String(err));
+      throw err;
+    });
   } else {
     // Check if any admin accounts exist — if not, the system is locked out
     const existingAdmins = await db.select({ id: adminUsers.id }).from(adminUsers).limit(1).catch(() => []);
@@ -115,6 +116,8 @@ async function start() {
     console.log(`│  Email    ${emailMode}`);
     console.log(`│  AI       ${process.env['OPENAI_API_KEY'] ? 'OPENAI_API_KEY set ✓' : '⚠  OPENAI_API_KEY not set — KB chat + TTX AI assist disabled'}`);
     console.log(`│  CORS     ${process.env['CORS_ORIGIN'] ?? 'http://localhost:5173 (default)'}`);
+    console.log(`│  Top admin ${CANONICAL_TOP_ADMIN_USERNAME}`);
+    console.log(`│  Recovery  ${BREAK_GLASS_ADMIN_USERNAME}`);
     console.log('└─────────────────────────────────────────────────────────────┘');
     console.log('');
   });

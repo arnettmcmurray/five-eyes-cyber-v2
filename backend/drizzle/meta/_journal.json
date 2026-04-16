@@ -15,6 +15,13 @@
       "when": 1774000000000,
       "tag": "0001_learner_profile_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776300000000,
+      "tag": "0002_admin_truth_flags",
+      "breakpoints": true
     }
   ]
 }

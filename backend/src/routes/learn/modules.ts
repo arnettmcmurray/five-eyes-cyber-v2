@@ -21,6 +21,40 @@ const accessSvc = new AccessService();
 const assignmentSvc = new AssignmentService();
 const retrievalSvc = new KBRetrievalService();
 
+function toLearnerModuleSummary(module: {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  published: boolean;
+  displayOrder: number;
+  nextModuleId: string | null;
+  estimatedMinutes: number | null;
+  locked: boolean;
+  inProgress: boolean;
+  completed: boolean;
+  score: number | null;
+  total: number | null;
+  percentage: number | null;
+}) {
+  return {
+    id: module.id,
+    slug: module.slug,
+    title: module.title,
+    description: module.description,
+    published: module.published,
+    displayOrder: module.displayOrder,
+    nextModuleId: module.nextModuleId,
+    estimatedMinutes: module.estimatedMinutes,
+    locked: module.locked,
+    inProgress: module.inProgress,
+    completed: module.completed,
+    score: module.score,
+    total: module.total,
+    percentage: module.percentage,
+  };
+}
+
 /** Middleware: require a valid learner session (Bearer token from /auth/otp/verify). */
 async function requireLearner(req: Request, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
@@ -123,7 +157,29 @@ router.get('/', async (req, res) => {
       nextRecommendedId = candidate?.id ?? null;
     }
 
-    res.json({ modules: enriched, nextRecommendedId });
+    res.json({ modules: enriched.map(toLearnerModuleSummary), nextRecommendedId });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// GET /learn/modules/kb-search?q=xxx — global learner KB search (no module scope)
+router.get('/kb-search', async (req, res) => {
+  const learnerId = (req as unknown as Request & { learnerId: string }).learnerId;
+  const q = (req.query.q as string | undefined)?.trim();
+  if (!q) { res.status(400).json({ error: 'q is required' }); return; }
+  try {
+    const result = await retrievalSvc.retrieve({ text: q, userId: learnerId, topK: 8 });
+    res.json({
+      query: result.query,
+      confidence: result.confidence,
+      band: result.band,
+      hits: result.hits.map(h => ({
+        title: h.title,
+        excerpt: h.excerpt,
+        topics: h.topics.map(t => ({ slug: t.topicSlug, name: t.topicName })),
+      })),
+    });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
@@ -185,28 +241,6 @@ router.get('/:id/help', async (req, res) => {
   try {
     const result = await retrievalSvc.retrieve({ text: q, userId: learnerId, topK: 5, moduleId: req.params.id });
     // Return learner-safe shape: title, excerpt, topics — no admin fields
-    res.json({
-      query: result.query,
-      confidence: result.confidence,
-      band: result.band,
-      hits: result.hits.map(h => ({
-        title: h.title,
-        excerpt: h.excerpt,
-        topics: h.topics.map(t => ({ slug: t.topicSlug, name: t.topicName })),
-      })),
-    });
-  } catch (err) {
-    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
-  }
-});
-
-// GET /learn/modules/kb-search?q=xxx — global learner KB search (no module scope)
-router.get('/kb-search', async (req, res) => {
-  const learnerId = (req as unknown as Request & { learnerId: string }).learnerId;
-  const q = (req.query.q as string | undefined)?.trim();
-  if (!q) { res.status(400).json({ error: 'q is required' }); return; }
-  try {
-    const result = await retrievalSvc.retrieve({ text: q, userId: learnerId, topK: 8 });
     res.json({
       query: result.query,
       confidence: result.confidence,
